@@ -18,5 +18,6 @@ HTTP Tutorial :<br>
     
 Socket Programming in C/C++:<br>
 https://www.geeksforgeeks.org/socket-programming-cc/<br>
-socket:<br>
+socket and file descriptor:<br>
+https://www.computerhope.com/jargon/f/file-descriptor.htm
 https://www.computerhope.com/jargon/n/network-socket.htm
