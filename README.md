@@ -19,5 +19,6 @@ HTTP Tutorial :<br>
 Socket Programming in C/C++:<br>
 https://www.geeksforgeeks.org/socket-programming-cc/<br>
 socket and file descriptor:<br>
+https://docs.oracle.com/javase/tutorial/networking/sockets/definition.html#:~:text=A%20socket%20is%20one%20endpoint,address%20and%20a%20port%20number.<br>
 https://www.computerhope.com/jargon/f/file-descriptor.htm
 https://www.computerhope.com/jargon/n/network-socket.htm
