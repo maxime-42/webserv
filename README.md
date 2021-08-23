@@ -1,15 +1,22 @@
 # webserv
 in progrress
-Comprendre les modèles OSI et TCP/IP :
-  https://www.youtube.com/watch?v=26jazyc7VNk
+Comprendre les modèles OSI et TCP/IP :<br>
+  https://www.youtube.com/watch?v=26jazyc7VNk<br>
   
-serveur web:
-  https://www.youtube.com/watch?v=msB9AvJ4bTM
+serveur web:<br>
+  https://www.youtube.com/watch?v=msB9AvJ4bTM<br>
   
- ports:
-  https://www.youtube.com/watch?v=YSl6bordSh8
+ ports:<br>
+  https://www.youtube.com/watch?v=YSl6bordSh8<br>
   
   man http:
-    https://www.w3.org/Protocols/
-    https://www.youtube.com/watch?v=Qxs2S4agyxk 
+    https://www.w3.org/Protocols/<br>
+    https://www.youtube.com/watch?v=Qxs2S4agyxk <br>
+
+HTTP Tutorial :<br>
+    https://www.tutorialspoint.com/http/index.htm
     
+Socket Programming in C/C++:<br>
+https://www.geeksforgeeks.org/socket-programming-cc/<br>
+socket:<br>
+https://www.computerhope.com/jargon/n/network-socket.htm
