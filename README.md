@@ -27,3 +27,13 @@ https://docs.oracle.com/javase/tutorial/networking/sockets/definition.html#:~:te
 https://www.computerhope.com/jargon/f/file-descriptor.htm
 https://www.computerhope.com/jargon/n/network-socket.htm
 
+7.3. Blocking and Nonblocking I/O:<br>
+http://faculty.salina.k-state.edu/tim/ossg/Device/blocking.html<br>
+https://www.ibm.com/docs/en/i/7.4?topic=concepts-nonblocking-io<br>
+
+Handle multiple socket connections :<br>
+https://www.ibm.com/docs/en/i/7.2?topic=designs-example-nonblocking-io-select<br>
+https://www.binarytides.com/multiple-socket-connections-fdset-select-linux/<br>
+https://man7.org/linux/man-pages/man2/select.2.html<br>
+https://www.youtube.com/watch?v=Y6pFtgRdUts<b>
+
