@@ -17,7 +17,7 @@ HTTP Tutorial :<br>
     https://www.tutorialspoint.com/http/index.htm
     
 Example Socket Programming your own web server in C/C++ :<br>
-https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa
+https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa<br>
 https://www.geeksforgeeks.org/socket-programming-cc/<br>
 part 1 : https://www.youtube.com/watch?v=LtXEMwSG5-8<br>
 part 2 : https://www.youtube.com/watch?v=mStnzIEprH8<br>
