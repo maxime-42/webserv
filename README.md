@@ -36,4 +36,5 @@ https://www.ibm.com/docs/en/i/7.2?topic=designs-example-nonblocking-io-select<br
 https://www.binarytides.com/multiple-socket-connections-fdset-select-linux/<br>
 https://man7.org/linux/man-pages/man2/select.2.html<br>
 https://www.youtube.com/watch?v=Y6pFtgRdUts<b>
+ https://www.youtube.com/watch?v=dEHZb9JsmOU&list=WL&index=84&t=161s<br>
 
