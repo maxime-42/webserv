@@ -43,3 +43,6 @@ https://www.youtube.com/watch?v=dEHZb9JsmOU&list=WL&index=84&t=161s<br>
 
 Difference between URI and URL :<br>
 https://www.youtube.com/watch?v=vpYct2npKD8<br>
+
+APIs | REST | REST APIs Demystified :<br>
+https://youtu.be/FOZtRzY5x8E
