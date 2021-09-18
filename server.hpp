@@ -17,8 +17,8 @@ namespace ft
 		int			_listen_fd;
 		struct  sockaddr_in	_address;
 		int			_addrlen;
-		int			_nb_pending;
 		int			_port;
+		int			_nb_pending;	  
 		struct pollfd		_tab_fd[200];
 
 

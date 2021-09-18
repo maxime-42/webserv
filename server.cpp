@@ -1,5 +1,6 @@
+#include "server.hpp"
+#include <cstring>
 
-#include "server_class.hpp"
 
 namespace ft
 {
@@ -17,7 +18,7 @@ namespace ft
 		_network_socket = socket(AF_INET, SOCK_STREAM, 0);
 		test_error(_network_socket, "failled create socket _network_socket_");
 	}
-    
+
 	server::                    server(){std::cout << "constructor calling...\n" << std::endl;}
 
 	server::                   server(int port, int nb_pending):_port(port), _nb_pending(nb_pending){}
