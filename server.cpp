@@ -9,6 +9,7 @@ namespace ft
 		if (error_code < 0)
 		{
 			std::cout << msg << std::endl;
+			close(_network_socket);
 			exit (ERROR);
 		}
 	}
