@@ -19,8 +19,7 @@ namespace ft
 		int			_addrlen;
 		int			_port;
 		int			_nb_pending;
-		int			_timeout;
-		struct pollfd		_tab_fd[200];
+		int			_opt = 1;
 
 
 

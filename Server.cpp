@@ -8,7 +8,7 @@ namespace ft
 	{
 		if (error_code < 0)
 		{
-			std::cout << msg << std::endl;
+			std::cout  << msg << std::endl;
 			close(_network_socket);
 			exit (ERROR);
 		}
@@ -17,12 +17,19 @@ namespace ft
 	void Server::			create_network_socket()
 	{
 		_network_socket = socket(AF_INET, SOCK_STREAM, 0);
-		test_error(_network_socket, "failled create socket _network_socket_");
+		test_error(_network_socket, "error create socket _network_socket_");
+		// Forcefully attaching socket to the port 
+		int ret = setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
+		test_error(_ret, "foce to reuse a port");
+		// Set socket to be nonblocking
+		ret = ioctl(_network_socket_, FIONBIO, (char *)&opt);
+		test_error(_ret, "set socket to be nonblocking");
+
 	}
 
-	Server::			Server():_timeout(3 * 60 * 1000){std::cout << "default constructor calling...\n" << std::endl;}
+	Server::			Server():{std::cout << "default constructor calling...\n" << std::endl;}
 
-	Server::			Server(int port, int nb_pending):_port(port), _nb_pending(nb_pending), _timeout(3 * 60 * 1000){}
+	Server::			Server(int port, int nb_pending):_port(port), _nb_pending(nb_pending),{}
 
 	Server::			~Server(){}
 
