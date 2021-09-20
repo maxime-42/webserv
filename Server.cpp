@@ -1,15 +1,15 @@
-#include "server.hpp"
+#include "Server.hpp"
 #include <cstring>
 
 
 namespace ft
 {
-	void Server::			test_error(int error_code, char const *msg)
+	void			Server::test_error(int error_code, char const *msg)
 	{
 		if (error_code < 0)
 		{
 			std::cout  << msg << std::endl;
-			close(_network_socket);
+			//close(_network_socket);
 			exit (ERROR);
 		}
 	}
@@ -19,17 +19,17 @@ namespace ft
 		_network_socket = socket(AF_INET, SOCK_STREAM, 0);
 		test_error(_network_socket, "error create socket _network_socket_");
 		// Forcefully attaching socket to the port 
-		int ret = setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
-		test_error(_ret, "foce to reuse a port");
+		int ret = setsockopt(_network_socket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &_opt, sizeof(_opt));
+		test_error(ret, "foce to reuse a port");
 		// Set socket to be nonblocking
-		ret = ioctl(_network_socket_, FIONBIO, (char *)&opt);
-		test_error(_ret, "set socket to be nonblocking");
+		ret = ioctl(_network_socket, FIONBIO, (char *)&_opt);
+		test_error(ret, "set socket to be nonblocking");
 
 	}
 
-	Server::			Server():{std::cout << "default constructor calling...\n" << std::endl;}
+	Server::			Server():_port(PORT), _nb_pending(NB_PENDING),_opt(1){std::cout << "default constructor calling...\n" << std::endl;}
 
-	Server::			Server(int port, int nb_pending):_port(port), _nb_pending(nb_pending),{}
+	Server::			Server(int port):_port(port), _nb_pending(NB_PENDING),_opt(1){}
 
 	Server::			~Server(){}
 

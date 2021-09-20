@@ -1,12 +1,11 @@
-
-#include "server.hpp"
+#include "Running_server.hpp"
 
 int	main(int argc, char const *argv[])
 {
-	ft::server apiRest(2, 4);
-	std::cout << "hellow world\n" << std::endl;
+	ft::Running_server apiRest;
+
+
 	(void)argc;
 	(void)argv;
-
 	return (0);
 }
