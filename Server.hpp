@@ -16,7 +16,7 @@ namespace ft
 	class Server
 	{
 	private:
-		int			_network_socket;
+		int			_server_fd;
 		int			_listen_fd;
 		struct  sockaddr_in	_address;
 		int			_addrlen;
@@ -30,13 +30,13 @@ namespace ft
 		Server();
 		Server(int port);
 		~Server();
-		void			create_network_socket();
+		void			create_server_fd();
 		void			listen_fd();   
  		void			test_error(int error_code, char const *msg);
-		void			bind_and_listen();
-		int			get_network_socket();
-	private:	  
-		void			init_struct_sockaddr();
+		void			binding();
+		int			get_server_fd();
+		void			start_server();
+
     };
 }
 
