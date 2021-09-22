@@ -16,7 +16,7 @@ namespace ft
 
 	void Server::			create_server_fd()
 	{
-		_server_fd = socket(AF_INET, SOCK_STREAM, 0);
+		_server_fd = socket(AF_INET6, SOCK_STREAM, 0);
 
 		test_error(_server_fd, "error create socket _server_fd_");
 
@@ -30,13 +30,13 @@ namespace ft
 		test_error(ret, "set socket to be nonblocking");
 	}
 
-	Server::			Server():_port(PORT), _nb_pending(NB_PENDING), _opt(1){std::cout << "default constructor server calling...\n" << std::endl;}
+	Server::			Server():_port(PORT),  _opt(1){std::cout << "default constructor server calling...\n" << std::endl;}
 
-	Server::			Server(int port):_port(port), _nb_pending(NB_PENDING), _opt(1){}
+	Server::			Server(int port):_port(port), _opt(1){}
 
 	Server::			~Server(){}
 
-	void    Server::		binding()
+	void    Server::		bind_socket()
 	{
 		int ret = 0;
 
@@ -55,9 +55,9 @@ namespace ft
 
 		// _address.sin_port = htons(_port);
 
-		_addrlen = sizeof(_address);
+
 		// std::cout << " _addrlen =  " << _addrlen << std::endl;
-		ret = bind(_server_fd, (struct sockaddr *)&_address, _addrlen);
+		ret = bind(_server_fd, (struct sockaddr *)&_address, sizeof(_address));
 
 		// std::cout << "ret =  " << ret << std::endl;		
 		test_error(ret, "error while the binding");
@@ -89,8 +89,8 @@ namespace ft
 	void	Server::		start_server()
 	{
 		create_server_fd();
-		binding();
-		_listen_fd = listen(_server_fd, _nb_pending);
+		bind_socket();
+		_listen_fd = listen(_server_fd, NB_PENDING);
 		test_error(_listen_fd, "error while the listening");
 		// std::cout << " _server_fd " << _server_fd << std::endl;
 		// bind_and_listen();
@@ -98,4 +98,5 @@ namespace ft
 	}
 
 	int	 Server::		get_server_fd() {return (_server_fd);}
+	int	 Server::		get_listen_fd() {return (_listen_fd);}
 }

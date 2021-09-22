@@ -18,10 +18,8 @@ namespace ft
 	private:
 		int			_server_fd;
 		int			_listen_fd;
-		struct  sockaddr_in	_address;
-		int			_addrlen;
+		struct  sockaddr_in6	_address;
 		int			_port;
-		int			_nb_pending;
 		int			_opt;
 
 
@@ -33,8 +31,9 @@ namespace ft
 		void			create_server_fd();
 		void			listen_fd();   
  		void			test_error(int error_code, char const *msg);
-		void			binding();
+		void			bind_socket();
 		int			get_server_fd();
+		int			get_listen_fd();
 		void			start_server();
 
     };
