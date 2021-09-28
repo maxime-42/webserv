@@ -1,10 +1,10 @@
-#include "Running_server.hpp"
+// #include "Running_server.hpp"
+#include "Create_server.hpp"
 
-int	main(int argc, char const *argv[])
+int	 main(int argc, const char** argv) 
 {
-	ft::Running_server apiRest;
-
-
+	// ft::Running_server apiRest;
+	ft::Create_server apiRest(PORT);
 	(void)argc;
 	(void)argv;
 	return (0);

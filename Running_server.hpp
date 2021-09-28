@@ -1,28 +1,23 @@
 #ifndef RUNNING_SERVER
 #define RUNNING_SERVER
 
-#include "Server.hpp"
+#include "Create_server.hpp"
 
 namespace ft
 {
-	class Running_server : public Server
+	class Running_server : public Create_server
 	{
 	private:
-		int			_timeout;
-		// Server			_server;
-		struct pollfd		_pollFd[SIZE_POLLFD];
-		int			_nb_fd_poll;
-		bool			_end_server;
+		// int					_timeout;
+		// // Server			_server;
+		// struct pollfd		_pollFd[SIZE_POLLFD];
+		// int					_nb_fd_poll;
+		// bool					_end_server;
 
 	public:
 		Running_server();
   		~Running_server();
-		int			initialise_poll();
-// 		void			setUp_listeningEvent();
-// 		void			check_event();
-// 		void			event_is_listening();
-// 		void			accept_event();
-// 		void			adding_fd_in_pollFd();
+		int					initialise_poll();
 	};
 
 }
