@@ -4,16 +4,6 @@
 
 namespace ft
 {
-	void							Create_server::test_error(int error_code, char const *msg)
-	{
-		if (error_code < 0)
-		{
-			std::cout  << msg << std::endl;
-			close(_server_fd);
-			exit (ERROR);
-		}
-	}
-
 	Create_server::					~Create_server(){}
 
  	Create_server::					Create_server(int port):_port(port)
@@ -21,7 +11,6 @@ namespace ft
 		setup();
 
 	}
-	
 	
 	void	Create_server::			setup()
 	{
@@ -44,21 +33,17 @@ namespace ft
 		_listen_fd = listen(_server_fd, NB_PENDING);
 		std::cout << "listen_fd = " << _listen_fd<< std::endl;
 		test_error(_listen_fd, "Error function  the listening");
+		/* Set up the initial listening socket                        */
+		_pollFd[0].fd = _server_fd;
+		_pollFd[0].events = POLLIN;
 	}
 	
-	void	Create_server:: setup_poll() 
-	{
-		/* Set up the initial listening socket                        */
-		_pollFd[0].fd = this->get_server_fd();
-		_pollFd[0].events = POLLIN;
-		_timeout = (3 * 60 * 1000);//Initialize the timeout to 3 minutes
-		int ret = poll(_pollFd, _nb_fd_poll, _timeout);
-		test_error(ret, " poll() failed");
-		if (ret == 0)
-			test_error(ERROR, " timed out.  End program.");
+	// void	Create_server::			receive()
+	// void	Create_server::			response()
 
-	}
+	int	 	Create_server::			get_server_fd() {return (_server_fd);}
+	int	 	Create_server::			get_listen_fd() {return (_listen_fd);}
+	// int		Create_server::			get_nb_fd_poll() {return (_nb_fd_poll);}
+	// void	Create_server::			set_nb_fd_poll(int n) {_nb_fd_poll = n;}
 
-	int	 Create_server::			get_server_fd() {return (_server_fd);}
-	int	 Create_server::			get_listen_fd() {return (_listen_fd);}
 }

@@ -24,7 +24,6 @@ namespace ft
 		int						_timeout;
 		struct pollfd			_pollFd[SIZE_POLLFD];
 		int						_nb_fd_poll;
-		bool					_end_server;
 
 
 	public:
@@ -36,7 +35,7 @@ namespace ft
 		int						get_server_fd();
 		int						get_listen_fd();
 		void					setup_poll(); 
-
+		// void					receive();
 	};
 }
 
