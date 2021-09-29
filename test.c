@@ -150,7 +150,6 @@ main (int argc, char *argv[])
       /*********************************************************/
       if(fds[i].revents == 0)
         continue;
-
       /*********************************************************/
       /* If revents is not POLLIN, it's an unexpected result,  */
       /* log and end the server.                               */

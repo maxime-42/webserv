@@ -22,8 +22,8 @@ namespace ft
 		struct	sockaddr_in		_address;
 		int						_port;
 		int						_timeout;
-		struct pollfd			_pollFd[SIZE_POLLFD];
-		int						_nb_fd_poll;
+		struct pollfd			_tab_poll[SIZE_POLLFD];
+		int						_nfds; //number file descriptor sever in _tab_poll
 
 
 	public:
@@ -35,7 +35,10 @@ namespace ft
 		int						get_server_fd();
 		int						get_listen_fd();
 		void					setup_poll(); 
-		// void					receive();
+		void					start_svc();
+		void					accept_all_incoming_connections(int index);
+		void					set_tab_poll(int fd);
+
 	};
 }
 
