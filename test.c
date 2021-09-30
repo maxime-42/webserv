@@ -7,13 +7,13 @@
 #include <netinet/in.h>
 #include <errno.h>
 #include <unistd.h>
-
+#include <string.h>
 #define SERVER_PORT  12345
 
 #define TRUE             1
 #define FALSE            0
 
-main (int argc, char *argv[])
+int main (int argc, char *argv[])
 {
   int    len, rc, on = 1;
   int    listen_sd = -1, new_sd = -1;
@@ -148,9 +148,15 @@ main (int argc, char *argv[])
       /* POLLIN and determine whether it's the listening       */
       /* or the active connection.                             */
       /*********************************************************/
+	  	  printf("i = %d\nfds[i] = %d\ncurrent_size = %d\nlisten_sd = %d\n", i, fds[i], current_size, listen_sd);
+
       if(fds[i].revents == 0)
+	  {
+	  	  printf("if [i = %d\nfds[i] = %d]\n", i, fds[i]);
+
         continue;
-      /*********************************************************/
+	  }
+	  /*********************************************************/
       /* If revents is not POLLIN, it's an unexpected result,  */
       /* log and end the server.                               */
       /*********************************************************/
@@ -166,7 +172,7 @@ main (int argc, char *argv[])
         /*******************************************************/
         /* Listening descriptor is readable.                   */
         /*******************************************************/
-        printf("  Listening socket is readable\n");
+        printf("Listening socket is readable \n");
 
         /*******************************************************/
         /* Accept all incoming connections that are            */
@@ -197,7 +203,7 @@ main (int argc, char *argv[])
           /* Add the new incoming connection to the            */
           /* pollfd structure                                  */
           /*****************************************************/
-          printf("  New incoming connection - %d\n", new_sd);
+          printf("  New incoming connection  %d\n", new_sd);
           fds[nfds].fd = new_sd;
           fds[nfds].events = POLLIN;
           nfds++;
@@ -323,4 +329,5 @@ main (int argc, char *argv[])
     if(fds[i].fd >= 0)
       close(fds[i].fd);
   }
+  return (0);
 }

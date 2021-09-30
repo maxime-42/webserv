@@ -11,6 +11,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "define.hpp"
+#include <sys/types.h>
+#include <sys/socket.h>
 
 namespace ft
 {
@@ -19,9 +21,13 @@ namespace ft
 	private:
 		int						_server_fd;
 		int						_listen_fd;
+		char					_buffer[BUFFER_SIZE];
 		struct	sockaddr_in		_address;
 		int						_port;
 		int						_timeout;
+		bool					_close_connexion;
+		bool					_compress_array;
+
 		struct pollfd			_tab_poll[SIZE_POLLFD];
 		int						_nfds; //number file descriptor sever in _tab_poll
 
@@ -36,8 +42,11 @@ namespace ft
 		int						get_listen_fd();
 		void					setup_poll(); 
 		void					start_svc();
-		void					accept_all_incoming_connections(int index);
 		void					set_tab_poll(int fd);
+		void					is_readable(struct pollfd	*_tab_poll);
+		void					squeeze_tab_poll();
+		void					accept_all_incoming_connections(struct pollfd	*_tab_poll);
+
 
 	};
 }
