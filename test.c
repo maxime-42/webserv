@@ -150,10 +150,9 @@ int main (int argc, char *argv[])
       /*********************************************************/
 	  	  printf("i = %d\nfds[i] = %d\ncurrent_size = %d\nlisten_sd = %d\n", i, fds[i], current_size, listen_sd);
 
-      if(fds[i].revents == 0)
+      if(fds[i].revents == 0) //si ya pas d'evenement on boucle pr trouver le fd qui a un evenement 
 	  {
 	  	  printf("if [i = %d\nfds[i] = %d]\n", i, fds[i]);
-
         continue;
 	  }
 	  /*********************************************************/
@@ -167,7 +166,7 @@ int main (int argc, char *argv[])
         break;
 
       }
-      if (fds[i].fd == listen_sd)
+      if (fds[i].fd == listen_sd)// on  a reçu un evenement est on vient l'accepter
       {
         /*******************************************************/
         /* Listening descriptor is readable.                   */

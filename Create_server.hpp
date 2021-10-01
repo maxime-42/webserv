@@ -43,10 +43,12 @@ namespace ft
 		void					setup_poll(); 
 		void					start_svc();
 		void					set_tab_poll(int fd);
-		void					is_readable(struct pollfd	*_tab_poll);
+		void					existing_connection(struct pollfd	*_tab_poll);
 		void					squeeze_tab_poll();
-		void					accept_all_incoming_connections(struct pollfd	*_tab_poll);
-
+		void					accept_all_incoming_connections();
+		bool					receive_data(struct pollfd	*_tab_poll);
+		bool					send_data(struct pollfd	*_tab_poll);
+		void					clean_all_socket();
 
 	};
 }

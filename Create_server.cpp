@@ -4,8 +4,11 @@
 
 namespace ft
 {
-	Create_server::					~Create_server()
+	Create_server::					~Create_server(){	}
+
+	void	Create_server:: clean_all_socket()
 	{
+
 		for (int i = 0; i < _nfds; i++)
 		{
 			if(_tab_poll[i].fd >= 0)
@@ -23,13 +26,11 @@ namespace ft
 			exit (ERROR);
 		}
 	}
-	
 
- 	Create_server::					Create_server(int port):_port(port)
+
+ 	Create_server::					Create_server(int port):_port(port), _nfds(1)
 	{
-		_close_connexion = false;
 		setup();
-
 	}
 	
 	void	Create_server::			setup()
@@ -64,59 +65,65 @@ namespace ft
 		_nfds++;
 	}
 
-	void	Create_server::			accept_all_incoming_connections(struct pollfd	*_tab_poll)
-	{
-		int new_sd = 0;
-		int addrlen = sizeof(_address);
-		while (new_sd != ERROR)
+
+
+	bool	Create_server:: receive_data(struct pollfd	*ptr_tab_poll)
+	{	
+		int ret;
+		ret = recv(ptr_tab_poll->fd, _buffer, sizeof(_buffer), 0);
+		if (ret < 0)
 		{
-			if (_tab_poll->fd == _server_fd)
+			if (errno != EWOULDBLOCK)
 			{
-				new_sd = accept(_server_fd, (sockaddr *)&_address, (socklen_t*)&addrlen);
-				if (new_sd < 0)
-				{
-					if (errno != EWOULDBLOCK)
-						test_error(ERROR, "accept() failed");
-					else
-						_nfds = ERROR;
-				}
-				else
-				{
-					_tab_poll[_nfds].fd = new_sd;
-					_tab_poll[_nfds++].events = POLLIN;
-				}
+				_close_connexion = true;
+				std::cout << "recv() failed" << std::endl;
 			}
+			return (false);
 		}
+		if (ret == 0)
+		{
+			std::cout << "recv() == 0 : Connection closed = true" << std::endl;
+			_close_connexion = true;
+			return(false);
+		}
+		std::cout << ret << " bytes received" << std::endl;
+		return (true);
 	}
 
-	void	Create_server::  is_readable(struct pollfd	*_tab_poll)
+	bool	Create_server:: send_data(struct pollfd	*_tab_poll)
 	{
-		int	ret;
-		std::cout << "Descriptor " << _tab_poll->fd << " is readable" << std::endl;
-		while (true)
+		int ret = 0;
+		bzero(_buffer, BUFFER_SIZE);
+		memcpy(_buffer, "HELLO WORLD", 11);
+		ret = send(_tab_poll->fd, _buffer, 11, 0);
+		if (ret < 0)
 		{
-			ret = recv(_tab_poll->fd, _buffer, sizeof(_buffer), 0);
-			if (ret < 0)
-			{
-				if (errno != EWOULDBLOCK)
-				{
-					test_error(ERROR, "  recv() failed");
-					_close_connexion = true;
-				}
-				return ;
-			}
-			if (ret == 0)
-			{
-				std::cout << "Connection closed" << std::endl;
-				_close_connexion = true;
-				return ;
-			}
-			if (_close_connexion)
-			{
-				close(_tab_poll->fd);
-				_tab_poll->fd = -1;
-				_compress_array = true;
-			}
+			std::cout << "send() failed" << std::endl;
+			_close_connexion = true;
+			return (false);
+		}
+		std::cout << "send : " << _buffer << std::endl;
+		return (true);
+	}
+
+
+	void	Create_server::  existing_connection(struct pollfd	*ptr_tab_poll)
+	{
+		bool infinity_loop = true;
+		_close_connexion = false;
+		std::cout << "existing_connection fd = " << _tab_poll->fd  << std::endl;
+		while (infinity_loop)
+		{
+			infinity_loop = receive_data(ptr_tab_poll);
+			if (infinity_loop)
+				infinity_loop = send_data(ptr_tab_poll);
+		}
+		if (_close_connexion)
+		{
+			std::cout << "existing_connection() == close connection" << std::endl;
+			close(ptr_tab_poll->fd);
+			ptr_tab_poll->fd = ERROR;
+			_compress_array = true;
 		}
 	}
 
@@ -128,7 +135,7 @@ namespace ft
 			_compress_array = false;
 			for (int i = 0; i < _nfds; i++)
 			{
-				if (_tab_poll[i].fd == -1)
+				if (_tab_poll[i].fd == ERROR)
 				{
 					for(int j = i; j < _nfds - 1; j++)
 					{
@@ -141,17 +148,41 @@ namespace ft
 		}
 	}
 
+	void	Create_server::			accept_all_incoming_connections()
+	{
+		int new_sd = 0;
+		int addrlen = sizeof(_address);
+		while (new_sd != ERROR)
+		{
+			new_sd = accept(_server_fd, (sockaddr *)&_address, (socklen_t*)&addrlen);
+			if (new_sd < 0)
+			{
+				if (errno != EWOULDBLOCK)
+					test_error(ERROR, "accept() failed");
+				new_sd = ERROR;
+			}
+			else
+			{
+				//Add the new incoming connection to _tab_poll structure 
+				_tab_poll[_nfds].fd = new_sd;
+				_tab_poll[_nfds++].events = POLLIN;
+			}
+		}
+	}
+
 	void	Create_server::			start_svc()
 	{
 		int ret;
+		int time_out =  (3 * 60 * 1000);
 		int	current_size;
 		while (true)
 		{
-			ret = poll(_tab_poll, _nfds, (3 * 60 * 1000));
+			std::cout << "Waiting on poll()..." << std::endl;
+			ret = poll(_tab_poll, _nfds, time_out);
 			test_error(ret, "poll() failed");
 			if (ret == 0)
 				test_error(ERROR, "poll() timed out.  End program.");
-			 current_size = _nfds;
+			current_size = _nfds;
 			for (int index = 0; index < current_size; index++)
 			{
 				if(_tab_poll[index].revents == 0)//loop as long the are not event happened
@@ -159,11 +190,12 @@ namespace ft
 				if(_tab_poll[index].revents != POLLIN)// i will probably change it to handle the responses
 					test_error(ERROR, "Error! revents");
 				if (_tab_poll[index].fd == _server_fd)
-					accept_all_incoming_connections(&_tab_poll[index]);
+					accept_all_incoming_connections();
 				else
-					is_readable(&_tab_poll[index]);
-				squeeze_tab_poll();
+					existing_connection(&_tab_poll[index]);
 			}
+			// std::cout << "wshh\n" << std::endl;
+			squeeze_tab_poll();
 		}
 	}
 
