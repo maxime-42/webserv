@@ -82,11 +82,11 @@ namespace ft
 		}
 		if (ret == 0)
 		{
-			std::cout << "recv() == 0 : Connection closed = true" << std::endl;
+			std::cout << "recv() == 0 so connection closed = true" << std::endl;
 			_close_connexion = true;
 			return(false);
 		}
-		std::cout << ret << " bytes received" << std::endl;
+		std::cout << ret << " bytes received:\n ===============\n" << _buffer << "\n===============\n"<< std::endl;
 		return (true);
 	}
 
@@ -94,8 +94,9 @@ namespace ft
 	{
 		int ret = 0;
 		bzero(_buffer, BUFFER_SIZE);
-		memcpy(_buffer, "HELLO WORLD", 11);
-		ret = send(_tab_poll->fd, _buffer, 11, 0);
+		int	size_data = strlen("HELLO WORLD");
+		memcpy(_buffer, "HELLO WORLD", size_data);
+		ret = send(_tab_poll->fd, _buffer, size_data, 0);
 		if (ret < 0)
 		{
 			std::cout << "send() failed" << std::endl;
@@ -120,7 +121,7 @@ namespace ft
 		}
 		if (_close_connexion)
 		{
-			std::cout << "existing_connection() == close connection" << std::endl;
+			std::cout << "close connection fd = " << ptr_tab_poll->fd << "\n" <<std::endl;
 			close(ptr_tab_poll->fd);
 			ptr_tab_poll->fd = ERROR;
 			_compress_array = true;
@@ -163,6 +164,7 @@ namespace ft
 			}
 			else
 			{
+				std::cout << "new incoming connection new_sd = " << new_sd << std::endl;
 				//Add the new incoming connection to _tab_poll structure 
 				_tab_poll[_nfds].fd = new_sd;
 				_tab_poll[_nfds++].events = POLLIN;
@@ -194,7 +196,6 @@ namespace ft
 				else
 					existing_connection(&_tab_poll[index]);
 			}
-			// std::cout << "wshh\n" << std::endl;
 			squeeze_tab_poll();
 		}
 	}
