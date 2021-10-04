@@ -263,11 +263,13 @@ int main (int argc, char *argv[])
           /*****************************************************/
           len = rc;
           printf("  %d bytes received\n", len);
-
+		printf("=============\n%s\n=============\n", buffer);
           /*****************************************************/
           /* Echo the data back to the client                  */
           /*****************************************************/
-          rc = send(fds[i].fd, buffer, len, 0);
+		char *hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
+		int ret = strlen(hello);
+          rc = send(fds[i].fd, hello, ret, 0);
           if (rc < 0)
           {
             perror("  send() failed");

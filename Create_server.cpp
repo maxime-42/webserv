@@ -90,12 +90,14 @@ namespace ft
 		return (true);
 	}
 
+
+
 	bool	Create_server:: send_data(struct pollfd	*_tab_poll)
 	{
 		int ret = 0;
 		bzero(_buffer, BUFFER_SIZE);
-		int	size_data = strlen("HELLO WORLD");
-		memcpy(_buffer, "HELLO WORLD", size_data);
+		int	size_data = strlen(DATA);
+		memcpy(_buffer, DATA, size_data);
 		ret = send(_tab_poll->fd, _buffer, size_data, 0);
 		if (ret < 0)
 		{
@@ -106,7 +108,6 @@ namespace ft
 		std::cout << "send : " << _buffer << std::endl;
 		return (true);
 	}
-
 
 	void	Create_server::  existing_connection(struct pollfd	*ptr_tab_poll)
 	{
