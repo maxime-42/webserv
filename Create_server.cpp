@@ -48,6 +48,7 @@ namespace ft
 		_address.sin_family = AF_INET;// IPv4 protocol
 		memset(&_address.sin_zero, 0, sizeof (_address.sin_zero));
 		_address.sin_addr.s_addr = INADDR_ANY;
+		//_address.sin_addr.s_addr = htons("127.0.0.1");
 		_address.sin_port = htons(_port);
 		ret = bind(_server_fd, (struct sockaddr *)&_address, sizeof(_address));    // Forcefully attaching socket to the port
 		test_error(ret, "Error while the binding");
@@ -190,8 +191,8 @@ namespace ft
 			{
 				if(_tab_poll[index].revents == 0)//loop as long the are not event happened
 					continue;
-				if(_tab_poll[index].revents != POLLIN)// i will probably change it to handle the responses
-					test_error(ERROR, "Error! revents");
+				//if(_tab_poll[index].revents != POLLIN)// i will probably change it to handle the responses
+				//	test_error(ERROR, "Error! revents");
 				if (_tab_poll[index].fd == _server_fd)
 					accept_all_incoming_connections();
 				else
