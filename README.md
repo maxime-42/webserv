@@ -50,5 +50,7 @@ https://youtu.be/FOZtRzY5x8E<br>
 Curl Command:<br>
 https://www.youtube.com/watch?v=7XUibDYw4mc<br>
 https://curl.se/docs/httpscripting.html<br>
-https://www.freecodecamp.org/news/how-to-start-using-curl-and-why-a-hands-on-introduction-ea1c913caaaa/<br>
+https://www.freecodecamp.org/news/how-to-start-using-curl-and-why-a-hands-on-introduction-ea1c913caaaa/<br><br>
+NGINX Configuration Guide
+https://www.plesk.com/blog/various/nginx-configuration-guide/<br>
 
