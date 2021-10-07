@@ -1,4 +1,3 @@
-// Server side C program to demonstrate Socket programming
 #include <stdio.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -17,7 +16,6 @@
 
 
 #define PORT 8080
-//#define PORT 28000
 
 int     get_listener_socket(void) {
 
@@ -140,6 +138,8 @@ void        send_reponse(int socket, std::map<std::string, std::string> & repons
     }
 
     write(socket, reply.c_str(),reply.length());
+
+
     write(1, "\nREPONSE:\n\n", 12);
     write(1, reply.c_str(),reply.length());
     write(1, "\n\n", 2);
@@ -154,15 +154,11 @@ int main(int argc, char const *argv[])
     socklen_t   addrlen;
     std::map<std::string, std::string> request;
     std::map<std::string, std::string> reponse;
-    
-	//const char *http_ok_header = "HTTP/1.1 200 OK\nContent-Type: text/html; charset=UTF-8\nContent-Length: ";//12\n\nHello world!";
-	//const char *http_ok_header = "HTTP/1.1 405 Not Found\n";//\nContent-Type: text/html; charset=UTF-8\nContent-Length: ";//12\n\nHello world!";
 
     server_fd = get_listener_socket();
     
     while(1)
     {
-//        printf("\n+++++++ Waiting for new connection ++++++++\n\n");
         if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0)
         {
             perror("In accept");
@@ -173,42 +169,12 @@ int main(int argc, char const *argv[])
         valread = read( new_socket , buffer, 30000);
         printf("%s\n",buffer );
 
-
-
         parse_request(std::string(buffer), request); 
 
         process_request(request, reponse);
 
         send_reponse(new_socket, reponse);
         
-        
-        
-/*  server kk
- *
- *
-        std::ifstream	ifs("index.html");
-	    if (ifs.fail()) 
-		    perror("Could not open the file");
-
-	    std::stringstream buf;
-	    buf << ifs.rdbuf();
-	    std::string	filestr = buf.str();
-
-	    ifs.close();
-
-
-
-		const char *len = std::to_string(filestr.length()).c_str();
-		const char *newline = "\n\n";
-
-        write(new_socket , http_ok_header, strlen(http_ok_header));
-		write(new_socket, len, strlen(len)); 
-		write(new_socket, newline, strlen(newline));
-		write(new_socket, filestr.c_str(), filestr.length());
-
-*/
-
-//        printf("------------------Hello message sent-------------------\n");
         close(new_socket);
     }
     return 0;
