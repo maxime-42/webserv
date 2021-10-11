@@ -51,6 +51,8 @@ Curl Command:<br>
 https://www.youtube.com/watch?v=7XUibDYw4mc<br>
 https://curl.se/docs/httpscripting.html<br>
 https://www.freecodecamp.org/news/how-to-start-using-curl-and-why-a-hands-on-introduction-ea1c913caaaa/<br><br>
-NGINX Configuration Guide
+NGINX Configuration Guide<br>
+https://www.youtube.com/channel/UCVpkAgcqXXm28glMcc3HOEA/videos<br>
+https://www.journaldev.com/26342/nginx-location-directive<br>
 https://www.plesk.com/blog/various/nginx-configuration-guide/<br>
 
