@@ -55,4 +55,4 @@ NGINX Configuration Guide<br>
 https://www.youtube.com/channel/UCVpkAgcqXXm28glMcc3HOEA/videos<br>
 https://www.journaldev.com/26342/nginx-location-directive<br>
 https://www.plesk.com/blog/various/nginx-configuration-guide/<br>
-
+https://www.youtube.com/watch?v=71bOe9EDrmg<br>
