@@ -118,7 +118,7 @@
 
                 send_reponse(ptr_tab_poll->fd, reponse);
 
-                //close(ptr_tab_poll->fd);
+                close(ptr_tab_poll->fd);
 
             }
         }
