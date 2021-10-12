@@ -95,24 +95,6 @@
     }
 
 
-
-    bool	Create_server:: send_data(struct pollfd	*_tab_poll)
-    {
-        int ret = 0;
-        bzero(_buffer, BUFFER_SIZE);
-        int	size_data = strlen(DATA);
-        memcpy(_buffer, DATA, size_data);
-        ret = send(_tab_poll->fd, _buffer, size_data, 0);
-        if (ret < 0)
-        {
-            std::cout << "send() failed" << std::endl;
-            _close_connexion = true;
-            return (false);
-        }
-        std::cout << "send : " << _buffer << std::endl;
-        return (true);
-    }
-
     void	Create_server::  existing_connection(struct pollfd	*ptr_tab_poll)
     {
 
@@ -254,15 +236,7 @@
 
     }
 
-    void        Create_server::     process_request(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse) {
-
-        reponse.clear();
-
-        if (request["method"] != "GET") {
-            reponse["code"] = "405";
-            reponse["status"] = "Method Not Allowed";
-            return ;
-        }
+    void        Create_server::     process_GET(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse) {
 
         char buffer[256];
         getwd(buffer);
@@ -293,7 +267,24 @@
             if(request["url"].substr(request["url"].find_last_of(".") + 1) == "html")
                 reponse["Content-Type"] = "text/html; charset=utf-8";
 
+    }
+}
+
+    void        Create_server::     process_request(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse) {
+
+        reponse.clear();
+
+        if (request["method"] == "GET") 
+            process_GET(request, reponse);
+        else if (request["method"] == "POST")
+            process_POST(request, reponse);
+        else if (request["method"] =="DELETE")
+            process_DELETE(request, reponse);
+        else {
+            reponse["code"] = "405";
+            reponse["status"] = "Method Not Allowed";
         }
+
     }
 
     void        Create_server::     send_reponse(int socket, std::map<std::string, std::string> & reponse) {

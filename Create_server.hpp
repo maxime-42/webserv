@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include "define.hpp"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <map>
@@ -54,7 +53,6 @@ class Create_server
         void					squeeze_tab_poll();
         void					accept_all_incoming_connections();
         bool					receive_data(struct pollfd	*_tab_poll);
-        bool					send_data(struct pollfd	*_tab_poll);
         void					clean_all_socket();
 
 
@@ -63,6 +61,9 @@ class Create_server
         void                    process_request(std::map<std::string, std::string> request,
                                                         std::map<std::string, std::string> & reponse);
         void                    send_reponse(int socket, std::map<std::string, std::string> & reponse);
+        void                    process_GET(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse);
+        void                    process_POST(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse) {};
+        void                    process_DELETE(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse) {};
 
 };
 
