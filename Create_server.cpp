@@ -112,7 +112,7 @@
 
                 printf("%s\n", _buffer);
 
-                parse_request(std::string(_buffer), request); 
+                parse_request(std::string(_buffer), request, reponse); 
 
                 process_request(request, reponse);
 
@@ -215,7 +215,7 @@
 
 
 
-    void      Create_server::   parse_request(std::string r, std::map<std::string, std::string> & request) {
+    void      Create_server::   parse_request(std::string r, std::map<std::string, std::string> & request, std::map<std::string, std::string> & reponse) {
 
         std::istringstream iss(r);
         std::string key;
@@ -233,6 +233,12 @@
             request[key] = val;
         }
 
+        if (request["url"][0] != '/')
+            std::cout << "url error\n";
+        if (request["http"] != "HTTP/1.1")
+            std::cout << "Error 505 HTTP Version Not Supported" << std::endl;
+
+        (void)reponse;
 
     }
 
@@ -276,10 +282,10 @@
 
         if (request["method"] == "GET") 
             process_GET(request, reponse);
-        else if (request["method"] == "POST")
-            process_POST(request, reponse);
-        else if (request["method"] =="DELETE")
-            process_DELETE(request, reponse);
+        //else if (request["method"] == "POST")
+        //    process_POST(request, reponse);
+        //else if (request["method"] =="DELETE")
+        //    process_DELETE(request, reponse);
         else {
             reponse["code"] = "405";
             reponse["status"] = "Method Not Allowed";

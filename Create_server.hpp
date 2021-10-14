@@ -57,13 +57,14 @@ class Create_server
 
 
 
-        void                    parse_request(std::string r, std::map<std::string, std::string> & request);
+        void                    parse_request(std::string r, std::map<std::string, std::string> & request,
+                                                        std::map<std::string, std::string> & reponse);
         void                    process_request(std::map<std::string, std::string> request,
                                                         std::map<std::string, std::string> & reponse);
         void                    send_reponse(int socket, std::map<std::string, std::string> & reponse);
         void                    process_GET(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse);
-        void                    process_POST(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse) {};
-        void                    process_DELETE(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse) {};
+        //void                    process_POST(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse);
+        //void                    process_DELETE(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse);
 
 };
 
