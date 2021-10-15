@@ -45,7 +45,7 @@ using namespace std;
 // {
       
 // //     // char line []= "   server     {name value;name value;name value;location{name value;}} server     {name value;name value;name value;location{name value;name value;name value;}}";
-//     char line []= "   server     {name value;name value;} ";
+//     char line []= "  server {       index   youpi ";
       
 //     // Vector of string to save tokens
 //     vector <string> tokens;
@@ -55,7 +55,7 @@ using namespace std;
 //     string intermediate;
       
 //     // Tokenizing w.r.t. space ' '
-//     while(getline(check1, intermediate, ';'))
+//     while(getline(check1, intermediate, '{'))
 //     {
 //         tokens.push_back(intermediate);
 //     }

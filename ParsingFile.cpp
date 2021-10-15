@@ -3,47 +3,117 @@
 ParsingFile::ParsingFile(/* args */):_file(""), _syntaxError(false)
 {
 	char const *ptr;
-	std::vector<std::string>tokenFile;
-	std::cout << "construteur" << std::endl;
+	std::vector<std::string>tokenArray;
+	// std::cout << "construteur" << std::endl;
 	getFile("./configFile/default.conf");
 	createKeyWord();
 	displayFile();
 	ptr = _file.c_str();
 	contentServer(&ptr);
-	tokenFile = tokenizeString(_file, ';');
-	displayToken(tokenFile);
+	tokenArray = tokenizeString(_file, ';');
+	displayToken(tokenArray);
+	tokenArray = formatToken(tokenArray[0], CONTENT_SERVER);
+	displayToken(tokenArray);
+
 }
 
 ParsingFile::~ParsingFile()
 {
 	// std::cout << "Bye" << std::endl;
-
 }
 
-void	ParsingFile:: addSiteTable(std::string &line, int is)
+std::vector<std::string> ParsingFile:: tokenizeString(std::string &line, char const sep)
+{
+	std::vector <std::string> tokens;
+	// stringstream class check1
+	std::stringstream check1(line);
+	std::string intermediate;
+	// Tokenizing w.r.t. space ' '
+	while(getline(check1, intermediate, sep))
+	{
+		tokens.push_back(intermediate);
+	}
+	return (tokens);
+}
+/***************************Fill _siteTable ***************************/
+/*
+**	this function get value from given string
+** exemple :
+**	string = "  a  b " name is a value is b
+**	this function copy b to return it and remove b from the string 
+*/
+std::string	ParsingFile::	getValueFromString(std::string &str)
+{
+	std::string value;
+	int i = 0;
+	while (isspace(str[i]))
+		i++;
+	while (!isspace(str[i]))
+		i++;
+	value = str.substr(i);
+	str.erase(i);
+	return (value);
+}
+
+std::vector<std::string>	ParsingFile:: formatToken(std::string &line, int content)
 {
 	std::vector<std::string> token;
-	int position = line.find("{");
-	if (is == CONTENT_SERVER)
+	std::string directive;
+	std::string value;
+	if (content == CONTENT_SERVER || content == CONTENT_LOCATION)
 	{
+		token = tokenizeString(line, '{');
+		directive = token[content];
+		displayToken(token);
+		value = getValueFromString(token[content]);
+		token.push_back(value);
 	}
-	else if (line.find("location") != std::string::npos)
+	for (size_t i = 0; i < token.size(); i++)
 	{
-
+		// this line remove all whitspaces charactere around given string 
+		token[i].erase(remove_if(token[i].begin(), token[i].end(), isspace), token[i].end());
 	}
+	return 	(token);
 }
 
-void	ParsingFile:: checkTokenFile(std::vector<std::string> &tokenFile)
+void	addSiteInTable(std::vector<std::string> &token, int i)
 {
+	std::string name;
+	std::string value;
+	if ((token.size() % 2))
+	{
+		for (size_t i = 0; i < token.size(); i++)
+		{
+			name = token[i];
+			// _siteTable[0][listen] = 20;
+			// _siteTable[0][server_name] = toto
+			// _siteTable[1][server_name] = toto
+		}
+	}
+	else
+	{
+			name = token[0];
+			// _siteTable[][name] = token[i++];
+	}
+	
+
+
+}
+
+void	ParsingFile::prepareTokenToTable(std::vector<std::string> &tokenFile)
+{
+	int	i = 0;
+	std::vector<std::string> token;
+
 	for (std::vector<std::string>::iterator  it = tokenFile.begin(); it != tokenFile.end(); it++)
 	{
-		if (it->find("server") != std::string::npos)
+		if (it->find("server") != std::string::npos )
+			token = formatToken(*it, CONTENT_SERVER);
+		if (it->find("location") != std::string::npos)
+			token = formatToken(*it, CONTENT_LOCATION);
+		if (token[0].compare("server")== 0)
 		{
-			;
-		}
-		else if (it->find("location") != std::string::npos)
-		{
-			;
+			i++;
 		}
 	}
 }
@@ -51,7 +121,6 @@ void	ParsingFile:: checkTokenFile(std::vector<std::string> &tokenFile)
 void	ParsingFile:: getFile(std::string fileName)
 {
 	std::string line;
-
 	std::ifstream MyReadFile(fileName.c_str());
 	if (MyReadFile.is_open())
 	{
@@ -65,17 +134,12 @@ void	ParsingFile:: getFile(std::string fileName)
 	else
 	{
 		std::cout << "error open file" << std::endl;
+		this->~ParsingFile();
 		exit(ERROR);
 	}
-	(void)fileName;
 }
 
 
-void	ParsingFile::displayFile()
-{
-	std::cout << "\n************DISPLAY FILE************" << std::endl;
-	std::cout << _file << std::endl;
-}
 
 void	ParsingFile::	createKeyWord()
 {
@@ -95,29 +159,24 @@ void	ParsingFile::	createKeyWord()
 
 }
 
-std::vector<std::string> ParsingFile:: tokenizeString(std::string &line, char const sep)
+void	ParsingFile::displayFile()
 {
-	std::vector <std::string> tokens;
-	// stringstream class check1
-	std::stringstream check1(line);
-	std::string intermediate;
-	// Tokenizing w.r.t. space ' '
-	while(getline(check1, intermediate, sep))
-	{
-		tokens.push_back(intermediate);
-	}
-	return (tokens);
+	std::cout << "\n************DISPLAY FILE************" << std::endl;
+	std::cout << _file << std::endl;
 }
+
 
 void	ParsingFile:: displayToken(std::vector<std::string> &tokenVector)
 {
-	std::cout << "************TOKEN AVAILABLE************" << std::endl;
+	std::cout << "************DISPLAY TOKEN VECTORE************" << std::endl;
 	for (std::vector<std::string>::iterator  it = tokenVector.begin(); it != tokenVector.end(); it++)
 	{
 		std::cout << *it << std::endl;
 	}
 }
 
+
+/***************************ANALYSE SYNTAXE CONFIG FILE***************************/
 
 void	ParsingFile::syntaxError(char const *msgError)
 {
@@ -135,7 +194,6 @@ void	ParsingFile:: movePointer(char const **ptr)
 	}
 }
 
-/***************************ANALYSE SYNTAXE CONFIG FILE***************************/
 
 void	ParsingFile::	directiveValue(char const **ptr)
 {
@@ -194,9 +252,7 @@ void	ParsingFile::	contentLocation(char const **ptr)
 			while(*ptr && **ptr != '{')
 				(*ptr)++;
 			if (*ptr && **ptr != '{')
-			{
 				syntaxError("error syntaxe: in location expected open parenthese");
-			}
 			openedParenthe = true;
 			(*ptr)++;
 		}

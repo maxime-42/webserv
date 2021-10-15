@@ -2,8 +2,8 @@
 #ifndef PARSINGFILE
 #define PARSINGFILE
 #define ERROR -1
+#define CONTENT_LOCATION 0
 #define CONTENT_SERVER 1
-#define CONTENT_ 1
 #define DIRECT 3
 #include <iostream>
 #include <fstream>
@@ -21,8 +21,8 @@ private:
 	bool		_syntaxError;
 	std::vector<std::string> _keyWords;
 	std::vector<std::string> _vectFiles;
-	std::vector<std::string> _tokens;
-	std::map<int, std::map<std::string, std::string> > _siteTable;//two-dimensional map  https://www.geeksforgeeks.org/implementing-multidimensional-map-in-c/
+	std::vector<std::string> _tokens;				   
+	std::map<int, std::map<std::string, std::string>> _siteTable; //two-dimensional map  https://www.geeksforgeeks.org/implementing-multidimensional-map-in-c/
 public:
 	ParsingFile(/* args */);
 	~ParsingFile();
@@ -42,8 +42,12 @@ public:
 // void	 displayToken(std::string &tokenVector);
 	void	displayToken(std::vector<std::string> &tokenVector);
 	void	addSiteTable();
-	void	addSiteTable(std::string &str, int is);
-	void	checkTokenFile(std::vector<std::string> &tokenFile);
+	void	addSiteInTable(std::vector<std::string> &tokenFile);
+	// void	formatToken(std::string &line, int is);
+std::vector<std::string>	 formatToken(std::string &line, int content);
+
+	std::string		getValueFromString(std::string &str);
+	void	prepareTokenToTable(std::vector<std::string> &tokenFile);
 
 
 
