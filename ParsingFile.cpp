@@ -3,12 +3,15 @@
 ParsingFile::ParsingFile(/* args */):_file(""), _syntaxError(false)
 {
 	char const *ptr;
+	std::vector<std::string>tokenFile;
 	std::cout << "construteur" << std::endl;
 	getFile("./configFile/default.conf");
-	addtokenAvailable();
+	createKeyWord();
 	displayFile();
 	ptr = _file.c_str();
-	parsingServer(&ptr);
+	contentServer(&ptr);
+	tokenFile = tokenizeString(_file, ';');
+	displayToken(tokenFile);
 }
 
 ParsingFile::~ParsingFile()
@@ -17,25 +20,33 @@ ParsingFile::~ParsingFile()
 
 }
 
+void	ParsingFile:: addSiteTable(std::string &line, int is)
+{
+	std::vector<std::string> token;
+	int position = line.find("{");
+	if (is == CONTENT_SERVER)
+	{
+	}
+	else if (line.find("location") != std::string::npos)
+	{
 
-// void	ParsingFile::tokenizer(std::string &line)
-// {
+	}
+}
 
-// 	std::stringstream check1(line);
-// 	std::string intermediate;
-// 	while(getline(check1, intermediate, ' '))
-// 	{
-// 		_tokens.push_back(intermediate);
-// 	}
-// 	(void)line;
-// }
-
-// void	getSite(std::string &file)
-// {
-// 	int openParenthese = 0;
-// 	int closeParenthese = 0;
-
-// }
+void	ParsingFile:: checkTokenFile(std::vector<std::string> &tokenFile)
+{
+	for (std::vector<std::string>::iterator  it = tokenFile.begin(); it != tokenFile.end(); it++)
+	{
+		if (it->find("server") != std::string::npos)
+		{
+			;
+		}
+		else if (it->find("location") != std::string::npos)
+		{
+			;
+		}
+	}
+}
 
 void	ParsingFile:: getFile(std::string fileName)
 {
@@ -47,7 +58,7 @@ void	ParsingFile:: getFile(std::string fileName)
 		while (getline (MyReadFile, line)) 
 		{
 			_file.append(line);
-			_file.append("\n");
+			_file.append(" ");
 		}
 		MyReadFile.close();
 	}
@@ -59,26 +70,6 @@ void	ParsingFile:: getFile(std::string fileName)
 	(void)fileName;
 }
 
-// void	ParsingFile:: getFile(std::string fileName)
-// {
-// 	// std::ifstream MyReadFile(fileName.c_str());
-// 	 _readFile = (fileName.c_str());
-
-// 	if (MyReadFile.is_open())
-// 	{
-// 	}
-// 	else
-// 	{
-// 		std::cout << "error open file" << std::endl;
-// 		exit(ERROR);
-// 	}
-// 	std::cout << _file << std::endl;
-// 	(void)fileName;
-// }
-
-/*
-**	this allow to skip any whitespace characters.
-*/
 
 void	ParsingFile::displayFile()
 {
@@ -86,28 +77,42 @@ void	ParsingFile::displayFile()
 	std::cout << _file << std::endl;
 }
 
-void	ParsingFile::	addtokenAvailable()
+void	ParsingFile::	createKeyWord()
 {
-	_tokenAvailable.push_back("listen");
-	_tokenAvailable.push_back("server_name");
-	_tokenAvailable.push_back("root");
-	_tokenAvailable.push_back("error_page");
-	_tokenAvailable.push_back("location");
-	_tokenAvailable.push_back("autoindex");
-	_tokenAvailable.push_back("client_max_body_size");
-	_tokenAvailable.push_back("index");
-	_tokenAvailable.push_back(";");
-	_tokenAvailable.push_back("allow_methods");
-	_tokenAvailable.push_back("cgi");
-	_tokenAvailable.push_back("fastcgi_pass");
-	_tokenAvailable.push_back("fastcgi_param");
+	_keyWords.push_back("listen");
+	_keyWords.push_back("server_name");
+	_keyWords.push_back("root");
+	_keyWords.push_back("error_page");
+	_keyWords.push_back("location");
+	_keyWords.push_back("autoindex");
+	_keyWords.push_back("client_max_body_size");
+	_keyWords.push_back("index");
+	_keyWords.push_back(";");
+	_keyWords.push_back("allow_methods");
+	_keyWords.push_back("cgi");
+	_keyWords.push_back("fastcgi_pass");
+	_keyWords.push_back("fastcgi_param");
 
 }
 
-void	ParsingFile:: displayTokenAvailable()
+std::vector<std::string> ParsingFile:: tokenizeString(std::string &line, char const sep)
+{
+	std::vector <std::string> tokens;
+	// stringstream class check1
+	std::stringstream check1(line);
+	std::string intermediate;
+	// Tokenizing w.r.t. space ' '
+	while(getline(check1, intermediate, sep))
+	{
+		tokens.push_back(intermediate);
+	}
+	return (tokens);
+}
+
+void	ParsingFile:: displayToken(std::vector<std::string> &tokenVector)
 {
 	std::cout << "************TOKEN AVAILABLE************" << std::endl;
-	for (std::vector<std::string>::iterator  it = _tokenAvailable.begin(); it != _tokenAvailable.end(); it++)
+	for (std::vector<std::string>::iterator  it = tokenVector.begin(); it != tokenVector.end(); it++)
 	{
 		std::cout << *it << std::endl;
 	}
@@ -118,6 +123,7 @@ void	ParsingFile::syntaxError(char const *msgError)
 {
 	std::cout << msgError<< std::endl;
 	_syntaxError = true;
+	this->~ParsingFile();
 	exit(1);
 }
 
@@ -129,7 +135,7 @@ void	ParsingFile:: movePointer(char const **ptr)
 	}
 }
 
-
+/***************************ANALYSE SYNTAXE CONFIG FILE***************************/
 
 void	ParsingFile::	directiveValue(char const **ptr)
 {
@@ -138,97 +144,93 @@ void	ParsingFile::	directiveValue(char const **ptr)
 	{
 		(*ptr)++;
 	}
+	movePointer(ptr);
 	if (**ptr != ';')
 	{
 		syntaxError("error syntaxe: directive value");
 	}
 	std::cout << "directive value is successfull" << std::endl;
 	(*ptr)++;
-	movePointer(ptr);
 }
 
-void	ParsingFile::	directiveName(char const **ptr)
+void	ParsingFile::directiveaName(char const **ptr)
 {
-	int 	ret;
-	while (**ptr &&  **ptr != '}' )
-	{ 
-		movePointer(ptr);
-		//directiveLocallocal(ptr)
-		ret = 1;
-		for (std::vector<std::string>::iterator it = _tokenAvailable.begin(); it !=  _tokenAvailable.end() && ret != 0; it++)
-		{
-			ret = it->compare(0, strlen(*ptr), *ptr, it->length());
-			if (ret == 0)
-				*ptr += it->length();
-		}
-		if (ret != 0 || !isspace(**ptr) )
-		{
-			syntaxError("error syntaxe: directive name");
-		}
-		else
-		{
-			std::cout << "analyse Directive name is successfull " << std::endl;
-			directiveValue(ptr);
-		}
+	int 	ret = 1;
+	for (std::vector<std::string>::iterator it = _keyWords.begin(); it !=  _keyWords.end() && ret != 0; it++)
+	{
+		ret = it->compare(0, strlen(*ptr), *ptr, it->length());
+		if (ret == 0)
+			*ptr += it->length();
 	}
+	if (ret != 0 || !isspace(**ptr) )
+	{
+		syntaxError("error syntaxe: directive name");
+	}
+	std::cout << "analyse Directive name is successfull " << std::endl;
+}
+
+void	ParsingFile::	directive(char const **ptr)
+{
+		movePointer(ptr);
+		if (**ptr != '}')
+		{
+			directiveaName(ptr);
+			directiveValue(ptr);
+			movePointer(ptr);
+		}
+
 }
 
 void	ParsingFile::	contentLocation(char const **ptr)
 {
+	bool openedParenthe = false;
 	std::string str("location");
 	movePointer(ptr);
-	int ret = str.compare(0, strlen(*ptr), *ptr, str.length());
-	// int ret = str.compare(0, strlen(*ptr), *ptr, str.length());
-	std::cout << "ret =========" << ret << std::endl;
-	if (ret == 0)
+	while (**ptr && **ptr != '}')
 	{
-		std::cout << "**********************HELLOW**************************" << std::endl;
-		movePointer(ptr);
-		if (ptr[0][str.length()] != '{')
+		if (str.compare(0, strlen(*ptr), *ptr, str.length()) == 0)
 		{
-			syntaxError("error syntaxe: in location expected open parenthese");
-		}
-		else
-		{
-			std::cout << "analyse location is successfully" << std::endl;
-			*ptr += str.length() + 1;
-			directiveName(ptr);
-			if (ptr[0][0] != '}')
-				syntaxError("error syntaxe: in location content expected closed parenthese ");
+			std::cout << "****location detect****" << std::endl;
+			while(*ptr && **ptr != '{')
+				(*ptr)++;
+			if (*ptr && **ptr != '{')
+			{
+				syntaxError("error syntaxe: in location expected open parenthese");
+			}
+			openedParenthe = true;
 			(*ptr)++;
-
 		}
-		movePointer(ptr);
+		directive(ptr);
 	}
-	else
-		directiveName(ptr);
+	if (openedParenthe == true && **ptr != '}')
+		syntaxError("error syntaxe: in location expected closed parenthe");
+	if (openedParenthe == true )
+		(*ptr)++;
 }
 
-void	ParsingFile::	parsingServer(char const **ptr)
+void	ParsingFile::	contentServer(char const **ptr)
 {
 	std::string str("server");
 	movePointer(ptr);
 	while (**ptr)
 	{
-		int ret = str.compare(0, strlen(*ptr), *ptr, str.length());
-		if (ret != 0)
+		if ( str.compare(0, strlen(*ptr), *ptr, str.length()) != 0)
 		{
 			syntaxError("error : expected server containt");
 		}
-		if (ptr[0][str.length()] != '{')
+		*ptr += str.length();
+		movePointer(ptr);
+		if (**ptr != '{')
 		{
 			syntaxError("error syntaxe: expected open parenthese");
 		}
-		else
-		{
-			std::cout << "analyse server is successfully" << std::endl;
-			*ptr += str.length() + 1;
-			// directiveName(ptr);
-			contentLocation(ptr);
-			if (ptr[0][0] != '}')
-				syntaxError("error syntaxe: expected closed parenthese");
-			(*ptr)++;
-		}
+		std::cout << "analyse server open parenthese is successfully" << std::endl;
+		*ptr += 1;
+		contentLocation(ptr);
+		movePointer(ptr);
+		if (ptr[0][0] != '}')
+			syntaxError("error syntaxe: server expected closed parenthese");
+		(*ptr)++;
 		movePointer(ptr);
 	}
 }
