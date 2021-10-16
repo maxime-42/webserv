@@ -11,9 +11,12 @@ void        Create_server::process_GET(std::map<std::string, std::string> reques
     std::string path;
 
     if (request["url"] == "/")
-        request["url"] = "/index.html";
+        request["url"] = "index.html";
+	else if (request["url"][0] == '/')
+		request["url"].erase(0,1);
 
     path += request["url"];
+
     std::ifstream	ifs(path.c_str());
     if (ifs.fail())
     {
@@ -25,6 +28,7 @@ void        Create_server::process_GET(std::map<std::string, std::string> reques
     {
 
         std::stringstream buf;
+		std::stringstream content_len;
         buf << ifs.rdbuf();
         std::string	filestr = buf.str();
 
@@ -33,7 +37,8 @@ void        Create_server::process_GET(std::map<std::string, std::string> reques
         reponse["code"] = "200";
         reponse["status"] = "OK";
         reponse["body"] = filestr;
-        reponse["Content-Length"] = filestr.length();
+		content_len << filestr.length();
+        reponse["Content-Length"] = content_len.str();
 
         reponse["Content-Type"] = "text/plain; charset=utf-8";
         if(request["url"].substr(request["url"].find_last_of(".") + 1) == "html")

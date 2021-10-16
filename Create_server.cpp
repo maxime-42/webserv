@@ -43,7 +43,7 @@
 
         _server_fd = socket(AF_INET, SOCK_STREAM, 0);//  Creating socket file descriptor, SOCK_STREAM: TCP(reliable, connection oriented)
         test_error(_server_fd, "error create socket");
-        std::cout << "server_fd = " << _server_fd << std::endl;
+        //std::cout << "server_fd = " << _server_fd << std::endl;
         ret = setsockopt(_server_fd, SOL_SOCKET,  SO_REUSEADDR, (char *)&option, sizeof(option));// Forcefully attaching socket to the port
         test_error(ret, "bfrforce to reuse a port function setsockopt");
         ret = fcntl(_server_fd, F_SETFL, O_NONBLOCK);// Set socket to be nonblocking
@@ -56,7 +56,7 @@
         ret = bind(_server_fd, (struct sockaddr *)&_address, sizeof(_address));    // Forcefully attaching socket to the port
         test_error(ret, "Error while the binding");
         _listen_fd = listen(_server_fd, NB_PENDING);
-        std::cout << "listen_fd = " << _listen_fd<< std::endl;
+        //std::cout << "listen_fd = " << _listen_fd<< std::endl;
         test_error(_listen_fd, "Error function  the listening");
         _tab_poll[0].fd = _server_fd;/* Set up the initial listening socket to monitori */
         _tab_poll[0].events = POLLIN;
@@ -183,7 +183,7 @@
         int	current_size;
         while (true)
         {
-            std::cout << "Waiting on poll()..." << std::endl;
+            //std::cout << "Waiting on poll()..." << std::endl;
             ret = poll(_tab_poll, _nfds, time_out);
             test_error(ret, "poll() failed");
             if (ret == 0)
@@ -247,11 +247,11 @@
         reponse.clear();
 
         if (request["method"] == "GET") 
-           ;//process_GET(request, reponse);
+           process_GET(request, reponse);
         else if (request["method"] == "POST")
             process_POST(request, reponse);
-        else if (request["method"] =="DELETE")
-            ;//process_DELETE(request, reponse);
+        //else if (request["method"] =="DELETE")
+            //process_DELETE(request, reponse);
         else {
             reponse["code"] = "405";
             reponse["status"] = "Method Not Allowed";

@@ -20,6 +20,7 @@ DIR_INC        = ./
 
 F_SRCS        =    main.cpp            \
                 Create_server.cpp    \
+				Process_request.cpp
 
 SRCS        = $(addprefix $(DIR_SRCS), $(F_SRCS))
 
