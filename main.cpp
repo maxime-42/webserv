@@ -1,10 +1,10 @@
 // #include "Running_server.hpp"
-#include "Create_server.hpp"
+#include "Server.hpp"
 
 
 int	 main(int argc, const char** argv) 
 {
-	Create_server apiRest(PORT);
+	Server apiRest(PORT);
 	apiRest.start_svc();
 	(void)argc;
 	(void)argv;

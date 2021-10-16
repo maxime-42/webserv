@@ -18,9 +18,9 @@ DIR_SRCS    = ./
 DIR_OBJS    = ./objs/
 DIR_INC        = ./
 
-F_SRCS        =    main.cpp            \
-                Create_server.cpp    \
-				Process_request.cpp
+F_SRCS        =    main.cpp   \
+                Server.cpp    \
+				Request.cpp
 
 SRCS        = $(addprefix $(DIR_SRCS), $(F_SRCS))
 

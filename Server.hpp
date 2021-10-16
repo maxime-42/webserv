@@ -1,5 +1,5 @@
-#ifndef	CREATE_SERVER_HPP
-#define	CREATE_SERVER_HPP
+#ifndef	SERVER_HPP
+#define	SERVER_HPP
 #include <iostream>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -12,12 +12,17 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <map>
 
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <algorithm>
+#include <cstring>
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <map>
 
 #define ERROR		-1
 #define PORT	    8080
@@ -25,9 +30,8 @@
 #define BUFFER_SIZE	30000
 #define TIMEOUT		(3 * 60 * 1000)
 #define NB_PENDING	SIZE_POLLFD
-#define DATA	"HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!"
 
-class Create_server
+class Server
 {
     private:
         int						_server_fd;
@@ -44,9 +48,9 @@ class Create_server
 
 
     public:
-        Create_server();
-        Create_server(int port);
-        ~Create_server();
+        Server();
+        Server(int port);
+        ~Server();
         void					setup();
         void					test_error(int error_code, char const *msg);
         int						get_server_fd();
@@ -54,7 +58,7 @@ class Create_server
         void					setup_poll(); 
         void					start_svc();
         void					set_tab_poll(int fd);
-        void					existing_connection(struct pollfd	*_tab_poll);
+        void					handle_existing_connections(struct pollfd	*_tab_poll);
         void					squeeze_tab_poll();
         void					accept_all_incoming_connections();
         bool					receive_data(struct pollfd	*_tab_poll);
