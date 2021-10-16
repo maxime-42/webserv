@@ -236,50 +236,16 @@
 
     }
 
-    void        Create_server::     process_GET(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse) {
-
-        char buffer[256];
-        getwd(buffer);
-        std::string path(buffer);
-
-        if (request["url"] == "/")
-            request["url"] = "/index.html";
-
-        std::ifstream	ifs(path + request["url"]);
-        if (ifs.fail()) {
-            //perror("Could not open the file");
-            reponse["code"] = "404";
-            reponse["status"] = "File Not Found";
-        } else {
-
-            std::stringstream buf;
-            buf << ifs.rdbuf();
-            std::string	filestr = buf.str();
-
-            ifs.close();
-
-            reponse["code"] = "200";
-            reponse["status"] = "OK";
-            reponse["body"] = filestr;
-            reponse["Content-Length"] = std::to_string(filestr.length());
-
-            reponse["Content-Type"] = "text/plain; charset=utf-8";
-            if(request["url"].substr(request["url"].find_last_of(".") + 1) == "html")
-                reponse["Content-Type"] = "text/html; charset=utf-8";
-
-    }
-}
-
     void        Create_server::     process_request(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse) {
 
         reponse.clear();
 
         if (request["method"] == "GET") 
-            process_GET(request, reponse);
+            ;//process_GET(request, reponse);
         else if (request["method"] == "POST")
             process_POST(request, reponse);
         else if (request["method"] =="DELETE")
-            process_DELETE(request, reponse);
+            ;//process_DELETE(request, reponse);
         else {
             reponse["code"] = "405";
             reponse["status"] = "Method Not Allowed";
