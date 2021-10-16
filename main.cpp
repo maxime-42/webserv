@@ -64,3 +64,84 @@ using namespace std;
 //     for(size_t i = 0; i < tokens.size(); i++)
 //         cout << tokens[i] << '\n';
 // }
+
+// int main()
+// {
+//  // Declaration of string
+//     char gfg[100] = "Geeks-for-geeks-Contribute lenox kay";
+  
+//     // Declaration of delimiter
+//     const char s[4] = "-";
+//     char* tok;
+  
+//     // Use of strtok
+//     // get first token
+//     tok = strtok(gfg, s);
+  
+//     // Checks for delimeter
+//     while (tok != 0) {
+//         printf(" %s\n", tok);
+  
+//         // Use of strtok
+//         // go through other tokens
+//         tok = strtok(0, s);
+//     }
+  
+//     return (0);
+// }
+// int main()
+// {
+//     char str[] = "Geeks for Geeks lenox-kay";
+//     char *token;
+//     char *rest = str;
+//     while ((token = strtok_r(rest, "-", &rest)))
+//         printf("%s\n", token);
+//     return(0);
+// }
+
+/*
+server {
+	server_name youpi;
+	listen 8080;
+
+	root /YoupiBanane;
+	index index.html;
+
+	autoindex off;
+
+	error_page	/www/error;
+	
+	allow_methods GET DELETE;
+
+	location /upload {
+		allow_methods POST;
+		client_max_body_size 10;
+		upload_pass ./YoupiBanane;
+	}
+
+	location /directory {
+		allow_methods GET;
+		root YoupiBanane/;
+		index youpi.bad_extension;
+	}
+
+	location *.bla {
+		allow_methods POST ;
+		client_max_body_size 5;
+		cgi	.bla;
+		cgi_pass testers/ubuntu_cgi_tester;
+	}
+
+	location *.php {
+		allow_methods POST GET;
+		client_max_body_size 100;
+		cgi	.php;
+		cgi_pass testers/php-cgi_ubuntu;
+	}
+
+	location /Yeah {
+		return 301 http://localhost:8080/nop/;
+	}
+}
+
+*/

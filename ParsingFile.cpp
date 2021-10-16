@@ -9,33 +9,51 @@ ParsingFile::ParsingFile(/* args */):_file(""), _syntaxError(false)
 	createKeyWord();
 	displayFile();
 	ptr = _file.c_str();
-	contentServer(&ptr);
-	tokenArray = tokenizeString(_file, ';');
+	checkFileSyntax(&ptr);
+	tokenArray = tokenizeString(_file, (char *)SEPARATOR);
 	displayToken(tokenArray);
-	tokenArray = formatToken(tokenArray[0], CONTENT_SERVER);
-	displayToken(tokenArray);
-
+	// tokenArray = formatToken(tokenArray[0], CONTENT_SERVER);
+	// displayToken(tokenArray);
+	// pushInArrayOfSite(tokenArray);
 }
 
 ParsingFile::~ParsingFile()
 {
 	// std::cout << "Bye" << std::endl;
 }
-
-std::vector<std::string> ParsingFile:: tokenizeString(std::string &line, char const sep)
+/*
+*** this function take any string like "a { b { c" split it to array of [0] = a, [1] = b,  [2] = c 
+*/
+/*
+**
+*/
+std::vector<std::string> ParsingFile:: tokenizeString(std::string &line, char *seperator)
 {
-	std::vector <std::string> tokens;
-	// stringstream class check1
-	std::stringstream check1(line);
-	std::string intermediate;
-	// Tokenizing w.r.t. space ' '
-	while(getline(check1, intermediate, sep))
+	char *ptrChar;
+	std::vector<std::string> token;
+	char *rest = (char *)line.c_str();
+	while ((ptrChar = strtok_r(rest, seperator, &rest)))
 	{
-		tokens.push_back(intermediate);
+		token.push_back(ptrChar);
 	}
-	return (tokens);
+	return (token);
 }
-/***************************Fill _siteTable ***************************/
+
+// std::vector<std::string> ParsingFile:: tokenizeString(std::string &line, char const separator)
+// {
+// 	std::vector <std::string> tokens;
+// 	// stringstream class check1
+// 	std::stringstream check1(line);
+// 	std::string intermediate;
+// 	// Tokenizing w.r.t. space ' '
+// 	while(getline(check1, intermediate, separator))
+// 	{
+// 		tokens.push_back(intermediate);
+// 	}
+// 	return (tokens);
+// }
+
+/***************************Fill arrayOfSite ***************************/
 /*
 **	this function get value from given string
 ** exemple :
@@ -55,6 +73,38 @@ std::string	ParsingFile::	getValueFromString(std::string &str)
 	return (value);
 }
 
+void	ParsingFile::insertNameValueInDictionary(std::vector<std::string> &token, std::map<std::string, std::string> &dictionary)
+{
+	std::string name;
+	std::string value = std::string(); //value is empty string
+	size_t i = 0;
+	if ((token.size() % 2))
+	{
+		name = token[i++];
+		dictionary[name] = value;
+	}
+	for (; i < token.size(); i++)
+	{
+		name = token[i++];
+		value = token[i];
+		dictionary[name] = value;
+	}
+}
+
+
+void	ParsingFile::displayDirectionary(std::map<std::string, std::string> &map)
+{
+	std::cout << "***************DISPLAY DICTIONNARY***************" << std::endl;
+	for (std::map<std::string, std::string>::iterator it = map.begin(); it != map.end(); it++)
+	{
+		std::cout << "name = " << it->first << "\t\tvalue = " << it->second<< std::endl;
+	}
+}
+
+/*
+** this function take any string like "a { b { c" split it to array of [0] = a, [1] = b,  [2] = c 
+*/
+
 std::vector<std::string>	ParsingFile:: formatToken(std::string &line, int content)
 {
 	std::vector<std::string> token;
@@ -62,12 +112,17 @@ std::vector<std::string>	ParsingFile:: formatToken(std::string &line, int conten
 	std::string value;
 	if (content == CONTENT_SERVER || content == CONTENT_LOCATION)
 	{
-		token = tokenizeString(line, '{');
+		token = tokenizeString(line, (char *)"{");
 		directive = token[content];
-		displayToken(token);
+		// displayToken(token);
 		value = getValueFromString(token[content]);
 		token.push_back(value);
 	}
+	// else
+	// {
+	// 	token = tokenizeString(line, '{');
+
+	// }
 	for (size_t i = 0; i < token.size(); i++)
 	{
 		// this line remove all whitspaces charactere around given string 
@@ -76,46 +131,38 @@ std::vector<std::string>	ParsingFile:: formatToken(std::string &line, int conten
 	return 	(token);
 }
 
-void	addSiteInTable(std::vector<std::string> &token, int i)
+/*
+**	the goal is to push a directionary in arrayOfSite
+*/
+void	ParsingFile::pushInArrayOfSite(std::vector<std::string> &tokenFile)
 {
-	std::string name;
-	std::string value;
-	if ((token.size() % 2))
-	{
-		for (size_t i = 0; i < token.size(); i++)
-		{
-			name = token[i];
-			// _siteTable[0][listen] = 20;
-			// _siteTable[0][server_name] = toto
-			// _siteTable[1][server_name] = toto
-		}
-	}
-	else
-	{
-			name = token[0];
-			// _siteTable[][name] = token[i++];
-	}
-	
-
-
-}
-
-void	ParsingFile::prepareTokenToTable(std::vector<std::string> &tokenFile)
-{
-	int	i = 0;
-	std::vector<std::string> token;
-
+	// int	nbServerWord = 0;
+	std::map<std::string, std::string> dictionary;
+	std::vector<std::string> Tmptoken;
+	std::cout << "**************pushInArrayOfSite**************" << std::endl;
 	for (std::vector<std::string>::iterator  it = tokenFile.begin(); it != tokenFile.end(); it++)
 	{
-		if (it->find("server") != std::string::npos )
-			token = formatToken(*it, CONTENT_SERVER);
-		if (it->find("location") != std::string::npos)
-			token = formatToken(*it, CONTENT_LOCATION);
-		if (token[0].compare("server")== 0)
-		{
-			i++;
-		}
+		// if (it->find("server") != std::string::npos )
+		// {
+		// 	// nbServerWord++;
+		// 	Tmptoken.clear();
+		// 	Tmptoken = formatToken(*it, CONTENT_SERVER);
+		// 	// if ((nbServerWord % 2) == 0)
+		// 	// {
+
+		// 	// 	// _arrayOfSite.push_back(dictionary);
+		// 	// 	dictionary.clear();
+		// 	// }
+		// }
+		// else if (it->find("location") != std::string::npos)
+		// 	Tmptoken = formatToken(*it, CONTENT_LOCATION);
+		// else
+		// 	Tmptoken = formatToken(*it, CONTENT_LOCATION);
+		// insertNameValueInDictionary(Tmptoken, dictionary);
+		std::cout <<  *it << std::endl;
 	}
+	displayDirectionary(dictionary);
+	// _arrayOfSite.push_back(dictionary);
 }
 
 void	ParsingFile:: getFile(std::string fileName)
@@ -156,6 +203,7 @@ void	ParsingFile::	createKeyWord()
 	_keyWords.push_back("cgi");
 	_keyWords.push_back("fastcgi_pass");
 	_keyWords.push_back("fastcgi_param");
+	_keyWords.push_back("return");
 
 }
 
@@ -198,11 +246,12 @@ void	ParsingFile:: movePointer(char const **ptr)
 void	ParsingFile::	directiveValue(char const **ptr)
 {
 	movePointer(ptr);
-	while (std::isalnum(**ptr))
+	while (**ptr != '{' && **ptr != '}' && !isspace(**ptr))
 	{
 		(*ptr)++;
 	}
-	movePointer(ptr);
+	std::cout << "ptr =" << *ptr << std::endl;
+
 	if (**ptr != ';')
 	{
 		syntaxError("error syntaxe: directive value");
@@ -264,7 +313,7 @@ void	ParsingFile::	contentLocation(char const **ptr)
 		(*ptr)++;
 }
 
-void	ParsingFile::	contentServer(char const **ptr)
+void	ParsingFile::	checkFileSyntax(char const **ptr)
 {
 	std::string str("server");
 	movePointer(ptr);
