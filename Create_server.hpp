@@ -14,6 +14,11 @@
 #include <sys/socket.h>
 #include <map>
 
+#include <errno.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <algorithm>
+
 #define ERROR		-1
 #define PORT	    8080
 #define SIZE_POLLFD	300
@@ -63,8 +68,8 @@ class Create_server
                                                         std::map<std::string, std::string> & reponse);
         void                    send_reponse(int socket, std::map<std::string, std::string> & reponse);
         void                    process_GET(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse);
-        //void                    process_POST(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse);
-        //void                    process_DELETE(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse);
+        void                    process_POST(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse);
+        void                    process_DELETE(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse);
 
 };
 
