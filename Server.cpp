@@ -99,8 +99,6 @@ void	Server::  handle_existing_connections(struct pollfd	*ptr_tab_poll)
 
     while (receive_data(ptr_tab_poll))
 	{
-        printf("%s\n", _buffer);
-
 		request.parse(std::string(_buffer));
 		request.process();
 		request.send_reponse(ptr_tab_poll->fd);
