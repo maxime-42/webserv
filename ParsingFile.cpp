@@ -1,94 +1,21 @@
 #include "ParsingFile.hpp"
 
-ParsingFile::ParsingFile(/* args */):_file(""), _syntaxError(false)
+ParsingFile::ParsingFile(/* args */):_configFile(""), _syntaxError(false)
 {
-	char const *ptr;
+	_nbParenthese = 0;
 	std::vector<std::string>tokenArray;
 	// std::cout << "construteur" << std::endl;
 	getFile("./configFile/default.conf");
+	std::cout << "**********ConfigFile***********\n"<< _configFile << std::endl;
 	createKeyWord();
-	displayFile();
-	ptr = _file.c_str();
-	checkFileSyntax(&ptr);
-	tokenArray = tokenizeString(_file, (char *)SEPARATOR);
-	displayToken(tokenArray);
-	// tokenArray = formatToken(tokenArray[0], CONTENT_SERVER);
-	// displayToken(tokenArray);
-	// pushInArrayOfSite(tokenArray);
+	parsingFile();
+	std::cout << _configFile << std::endl;
+
 }
 
 ParsingFile::~ParsingFile()
 {
 	// std::cout << "Bye" << std::endl;
-}
-/*
-*** this function take any string like "a { b { c" split it to array of [0] = a, [1] = b,  [2] = c 
-*/
-/*
-**
-*/
-std::vector<std::string> ParsingFile:: tokenizeString(std::string &line, char *seperator)
-{
-	char *ptrChar;
-	std::vector<std::string> token;
-	char *rest = (char *)line.c_str();
-	while ((ptrChar = strtok_r(rest, seperator, &rest)))
-	{
-		token.push_back(ptrChar);
-	}
-	return (token);
-}
-
-// std::vector<std::string> ParsingFile:: tokenizeString(std::string &line, char const separator)
-// {
-// 	std::vector <std::string> tokens;
-// 	// stringstream class check1
-// 	std::stringstream check1(line);
-// 	std::string intermediate;
-// 	// Tokenizing w.r.t. space ' '
-// 	while(getline(check1, intermediate, separator))
-// 	{
-// 		tokens.push_back(intermediate);
-// 	}
-// 	return (tokens);
-// }
-
-/***************************Fill arrayOfSite ***************************/
-/*
-**	this function get value from given string
-** exemple :
-**	string = "  a  b " name is a value is b
-**	this function copy b to return it and remove b from the string 
-*/
-std::string	ParsingFile::	getValueFromString(std::string &str)
-{
-	std::string value;
-	int i = 0;
-	while (isspace(str[i]))
-		i++;
-	while (!isspace(str[i]))
-		i++;
-	value = str.substr(i);
-	str.erase(i);
-	return (value);
-}
-
-void	ParsingFile::insertNameValueInDictionary(std::vector<std::string> &token, std::map<std::string, std::string> &dictionary)
-{
-	std::string name;
-	std::string value = std::string(); //value is empty string
-	size_t i = 0;
-	if ((token.size() % 2))
-	{
-		name = token[i++];
-		dictionary[name] = value;
-	}
-	for (; i < token.size(); i++)
-	{
-		name = token[i++];
-		value = token[i];
-		dictionary[name] = value;
-	}
 }
 
 
@@ -101,68 +28,20 @@ void	ParsingFile::displayDirectionary(std::map<std::string, std::string> &map)
 	}
 }
 
-/*
-** this function take any string like "a { b { c" split it to array of [0] = a, [1] = b,  [2] = c 
-*/
 
-std::vector<std::string>	ParsingFile:: formatToken(std::string &line, int content)
-{
-	std::vector<std::string> token;
-	std::string directive;
-	std::string value;
-	if (content == CONTENT_SERVER || content == CONTENT_LOCATION)
-	{
-		token = tokenizeString(line, (char *)"{");
-		directive = token[content];
-		// displayToken(token);
-		value = getValueFromString(token[content]);
-		token.push_back(value);
-	}
-	// else
-	// {
-	// 	token = tokenizeString(line, '{');
-
-	// }
-	for (size_t i = 0; i < token.size(); i++)
-	{
-		// this line remove all whitspaces charactere around given string 
-		token[i].erase(remove_if(token[i].begin(), token[i].end(), isspace), token[i].end());
-	}
-	return 	(token);
-}
+/******************************************** OPEN  FILE*******************************************/
 
 /*
-**	the goal is to push a directionary in arrayOfSite
+*	this function remove comments
 */
-void	ParsingFile::pushInArrayOfSite(std::vector<std::string> &tokenFile)
-{
-	// int	nbServerWord = 0;
-	std::map<std::string, std::string> dictionary;
-	std::vector<std::string> Tmptoken;
-	std::cout << "**************pushInArrayOfSite**************" << std::endl;
-	for (std::vector<std::string>::iterator  it = tokenFile.begin(); it != tokenFile.end(); it++)
-	{
-		// if (it->find("server") != std::string::npos )
-		// {
-		// 	// nbServerWord++;
-		// 	Tmptoken.clear();
-		// 	Tmptoken = formatToken(*it, CONTENT_SERVER);
-		// 	// if ((nbServerWord % 2) == 0)
-		// 	// {
 
-		// 	// 	// _arrayOfSite.push_back(dictionary);
-		// 	// 	dictionary.clear();
-		// 	// }
-		// }
-		// else if (it->find("location") != std::string::npos)
-		// 	Tmptoken = formatToken(*it, CONTENT_LOCATION);
-		// else
-		// 	Tmptoken = formatToken(*it, CONTENT_LOCATION);
-		// insertNameValueInDictionary(Tmptoken, dictionary);
-		std::cout <<  *it << std::endl;
+void	ParsingFile::handleCommentes(std::string &line)
+{
+	size_t  begin = line.find("#");
+	if (begin != std::string::npos)
+	{
+		line.erase(begin);
 	}
-	displayDirectionary(dictionary);
-	// _arrayOfSite.push_back(dictionary);
 }
 
 void	ParsingFile:: getFile(std::string fileName)
@@ -173,8 +52,9 @@ void	ParsingFile:: getFile(std::string fileName)
 	{
 		while (getline (MyReadFile, line)) 
 		{
-			_file.append(line);
-			_file.append(" ");
+			_configFile.append(line);
+			handleCommentes(_configFile);
+			_configFile.append("\n");
 		}
 		MyReadFile.close();
 	}
@@ -186,6 +66,33 @@ void	ParsingFile:: getFile(std::string fileName)
 	}
 }
 
+
+void	ParsingFile::displayFile()
+{
+	std::cout << "\n************DISPLAY FILE************" << std::endl;
+	std::cout << _configFile << std::endl;
+}
+
+
+void	ParsingFile:: displayToken(std::vector<std::string> &tokenVector)
+{
+	std::cout << "************DISPLAY TOKEN VECTORE************" << std::endl;
+	for (std::vector<std::string>::iterator  it = tokenVector.begin(); it != tokenVector.end(); it++)
+	{
+		std::cout << *it << std::endl;
+	}
+}
+
+
+void	ParsingFile::syntaxError(char const *msgError)
+{
+	std::cout << msgError<< std::endl;
+	_syntaxError = true;
+	this->~ParsingFile();
+	exit(1);
+}
+
+/***************************ANALYSE SYNTAXE CONFIG FILE***************************/
 
 
 void	ParsingFile::	createKeyWord()
@@ -204,138 +111,92 @@ void	ParsingFile::	createKeyWord()
 	_keyWords.push_back("fastcgi_pass");
 	_keyWords.push_back("fastcgi_param");
 	_keyWords.push_back("return");
+	_keyWords.push_back("location");
+	_keyWords.push_back("server");
+	_keyWords.push_back("{");
+	_keyWords.push_back("}");
+	_keyWords.push_back(";");
+
 
 }
 
-void	ParsingFile::displayFile()
+/*
+**	the goal is to get a piece of word inside a string
+**		get a piece of a string, between start and nbCharacterTocopy
+**		this piece came from configFile
+*/
+std::string	ParsingFile::pieceOfConfigFile(size_t &i)
 {
-	std::cout << "\n************DISPLAY FILE************" << std::endl;
-	std::cout << _file << std::endl;
-}
+	size_t	nbCharacterTocopy = 0;
+	size_t start = i;
 
-
-void	ParsingFile:: displayToken(std::vector<std::string> &tokenVector)
-{
-	std::cout << "************DISPLAY TOKEN VECTORE************" << std::endl;
-	for (std::vector<std::string>::iterator  it = tokenVector.begin(); it != tokenVector.end(); it++)
+	while (!isspace(_configFile[i++]) && (_configFile[i] != '{' && _configFile[i] != '}') && _configFile[i] != ';')
 	{
-		std::cout << *it << std::endl;
+		nbCharacterTocopy++;
 	}
+	std::string pieceOfString = _configFile.substr(start, nbCharacterTocopy);
+	return (pieceOfString);
 }
 
-
-/***************************ANALYSE SYNTAXE CONFIG FILE***************************/
-
-void	ParsingFile::syntaxError(char const *msgError)
+void	ParsingFile::checkServerSyntaxe(size_t &i, std::string &pieceOfString)
 {
-	std::cout << msgError<< std::endl;
-	_syntaxError = true;
-	this->~ParsingFile();
-	exit(1);
+	if (_prevElem == INIT)
+		_prevElem = CONTENTE_SERVER;
+	else if (pieceOfString.compare("{") == 0 && _prevElem == CONTENTE_SERVER)
+	{
+		_nbParenthese++;
+	}
+	else
+		syntaxError("Syntaxe error : Server expected open parenthese");
 }
 
-void	ParsingFile:: movePointer(char const **ptr)
+/*
+** this function do three thing , the goal is to get a piece of word inside a string
+** first step:
+**		get a piece of a string, between start and nbCharacterTocopy
+**		this piece came from configFile
+** 
+**second step:
+**		trying to find this piece string in _keyWords vector
+**
+** last step :
+**	return this piece if is exist in keyWords otherwise return empty string
+*/
+int	ParsingFile::wordsRecognizer(std::string &pieceOfString)
 {
-	while (isspace(**ptr))
+	int resultCompar = -1;
+
+	for (size_t j = 0; j < _keyWords.size()&& resultCompar != 0 ; j++)
 	{
-		(*ptr)++;
+		resultCompar = _keyWords[j].compare(pieceOfString);
 	}
+	std::cout << "word =["<< pieceOfString <<"]\nresultCompar = " << resultCompar << std::endl;
+	return (resultCompar == 0 ? resultCompar : NOT_FOUND);
 }
 
-
-void	ParsingFile::	directiveValue(char const **ptr)
+void	ParsingFile::parsingFile()
 {
-	movePointer(ptr);
-	while (**ptr != '{' && **ptr != '}' && !isspace(**ptr))
+	_prevElem = INIT;
+	for (size_t i = 0; i < _configFile.size(); i++)
 	{
-		(*ptr)++;
-	}
-	std::cout << "ptr =" << *ptr << std::endl;
-
-	if (**ptr != ';')
-	{
-		syntaxError("error syntaxe: directive value");
-	}
-	std::cout << "directive value is successfull" << std::endl;
-	(*ptr)++;
-}
-
-void	ParsingFile::directiveaName(char const **ptr)
-{
-	int 	ret = 1;
-	for (std::vector<std::string>::iterator it = _keyWords.begin(); it !=  _keyWords.end() && ret != 0; it++)
-	{
-		ret = it->compare(0, strlen(*ptr), *ptr, it->length());
-		if (ret == 0)
-			*ptr += it->length();
-	}
-	if (ret != 0 || !isspace(**ptr) )
-	{
-		syntaxError("error syntaxe: directive name");
-	}
-	std::cout << "analyse Directive name is successfull " << std::endl;
-}
-
-void	ParsingFile::	directive(char const **ptr)
-{
-		movePointer(ptr);
-		if (**ptr != '}')
+		if (!isspace(_configFile[i]))
 		{
-			directiveaName(ptr);
-			directiveValue(ptr);
-			movePointer(ptr);
+			std::string pieceOfString = pieceOfConfigFile(i);
+			if (pieceOfString.compare("server") == 0)
+			{
+				std::cout << "found = " << _keyWords[CONTENT_SERVER] << std::endl;
+				// checkServerSyntaxe(i);
+				std::cout << "word = [" << pieceOfString << "]" << std::endl;
+			}
+			else if (pieceOfString.compare("location") == 0)
+			{
+				std::cout << "found location = " << _keyWords[CONTENT_LOCATION] << std::endl;
+				// std::cout << "found = " << _keyWords[CONTENT_SERVER] << std::endl;
+			}
+			else if (wordsRecognizer(pieceOfString) == 0)
+			{
+				;
+			}
 		}
-
-}
-
-void	ParsingFile::	contentLocation(char const **ptr)
-{
-	bool openedParenthe = false;
-	std::string str("location");
-	movePointer(ptr);
-	while (**ptr && **ptr != '}')
-	{
-		if (str.compare(0, strlen(*ptr), *ptr, str.length()) == 0)
-		{
-			std::cout << "****location detect****" << std::endl;
-			while(*ptr && **ptr != '{')
-				(*ptr)++;
-			if (*ptr && **ptr != '{')
-				syntaxError("error syntaxe: in location expected open parenthese");
-			openedParenthe = true;
-			(*ptr)++;
-		}
-		directive(ptr);
-	}
-	if (openedParenthe == true && **ptr != '}')
-		syntaxError("error syntaxe: in location expected closed parenthe");
-	if (openedParenthe == true )
-		(*ptr)++;
-}
-
-void	ParsingFile::	checkFileSyntax(char const **ptr)
-{
-	std::string str("server");
-	movePointer(ptr);
-	while (**ptr)
-	{
-		if ( str.compare(0, strlen(*ptr), *ptr, str.length()) != 0)
-		{
-			syntaxError("error : expected server containt");
-		}
-		*ptr += str.length();
-		movePointer(ptr);
-		if (**ptr != '{')
-		{
-			syntaxError("error syntaxe: expected open parenthese");
-		}
-		std::cout << "analyse server open parenthese is successfully" << std::endl;
-		*ptr += 1;
-		contentLocation(ptr);
-		movePointer(ptr);
-		if (ptr[0][0] != '}')
-			syntaxError("error syntaxe: server expected closed parenthese");
-		(*ptr)++;
-		movePointer(ptr);
 	}
 }
