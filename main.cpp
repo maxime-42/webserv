@@ -1,7 +1,12 @@
 #include "ParsingFile.hpp"
+// #include <cstdint>
+using namespace std;
+using namespace std;
 
 int main(int argc, char const *argv[])
 {
+	// smallenum test = a;
+	// std::cout << "value= " << test << std::endl;
 	ParsingFile test;
 	(void)argc;
 	(void)argv;
@@ -18,8 +23,7 @@ int main(int argc, char const *argv[])
 //     my_map[ "hello" ][ 23 ] = 8.9 ;
 // }
 
-using namespace std;
-using namespace std;
+
   
 // int main()
 // {
