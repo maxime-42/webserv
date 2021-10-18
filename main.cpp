@@ -1,7 +1,7 @@
 #include "ParsingFile.hpp"
 // #include <cstdint>
-using namespace std;
-using namespace std;
+// using namespace std;
+// using namespace std;
 
 int main(int argc, char const *argv[])
 {
@@ -12,140 +12,74 @@ int main(int argc, char const *argv[])
 	(void)argv;
 	return 0;
 }
-
-// #include <map>
-// #include <string>
-
-// int main()
-// {
-//     std::map< std::string, std::map< int, double > > my_map ;
-
-//     my_map[ "hello" ][ 23 ] = 8.9 ;
-// }
-
-
   
-// int main()
-// {
-//     string str = "geeksforgeeks a computr science";
-//     string str1 = "computer";
+// #include <iostream>
+// #include <iterator>
+// #include <list>
+// using namespace std;
   
-//     // Find first occurrence of "geeks"
-//     size_t found = str.find(str1);
-//     if (found != string::npos)
-//         cout << "First occurrence is " << found << endl;
-// 	else
-// 		std::cout << "not found" << std::endl;
-//     // Find next occurrence of "geeks". Note here we pass
-//     // "geeks" as C style string.
-//     // char arr[] = "geeks";
-//     // found = str.find(arr, found+1);
-//     // if (found != string::npos)
-//     //     cout << "Next occurrence is " << found << endl;
-//     return 0;
-// }
-
-// int main()
+// void printNestedList(list<list<int> > nested_list)
 // {
-      
-// //     // char line []= "   server     {name value;name value;name value;location{name value;}} server     {name value;name value;name value;location{name value;name value;name value;}}";
-//     char line []= "  server {       index   youpi ";
-      
-//     // Vector of string to save tokens
-//     vector <string> tokens;
-//     // stringstream class check1
-//     stringstream check1(line);
-      
-//     string intermediate;
-      
-//     // Tokenizing w.r.t. space ' '
-//     while(getline(check1, intermediate, '{'))
-//     {
-//         tokens.push_back(intermediate);
+//     cout << "[\n";
+  
+//     // nested_list`s iterator(same type as nested_list)
+//     // to iterate the nested_list
+//     list<list<int> >::iterator nested_list_itr;
+  
+//     // Print the nested_list
+//     for (nested_list_itr = nested_list.begin();         nested_list_itr != nested_list.end();          ++nested_list_itr) 
+// 	{
+  
+//         cout << "  [";
+  
+//         // normal_list`s iterator(same type as temp_list)
+//         // to iterate the normal_list
+//         list<int>::iterator single_list_itr;
+  
+//         // pointer of each list one by one in nested list
+//         // as loop goes on
+//         list<int>& single_list_pointer = *nested_list_itr;
+  
+//         for (single_list_itr = single_list_pointer.begin();
+//              single_list_itr != single_list_pointer.end();
+//              single_list_itr++) {
+//             cout << " " << *single_list_itr << " ";
+//         }
+//         cout << "]\n";
 //     }
-      
-//     // Printing the token vector
-//     for(size_t i = 0; i < tokens.size(); i++)
-//         cout << tokens[i] << '\n';
+//     cout << "]";
 // }
-
-// int main()
-// {
-//  // Declaration of string
-//     char gfg[100] = "Geeks-for-geeks-Contribute lenox kay";
   
-//     // Declaration of delimiter
-//     const char s[4] = "-";
-//     char* tok;
+// // Driver code
+// // int main()
+// // {
+// //     // instead integer type can have any data type
+// //     list<list<int> > nested_list;
+// //     list<int> single_list;
+// //     int n, m, num;
   
-//     // Use of strtok
-//     // get first token
-//     tok = strtok(gfg, s);
+// //     // number of lists in nested list
+// //     n = 3;
   
-//     // Checks for delimeter
-//     while (tok != 0) {
-//         printf(" %s\n", tok);
+// //     for (int i = 0; i < n; i++) 
+// // 	{
   
-//         // Use of strtok
-//         // go through other tokens
-//         tok = strtok(0, s);
-//     }
+// //         // number of elements in list
+// //         m = i + 2;
+// //         for (int j = 0; j < m; j++) 
+// // 		{
+// //             num = i + j;
+// //             single_list.push_back(num);
+// //         }
   
-//     return (0);
-// }
-// int main()
-// {
-//     char str[] = "Geeks for Geeks lenox-kay";
-//     char *token;
-//     char *rest = str;
-//     while ((token = strtok_r(rest, "-", &rest)))
-//         printf("%s\n", token);
-//     return(0);
-// }
-
-/*
-server {
-	server_name youpi;
-	listen 8080;
-
-	root /YoupiBanane;
-	index index.html;
-
-	autoindex off;
-
-	error_page	/www/error;
-	
-	allow_methods GET DELETE;
-
-	location /upload {
-		allow_methods POST;
-		client_max_body_size 10;
-		upload_pass ./YoupiBanane;
-	}
-
-	location /directory {
-		allow_methods GET;
-		root YoupiBanane/;
-		index youpi.bad_extension;
-	}
-
-	location *.bla {
-		allow_methods POST ;
-		client_max_body_size 5;
-		cgi	.bla;
-		cgi_pass testers/ubuntu_cgi_tester;
-	}
-
-	location *.php {
-		allow_methods POST GET;
-		client_max_body_size 100;
-		cgi	.php;
-		cgi_pass testers/php-cgi_ubuntu;
-	}
-
-	location /Yeah {
-		return 301 http://localhost:8080/nop/;
-	}
-}
-
-*/
+// //         nested_list.push_back(single_list);
+  
+// //         // delete all elements from single_list
+// //         single_list.erase(single_list.begin(),
+// //                           single_list.end());
+// //     }
+  
+// //     printNestedList(nested_list);
+  
+// //     return 0;
+// // }
