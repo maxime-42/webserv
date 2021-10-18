@@ -1,6 +1,6 @@
 #include "ParsingFile.hpp"
 
-ParsingFile::ParsingFile(/* args */):_configFile(""), _syntaxError(false)
+ParsingFile::ParsingFile(/* args */):_configFile("")
 {
 	_previousToken = initialized;
 	_nbParenthese = 0;
@@ -88,7 +88,6 @@ void	ParsingFile:: displayToken(std::vector<std::string> &tokenVector)
 void	ParsingFile::syntaxError(char const *msgError)
 {
 	std::cout << msgError<< std::endl;
-	_syntaxError = true;
 	this->~ParsingFile();
 	exit(1);
 }
@@ -100,7 +99,7 @@ void	ParsingFile:: insertMap(std::map<std::string, std::string> & dictionary, st
 {
 	if (_previousToken == value)
 	{
-		dictionary[directiveName] = directiveValue;
+		// dictionary[directiveName] = directiveValue;
 		_previousToken = semicolon;
 	}
 	else
@@ -159,6 +158,7 @@ void	ParsingFile::	createKeyWord()
 **	the goal is to get a piece of word inside a string
 **		get a piece of a string, between start and nbCharacterTocopy
 **		this piece came from configFile
+** 		paramter i is index of string _configFile
 */
 std::string	ParsingFile::getPieceOfstring(size_t &i)
 {
@@ -189,7 +189,9 @@ void	ParsingFile::hasServer()
 		_previousToken = server;
 	}
 	else
+	{
 		syntaxError("Syntaxe error : hasServer");
+	}
 }
 
 void	ParsingFile::hasLocation(std::string &directiveName, std::string & pieceOfString)
@@ -233,7 +235,6 @@ void	ParsingFile::HasBracketClose()
 ** check if given string in paramter of function is secret word
 ** secret word is inside vector _keyWords
 */
-
 bool	ParsingFile::checkIfSecretWord(std::string &pieceOfString)
 {
 	int resultCompar = -1;
@@ -304,6 +305,6 @@ void	ParsingFile::parsingFile()
 	}
 	if ((_nbParenthese%2) )
 		syntaxError("error syntaxe: missing parenthe");
-	displayDirectionary(dictionary);
+	// displayDirectionary(dictionary);
 
 }

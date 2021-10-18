@@ -32,18 +32,13 @@ class ParsingFile
 private:
 	std::string					_configFile;
 	size_t						_nbParenthese;
-	std::bitset<8> 				_prevElem;
-	token_type					_previousToken;
-	bool						_syntaxError;
-	std::vector<std::string> 	_keyWords;
-	std::vector<std::string> 	_vectFiles;
-	std::vector<std::string> 	_tokens;				   
-	std::vector<std::map<std::string, std::string> > _arrayOfSite;
+	char						_characterOfLimite;
+	token_type					_previousToken;//this function always stock the previous token
+	std::vector<std::string> 	_keyWords;		//this vectore stock all keys word
 
 public:
 	ParsingFile(/* args */);
 	~ParsingFile();
-	void						testError(int code); 
 	void						getFile(std::string fileName);
 	void						createKeyWord();
 	void						displayFile();
@@ -52,7 +47,6 @@ public:
 	void						handleCommentes(std::string &line);
 	void						parsingFile();
 
-	void						skipWhiteSpace(size_t &i);
 	void						checkServerSyntaxe(size_t &i);
 
 	std::string					getPieceOfstring(size_t &i);
