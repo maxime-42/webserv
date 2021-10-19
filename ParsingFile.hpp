@@ -31,15 +31,18 @@ enum token_type
 class ParsingFile
 {
 private:
-	size_t						_line;
-	size_t						_column;
-	std::map<std::string, std::string> _dictionary;
-	std::string					_configFile;
-	size_t						_nbParenthese;
-	char						_characterOfLimite;
-	token_type					_previousToken;//this function always stock the previous token
-	std::vector<std::string> 	_keyWords;		//this vectore stock all keys word
-	std::list < std::list < std::map < std::string, std::string > > > _serverTable;		//this vectore stock all keys word
+	size_t																_line;
+	size_t																_column;
+	std::list<std::map < std::string, std::string > >					_singleList;
+
+	std::map<std::string, std::string>			 						_dictionary;
+	std::string															_configFile;
+	size_t																_nbParenthese;
+	char																_characterOfLimite;
+	token_type															_previousToken;//this function always stock the previous token
+	std::vector<std::string> 											_keyWords;		//this vectore stock all keys word
+
+	std::list < std::list < std::map < std::string, std::string > > >	_serverTable;		//this vectore stock all keys word
 
 public:
 	ParsingFile(/* args */);
@@ -60,7 +63,7 @@ public:
 	void						displayDirectionary(std::map<std::string, std::string> &map);
 	bool						checkIfSecretWord(std::string &pieceOfString);
 
-	void						HasBracketOpen();
+	void						hasBracketOpen();
 	void 						hasName(std::string &directiveName, std::string & pieceOfString, size_t i);
 
 	void						hasValue(std::string &directiveValue, std::string & pieceOfString);
@@ -69,6 +72,11 @@ public:
 	void						HasBracketClose();
 	void						hasLocation(std::string &directiveName, std::string & pieceOfString);
 	void						displayServerTable();
+	void						addListInNestedList();
+	void						addDictionaryInList();
+	void						displaySingleList(std::list<std::map < std::string, std::string > > &linkedList);
+	void						insertInDictionary();
+
 
 };
 

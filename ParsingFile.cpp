@@ -13,6 +13,9 @@ ParsingFile::ParsingFile(/* args */):_configFile("")
 	createKeyWord();
 	parsingFile();
 	displayServerTable();
+	std::cout << "\n>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n" << std::endl;
+	// displayDirectionary(*_singleList.begin());
+
 	// std::cout << _configFile << std::endl;
 
 }
@@ -22,13 +25,6 @@ ParsingFile::~ParsingFile()
 	// std::cout << "Bye" << std::endl;
 }
 /*********************************************************************************DISPLAY*********************************************************************************/
-
-
-void	ParsingFile::displayFile()
-{
-	std::cout << "\n************DISPLAY FILE************" << std::endl;
-	std::cout << _configFile << std::endl;
-}
 
 
 void	ParsingFile:: displayToken(std::vector<std::string> &tokenVector)
@@ -49,13 +45,26 @@ void	ParsingFile::displayDirectionary(std::map<std::string, std::string> &map)
 	}
 }
 
+void	ParsingFile::displaySingleList(std::list<std::map < std::string, std::string > > &linkedList)
+{
+	std::list<std::map < std::string, std::string > >::iterator  itrSingle_list_pointer  = linkedList.begin();
+	for (;  itrSingle_list_pointer != linkedList.end(); itrSingle_list_pointer++)
+	{
+		std::cout << "<<<<<<<<<<SINGLE LIST>>>>>>>>>>" << std::endl;
+		displayDirectionary(*itrSingle_list_pointer);
+	}
+}
+
 void	ParsingFile::displayServerTable()
 {
 	std::list < std::list < std::map < std::string, std::string > > >::iterator first = _serverTable.begin() ;
 	std::list < std::map < std::string, std::string > >::iterator itrSingle_list_pointer;
+	size_t i = 0;
 	for (; first != _serverTable.end(); first++)
 	{
+		i++;
 		std::list<std::map < std::string, std::string > > & single_list_pointer  = *first;
+		std::cout << "<<<<<<<<<<<<<<<<<<<<SINGLE LIST N° = "<< i <<">>>>>>>>>>>>>>>>>>>>\n" << std::endl;
 		for (itrSingle_list_pointer = single_list_pointer.begin();  itrSingle_list_pointer != single_list_pointer.end(); itrSingle_list_pointer++)
 		{
 			displayDirectionary(*itrSingle_list_pointer);
@@ -63,10 +72,10 @@ void	ParsingFile::displayServerTable()
 	
 	}	
 }
-/******************************************** OPEN  FILE*******************************************/
+/*********************************************************************************OPEN  FILE* *********************************************************************************/
 
 /*
-*	this function remove comments
+*	this function remove comments line
 */
 
 void	ParsingFile::handleCommentes(std::string &line)
@@ -101,6 +110,7 @@ void	ParsingFile:: getFile(std::string fileName)
 }
 
 
+/*********************************************************************************ANALYSE SYNTAXE CONFIG FILE*********************************************************************************/
 
 void	ParsingFile::syntaxError(char const *msgError)
 {
@@ -109,7 +119,6 @@ void	ParsingFile::syntaxError(char const *msgError)
 	exit(1);
 }
 
-/*********************************************************************************ANALYSE SYNTAXE CONFIG FILE*********************************************************************************/
 
 
 void	ParsingFile:: hasSemicolon()
@@ -232,7 +241,7 @@ void	ParsingFile::hasLocation(std::string &directiveName, std::string & pieceOfS
 	}
 }
 
-void	ParsingFile::HasBracketOpen()
+void	ParsingFile::hasBracketOpen()
 {
 	if ( _previousToken == server || _previousToken == location || _previousToken == value)
 	{
@@ -271,9 +280,31 @@ bool	ParsingFile::checkIfSecretWord(std::string &pieceOfString)
 	return (resultCompar == 0 ? true : false);
 }
 
+void	ParsingFile::addListInNestedList()
+{
+	if (_previousToken == brackets_close)
+	{
+		_serverTable.push_back(_singleList);
+		_dictionary.clear();
+		_singleList.clear();
+	}
+}
+
+void	ParsingFile::addDictionaryInList()
+{
+	if (_dictionary.size())
+	{
+		_singleList.push_back(_dictionary);
+		_dictionary.clear();
+	}
+}
+
+void	ParsingFile::insertInDictionary()
+{
+	
+}
 void	ParsingFile::parsingFile()
 {
-	std::list<std::map < std::string, std::string > > singleList;
 	std::string directiveName;
 	std::string directiveValue;
 	std::cout << "***********PARSING****************" << std::endl;
@@ -285,28 +316,28 @@ void	ParsingFile::parsingFile()
 			std::cout << "pieceOfString [" << pieceOfString << "]"<< std::endl;
 			if (pieceOfString.compare("server") == 0)
 			{
+				addListInNestedList();
 				hasServer();
-				if (_previousToken == brackets_close)
-				{
-					_serverTable.push_back(singleList);
-					_dictionary.clear();
-				}
 			}
 			else if (pieceOfString.compare("location") == 0)
 			{
 				hasLocation(directiveName, pieceOfString);
-				singleList.push_back(_dictionary);
-				_dictionary.clear();
 			}
 			else if (pieceOfString.compare("{") == 0)
 			{
-				HasBracketOpen();
+				hasBracketOpen();
+				if (directiveName.compare("location") == 0)
+				{
+					addDictionaryInList();
+					_dictionary[directiveName] = directiveValue;
+					directiveName = std::string();
+					directiveValue = std::string();
+				}
 			}
 			else if (pieceOfString.compare("}") == 0)
 			{
 				HasBracketClose();
-				singleList.push_back(_dictionary);
-
+				addDictionaryInList();
 			}
 			else if (checkIfSecretWord(pieceOfString) == true)
 			{
@@ -314,9 +345,10 @@ void	ParsingFile::parsingFile()
 			}
 			else if (pieceOfString.compare(";") == 0)
 			{
-				std::cout << "FOUND SEMICOLON  =[" << pieceOfString << "]"<< std::endl;
 				hasSemicolon();
 				_dictionary[directiveName] = directiveValue;
+				directiveName = std::string();
+				directiveValue = std::string();
 			}
 			else
 			{
@@ -328,9 +360,6 @@ void	ParsingFile::parsingFile()
 	}
 	if ((_nbParenthese%2) )
 		syntaxError("error syntaxe: missing parenthe");
-	// displayDirectionary(_dictionary);
 	std::cout << "***********SUCCESSFULLY PARSING***********" << std::endl;
-	// vect.push_back(_dictionary);
-	//grille.push_back(vector<int>(3)); //On ajoute une ligne de 3 cases contenant chacune le nombre 4 à notre grille
-	_serverTable.push_back(singleList);
+	addListInNestedList();
 }
