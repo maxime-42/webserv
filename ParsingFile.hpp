@@ -35,17 +35,15 @@ private:
 	size_t																_column;
 	std::list<std::map < std::string, std::string > >					_singleList;
 
-	std::map<std::string, std::string>			 						_dictionary;
 	std::string															_configFile;
 	size_t																_nbParenthese;
-	char																_characterOfLimite;
 	token_type															_previousToken;//this function always stock the previous token
 	std::vector<std::string> 											_keyWords;		//this vectore stock all keys word
 
-	std::list < std::list < std::map < std::string, std::string > > >	_serverTable;		//this vectore stock all keys word
+	std::list < std::list < std::map < std::string, std::string > > >	_serverList;		//this vectore stock all keys word
 
 public:
-	ParsingFile(/* args */);
+	ParsingFile();
 	~ParsingFile();
 	void						getFile(std::string fileName);
 	void						createKeyWord();
@@ -72,10 +70,12 @@ public:
 	void						HasBracketClose();
 	void						hasLocation(std::string &directiveName, std::string & pieceOfString);
 	void						displayServerTable();
-	void						addListInNestedList();
-	void						addDictionaryInList();
+	void						addListInNestedList(std::map<std::string, std::string>	&dictionary);
+	void						addDictionaryInList(std::map<std::string, std::string>	&dictionary);
 	void						displaySingleList(std::list<std::map < std::string, std::string > > &linkedList);
-	void						insertInDictionary();
+	void						insertInDictionary(std::map<std::string, std::string> &dictionary, std::string &directiveName, std::string &directiveValue);
+	bool						isNumber(std::string &str);
+	std::string					getElem(size_t lineServer, std::string elem);
 
 
 };
