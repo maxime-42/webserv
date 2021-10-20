@@ -25,7 +25,7 @@ ParsingFile::~ParsingFile()
 	// std::cout << "Bye" << std::endl;
 }
 
-/*********************************************************************************DISPLAY*********************************************************************************/
+/*********************************************************************************DISPLAY to DEBUG *********************************************************************************/
 
 
 void	ParsingFile::						displayToken(std::vector<std::string> &tokenVector)
@@ -73,6 +73,7 @@ void	ParsingFile::						displayServerTable()
 	
 	}	
 }
+/***********************************************************************************************************************************************************************************************/
 
 std::string	ParsingFile::				getElem(size_t lineServer, std::string elem)
 {
@@ -154,6 +155,7 @@ bool	ParsingFile:: 						isNumber(std::string &str)
 	}
 	return (true);
 }
+
 void	ParsingFile::						syntaxError(char const *msgError)
 {
 	std::cout << msgError<< std::endl;
@@ -212,7 +214,6 @@ void	ParsingFile::	createKeyWord()
 	_keyWords.push_back("server_name");
 	_keyWords.push_back("root");
 	_keyWords.push_back("error_page");
-	// _keyWords.push_back("location");
 	_keyWords.push_back("autoindex");
 	_keyWords.push_back("client_max_body_size");
 	_keyWords.push_back("index");
@@ -407,13 +408,3 @@ void										ParsingFile::parsingFile()
 	std::cout << "***********SUCCESSFULLY PARSING***********" << std::endl;
 	addListInNestedList(dictionary);
 }
-
-/*********************************************************************************get value*********************************************************************************/
-
-
-
-/*
-single linked list containt a map in each node.
-each node  represente a location.
-map containt all directive
-*/
