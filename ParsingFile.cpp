@@ -1,83 +1,44 @@
 #include "ParsingFile.hpp"
 
-ParsingFile::								ParsingFile(/* args */):_configFile("")
+/*
+**	this construct it called when there are not any argument to the object
+*/
+ParsingFile::								ParsingFile():_fileName("./configFile/default.conf"), _configFile(std::string())
+{
+	getStartProcess();
+}
+
+/*
+**	this construct it called when there is argument to the object
+*/
+ParsingFile::								ParsingFile(std::string fileName):_fileName(fileName), _configFile(std::string())
 {	
-	_line = 0;
-	_column = 0;
+	getStartProcess();
+}
+
+/*
+**	step one 	:	get file in std::string "configFile"
+**	step two 	:	create table of keyword
+**	step three	:	parsing _configFile;
+*/
+void	ParsingFile::						getStartProcess()
+{
 	_previousToken = initialized;
-	_nbParenthese = 0;
+	_nbParenthese = 0;	//it increment when it meet open brack an decrement to bracket closed 
 	std::vector<std::string>tokenArray;
-	// std::cout << "construteur" << std::endl;
-	getFile("./configFile/default.conf");
-	// std::cout << "**********ConfigFile***********\n"<< _configFile << std::endl;
+	getFile();
 	createKeyWord();
 	parsingFile();
-	// displayServerTable();
-	std::cout << "\n>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n" << std::endl;
-	// displayDirectionary(*_singleList.begin());
-
-	// std::cout << _configFile << std::endl;
-
 }
 
-ParsingFile::~ParsingFile()
-{
-}
+ParsingFile::~ParsingFile(){}
 
 size_t	ParsingFile::						numberOfSite()
 {
 	return (_singleList.size());
 }
 
-/*********************************************************************************DISPLAY to DEBUG *********************************************************************************/
-
-
-void	ParsingFile::						displayToken(std::vector<std::string> &tokenVector)
-{
-	std::cout << "************DISPLAY TOKEN VECTORE************" << std::endl;
-	for (std::vector<std::string>::iterator  it = tokenVector.begin(); it != tokenVector.end(); it++)
-	{
-		std::cout << *it << std::endl;
-	}
-}
-
-void	ParsingFile::displayDirectionary(std::map<std::string, std::string> &map)
-{
-	std::cout << "***************DISPLAY DICTIONNARY***************" << std::endl;
-	for (std::map<std::string, std::string>::iterator it = map.begin(); it != map.end(); it++)
-	{
-		std::cout << "name = " << it->first << "\t\tvalue = " << it->second<< std::endl;
-	}
-}
-
-void	ParsingFile::						displaySingleList(std::list<std::map < std::string, std::string > > &linkedList)
-{
-	std::list<std::map < std::string, std::string > >::iterator  itrSingle_list_pointer  = linkedList.begin();
-	for (;  itrSingle_list_pointer != linkedList.end(); itrSingle_list_pointer++)
-	{
-		std::cout << "<<<<<<<<<<SINGLE LIST>>>>>>>>>>" << std::endl;
-		displayDirectionary(*itrSingle_list_pointer);
-	}
-}
-
-void	ParsingFile::						displayServerTable()
-{
-	std::list < std::list < std::map < std::string, std::string > > >::iterator first = _serverList.begin() ;
-	std::list < std::map < std::string, std::string > >::iterator itrSingle_list_pointer;
-	size_t i = 0;
-	for (; first != _serverList.end(); first++)
-	{
-		i++;
-		std::list<std::map < std::string, std::string > > & single_list_pointer  = *first;
-		std::cout << "<<<<<<<<<<<<<<<<<<<<SINGLE LIST N° = "<< i <<">>>>>>>>>>>>>>>>>>>>\n" << std::endl;
-		for (itrSingle_list_pointer = single_list_pointer.begin();  itrSingle_list_pointer != single_list_pointer.end(); itrSingle_list_pointer++)
-		{
-			displayDirectionary(*itrSingle_list_pointer);
-		}
-	
-	}	
-}
-/***********************************************************************************************************************************************************************************************/
+/********************************************************************************ACCESS TO ELEM it _serverList it is a neested list************************************************************************************/
 
 std::string	ParsingFile::				getElem(size_t lineServer, std::string elem)
 {
@@ -118,10 +79,10 @@ void	ParsingFile::						handleCommentes(std::string &line)
 	}
 }
 
-void	ParsingFile:: getFile(std::string fileName)
+void	ParsingFile:: getFile()
 {
 	std::string line;
-	std::ifstream MyReadFile(fileName.c_str());
+	std::ifstream MyReadFile(_fileName.c_str());
 	if (MyReadFile.is_open())
 	{
 		while (getline (MyReadFile, line)) 
@@ -305,7 +266,6 @@ void	ParsingFile::						hasBracketClose()
 	if ( _previousToken == semicolon || _previousToken == brackets_close || _previousToken == brackets_open)
 	{
 		_nbParenthese--;
-		// _nbParenthese++;
 		_previousToken = brackets_close;
 	}
 	else
@@ -345,6 +305,7 @@ void	ParsingFile::						addDictionaryInList(std::map<std::string, std::string>	&
 		dictionary.clear();
 	}
 }
+
 /*
 ** this function insert name and value in dictionary
 ** afterward initialize  name and value
@@ -416,6 +377,6 @@ void										ParsingFile::parsingFile()
 		directiveValue.~basic_string();
 		syntaxError("error syntaxe: missing parenthe");
 	}
-	std::cout << "***********SUCCESSFULLY PARSING***********" << std::endl;
+	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SUCCESSFULLY PARSING<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 	addListInNestedList(dictionary);
 }

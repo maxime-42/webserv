@@ -10,6 +10,8 @@ test*
 !.vscode/extensions.json
 *.code-workspace
 
+# to debug..
+to_debug.cpp
 # Local History for Visual Studio Code
 .history/
 # Prerequisites

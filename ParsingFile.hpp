@@ -31,11 +31,11 @@ enum token_type
 class ParsingFile
 {
 private:
-	size_t																_line;
-	size_t																_column;
+	std::string															_fileName;
 	std::list<std::map < std::string, std::string > >					_singleList;
 
 	std::string															_configFile;
+
 	size_t																_nbParenthese;
 	token_type															_previousToken;//this function always stock the previous token
 	std::vector<std::string> 											_keyWords;		//this vectore stock all keys word
@@ -44,41 +44,41 @@ private:
 
 public:
 	ParsingFile();
+	ParsingFile(std::string fileName);
 	~ParsingFile();
-	void						getFile(std::string fileName);
+	void						getFile();
 	void						createKeyWord();
-	void						displayFile();
+	
+	/****************this four function it is to debug********************/
+	void						displayServerTable();
 	void						displayToken(std::vector<std::string> &tokenVector);
+	void						displayDirectionary(std::map<std::string, std::string> &map);
+	void						displaySingleList(std::list<std::map < std::string, std::string > > &linkedList);
 
 	void						handleCommentes(std::string &line);
 	void						parsingFile();
-
 	void						checkServerSyntaxe(size_t &i);
 
 	std::string					getPieceOfstring(size_t &i);
 	void						hasServer();
 	void						syntaxError(char const *msgError);
-	void						displayDirectionary(std::map<std::string, std::string> &map);
 	bool						checkIfSecretWord(std::string &pieceOfString);
 
+	/****************those function operare to a specific token********************/
 	void						hasBracketOpen(std::string &directiveName, std::string &directiveValue);
 	void						hasBracketClose();	
-
-
 	void 						hasName(std::string &directiveName, std::string & pieceOfString, size_t i);
-
 	void						hasValue(std::string &directiveValue, std::string & pieceOfString);
-
 	void						hasSemicolon();
 	void						hasLocation(std::string &directiveName, std::string & pieceOfString);
-	void						displayServerTable();
+
 	void						addListInNestedList(std::map<std::string, std::string>	&dictionary);
 	void						addDictionaryInList(std::map<std::string, std::string>	&dictionary);
-	void						displaySingleList(std::list<std::map < std::string, std::string > > &linkedList);
 	void						insertInDictionary(std::map<std::string, std::string> &dictionary, std::string &directiveName, std::string &directiveValue);
 	bool						isNumber(std::string &str);
 	std::string					getElem(size_t lineServer, std::string elem);
 	size_t						numberOfSite();
+	void						getStartProcess();
 
 
 };
