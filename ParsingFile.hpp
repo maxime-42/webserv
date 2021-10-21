@@ -36,7 +36,6 @@ private:
 
 	std::string															_configFile;
 
-	size_t																_nbParenthese;
 	token_type															_previousToken;//this function always stock the previous token
 	std::vector<std::string> 											_keyWords;		//this vectore stock all keys word
 
@@ -65,8 +64,8 @@ public:
 	bool						checkIfSecretWord(std::string &pieceOfString);
 
 	/****************those function operare to a specific token********************/
-	void						hasBracketOpen();
-	void						hasBracketClose();	
+	void						hasBracketOpen(int nbParenthese);
+	void						hasBracketClose(int nbParenthese);	
 	void 						hasName(std::string &directiveName, std::string & pieceOfString, size_t i);
 	void						hasValue(std::string &directiveValue, std::string & pieceOfString);
 	void						hasSemicolon();
@@ -79,7 +78,7 @@ public:
 	std::string					getElem(size_t lineServer, std::string elem);
 	size_t						numberOfSite();
 	void						getStartProcess();
-	void						checkParenthe();
+	void						checkParenthe(int &nbParenthese);
 	// void	ParsingFile							identifyToken(std::string &token)
 
 

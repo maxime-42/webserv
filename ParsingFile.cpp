@@ -24,11 +24,12 @@ ParsingFile::								ParsingFile(std::string fileName):_fileName(fileName), _con
 void	ParsingFile::						getStartProcess()
 {
 	_previousToken = initialized;
-	_nbParenthese = 0;	//it increment when it meet open brack an decrement to bracket closed 
 	std::vector<std::string>tokenArray;
 	getFile();
 	createKeyWord();
-	parsingFile();
+	int ret = parsingFile();
+	if (ret == ERROR)
+		exit(ERROR);
 }
 
 ParsingFile::~ParsingFile(){}
@@ -246,11 +247,11 @@ void	ParsingFile::						hasLocation(std::string &directiveName, std::string & pi
 	}
 }
 
-void	ParsingFile::						hasBracketOpen()
+void	ParsingFile::						hasBracketOpen(int nbParenthese)
 {
 	if ( _previousToken == server || _previousToken == location || _previousToken == value)
 	{
-		_nbParenthese++;
+		nbParenthese++;
 		_previousToken = brackets_open;
 	}
 	else
@@ -259,11 +260,11 @@ void	ParsingFile::						hasBracketOpen()
 	}
 }
 
-void	ParsingFile::						hasBracketClose()
+void	ParsingFile::						hasBracketClose(int nbParenthese)
 {
 	if ( _previousToken == semicolon || _previousToken == brackets_close || _previousToken == brackets_open)
 	{
-		_nbParenthese--;
+		nbParenthese--;
 		_previousToken = brackets_close;
 	}
 	else
@@ -315,9 +316,9 @@ void	ParsingFile::						insertInDictionary(std::map<std::string, std::string>	&d
 	directiveValue = std::string();	
 }
 
-void	ParsingFile::						checkParenthe()
+void	ParsingFile::						checkParenthe(int &nbParenthese)
 {
-	if (_nbParenthese != 0 )
+	if (nbParenthese != 0 )
 	{
 		syntaxError("error syntaxe: missing parenthe");
 	}
@@ -332,7 +333,8 @@ int										ParsingFile::parsingFile()
 {
 	std::string 							directiveName;
 	std::string 							directiveValue;
-	std::map<std::string, std::string>		dictionary;
+	std::map<std::string, std::string>		dictionary; 
+	int										nbParenthese = 0;//it increment when it meet open brack an decrement to bracket closed 
 	std::cout << "*********************************** ST A R T I N G	P A R S I N G...******************************************" << std::endl;
 	for (size_t i = 0; i < _configFile.size(); )
 	{
@@ -352,7 +354,7 @@ int										ParsingFile::parsingFile()
 					}
 					else if (pieceOfString.compare("{") == 0)
 					{
-						hasBracketOpen();
+						hasBracketOpen(nbParenthese);
 						if (directiveName.compare("location") == 0)
 						{
 							addDictionaryInList(dictionary);
@@ -361,7 +363,7 @@ int										ParsingFile::parsingFile()
 					}
 					else if (pieceOfString.compare("}") == 0)
 					{
-						hasBracketClose();
+						hasBracketClose(nbParenthese);
 						addDictionaryInList(dictionary);
 					}
 					else if (checkIfSecretWord(pieceOfString) == true)
@@ -384,13 +386,12 @@ int										ParsingFile::parsingFile()
 			{
 				return (error);
 			}
-				
 		}
 		else
 			i++;
 		}
 	
-	checkParenthe();
+	checkParenthe( nbParenthese);
 	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SUCCESSFULLY PARSING<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 	addListInNestedList(dictionary);
 	return (0);
