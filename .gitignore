@@ -1,5 +1,6 @@
 .gitignore
-*a.out
+a.out*
+a.out.dSYM/Contents
 
 test*
 .vscode/
