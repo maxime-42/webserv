@@ -9,10 +9,10 @@ ParsingFile::								ParsingFile(/* args */):_configFile("")
 	std::vector<std::string>tokenArray;
 	// std::cout << "construteur" << std::endl;
 	getFile("./configFile/default.conf");
-	std::cout << "**********ConfigFile***********\n"<< _configFile << std::endl;
+	// std::cout << "**********ConfigFile***********\n"<< _configFile << std::endl;
 	createKeyWord();
 	parsingFile();
-	displayServerTable();
+	// displayServerTable();
 	std::cout << "\n>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n" << std::endl;
 	// displayDirectionary(*_singleList.begin());
 
@@ -22,7 +22,11 @@ ParsingFile::								ParsingFile(/* args */):_configFile("")
 
 ParsingFile::~ParsingFile()
 {
-	// std::cout << "Bye" << std::endl;
+}
+
+size_t	ParsingFile::						numberOfSite()
+{
+	return (_singleList.size());
 }
 
 /*********************************************************************************DISPLAY to DEBUG *********************************************************************************/
@@ -281,7 +285,7 @@ void	ParsingFile::						hasLocation(std::string &directiveName, std::string & pi
 	}
 }
 
-void	ParsingFile::						hasBracketOpen()
+void	ParsingFile::						hasBracketOpen(std::string &directiveName, std::string &directiveValue)
 {
 	if ( _previousToken == server || _previousToken == location || _previousToken == value)
 	{
@@ -290,15 +294,18 @@ void	ParsingFile::						hasBracketOpen()
 	}
 	else
 	{
+		directiveName.~basic_string();
+		directiveValue.~basic_string();
 		syntaxError("Syntaxe error : Server expected open bracket");
 	}
 }
 
-void	ParsingFile::						HasBracketClose()
+void	ParsingFile::						hasBracketClose()
 {
 	if ( _previousToken == semicolon || _previousToken == brackets_close || _previousToken == brackets_open)
 	{
-		_nbParenthese++;
+		_nbParenthese--;
+		// _nbParenthese++;
 		_previousToken = brackets_close;
 	}
 	else
@@ -372,7 +379,7 @@ void										ParsingFile::parsingFile()
 			}
 			else if (pieceOfString.compare("{") == 0)
 			{
-				hasBracketOpen();
+				hasBracketOpen(directiveName, directiveValue);
 				if (directiveName.compare("location") == 0)
 				{
 					addDictionaryInList(dictionary);
@@ -381,7 +388,7 @@ void										ParsingFile::parsingFile()
 			}
 			else if (pieceOfString.compare("}") == 0)
 			{
-				HasBracketClose();
+				hasBracketClose();
 				addDictionaryInList(dictionary);
 			}
 			else if (checkIfSecretWord(pieceOfString) == true)
@@ -403,8 +410,12 @@ void										ParsingFile::parsingFile()
 		else
 			i++;
 	}
-	if ((_nbParenthese%2) )
+	if (_nbParenthese != 0 )
+	{
+		directiveName.~basic_string();
+		directiveValue.~basic_string();
 		syntaxError("error syntaxe: missing parenthe");
+	}
 	std::cout << "***********SUCCESSFULLY PARSING***********" << std::endl;
 	addListInNestedList(dictionary);
 }

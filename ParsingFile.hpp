@@ -61,13 +61,15 @@ public:
 	void						displayDirectionary(std::map<std::string, std::string> &map);
 	bool						checkIfSecretWord(std::string &pieceOfString);
 
-	void						hasBracketOpen();
+	void						hasBracketOpen(std::string &directiveName, std::string &directiveValue);
+	void						hasBracketClose();	
+
+
 	void 						hasName(std::string &directiveName, std::string & pieceOfString, size_t i);
 
 	void						hasValue(std::string &directiveValue, std::string & pieceOfString);
 
 	void						hasSemicolon();
-	void						HasBracketClose();
 	void						hasLocation(std::string &directiveName, std::string & pieceOfString);
 	void						displayServerTable();
 	void						addListInNestedList(std::map<std::string, std::string>	&dictionary);
@@ -76,6 +78,7 @@ public:
 	void						insertInDictionary(std::map<std::string, std::string> &dictionary, std::string &directiveName, std::string &directiveValue);
 	bool						isNumber(std::string &str);
 	std::string					getElem(size_t lineServer, std::string elem);
+	size_t						numberOfSite();
 
 
 };
