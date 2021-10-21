@@ -1,7 +1,7 @@
 
 #ifndef PARSINGFILE
 #define PARSINGFILE
-#define ERROR -1
+#define ERROR 1
 
 
 enum token_type
@@ -56,7 +56,7 @@ public:
 	void						displaySingleList(std::list<std::map < std::string, std::string > > &linkedList);
 
 	void						handleCommentes(std::string &line);
-	void						parsingFile();
+	int							parsingFile();
 	void						checkServerSyntaxe(size_t &i);
 
 	std::string					getPieceOfstring(size_t &i);
@@ -65,7 +65,7 @@ public:
 	bool						checkIfSecretWord(std::string &pieceOfString);
 
 	/****************those function operare to a specific token********************/
-	void						hasBracketOpen(std::string &directiveName, std::string &directiveValue);
+	void						hasBracketOpen();
 	void						hasBracketClose();	
 	void 						hasName(std::string &directiveName, std::string & pieceOfString, size_t i);
 	void						hasValue(std::string &directiveValue, std::string & pieceOfString);
@@ -79,6 +79,8 @@ public:
 	std::string					getElem(size_t lineServer, std::string elem);
 	size_t						numberOfSite();
 	void						getStartProcess();
+	void						checkParenthe();
+	// void	ParsingFile							identifyToken(std::string &token)
 
 
 };

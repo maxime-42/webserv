@@ -124,8 +124,7 @@ bool	ParsingFile:: 						isNumber(std::string &str)
 void	ParsingFile::						syntaxError(char const *msgError)
 {
 	std::cout << msgError<< std::endl;
-	this->~ParsingFile();
-	exit(1);
+	throw(ERROR);
 }
 
 void	ParsingFile:: hasSemicolon()
@@ -198,20 +197,21 @@ void	ParsingFile::	createKeyWord()
 **		get a piece of a string, between start and nbCharacterTocopy
 **		this piece came from configFile
 ** 		paramter i is index of string _configFile
+** 		i it is increment depending  numbers characters to copy
 */
 std::string	ParsingFile::					getPieceOfstring(size_t &i)
 {
 	size_t	nbCharacterTocopy = 0;
 	size_t start = i;
 
-	if (_configFile[i] == '{' || _configFile[i] == '}' || _configFile[i] == ';')
+	if (_configFile[i] == '{' || _configFile[i] == '}' || _configFile[i] == ';')//if { or { or ; is the first character i going to catch that piece Of String
 	{
 		i++;
 		nbCharacterTocopy++;
 	}
 	else
 	{
-		while (!isspace(_configFile[i]) && (_configFile[i] != '{' && _configFile[i] != '}') && _configFile[i] != ';')
+		while (!isspace(_configFile[i]) && (_configFile[i] != '{' && _configFile[i] != '}') && _configFile[i] != ';') // { or } or ; and whitespace character are delimiter
 		{
 			nbCharacterTocopy++;
 			i++;
@@ -246,7 +246,7 @@ void	ParsingFile::						hasLocation(std::string &directiveName, std::string & pi
 	}
 }
 
-void	ParsingFile::						hasBracketOpen(std::string &directiveName, std::string &directiveValue)
+void	ParsingFile::						hasBracketOpen()
 {
 	if ( _previousToken == server || _previousToken == location || _previousToken == value)
 	{
@@ -255,8 +255,6 @@ void	ParsingFile::						hasBracketOpen(std::string &directiveName, std::string &
 	}
 	else
 	{
-		directiveName.~basic_string();
-		directiveValue.~basic_string();
 		syntaxError("Syntaxe error : Server expected open bracket");
 	}
 }
@@ -317,66 +315,84 @@ void	ParsingFile::						insertInDictionary(std::map<std::string, std::string>	&d
 	directiveValue = std::string();	
 }
 
-void										ParsingFile::parsingFile()
+void	ParsingFile::						checkParenthe()
+{
+	if (_nbParenthese != 0 )
+	{
+		syntaxError("error syntaxe: missing parenthe");
+	}
+}
+
+
+/*
+** this function try to identify token, then act to depending token  
+** token is pieceOfString
+*/
+int										ParsingFile::parsingFile()
 {
 	std::string 							directiveName;
 	std::string 							directiveValue;
 	std::map<std::string, std::string>		dictionary;
-	std::cout << "*********************************** STARTING P A R S I N G...******************************************" << std::endl;
+	std::cout << "*********************************** ST A R T I N G	P A R S I N G...******************************************" << std::endl;
 	for (size_t i = 0; i < _configFile.size(); )
 	{
 		if (!isspace(_configFile[i]))
 		{
 			std::string pieceOfString = getPieceOfstring(i);
-			// std::cout << "pieceOfString [" << pieceOfString << "]"<< std::endl;
-			if (pieceOfString.compare("server") == 0)
-			{
-				addListInNestedList(dictionary);
-				hasServer();
+			try {
+
+					if (pieceOfString.compare("server") == 0)
+					{
+						addListInNestedList(dictionary);
+						hasServer();
+					}
+					else if (pieceOfString.compare("location") == 0)
+					{
+						hasLocation(directiveName, pieceOfString);
+					}
+					else if (pieceOfString.compare("{") == 0)
+					{
+						hasBracketOpen();
+						if (directiveName.compare("location") == 0)
+						{
+							addDictionaryInList(dictionary);
+							insertInDictionary(dictionary, directiveName, directiveValue);
+						}
+					}
+					else if (pieceOfString.compare("}") == 0)
+					{
+						hasBracketClose();
+						addDictionaryInList(dictionary);
+					}
+					else if (checkIfSecretWord(pieceOfString) == true)
+					{
+						hasName(directiveName, pieceOfString, i);
+					}
+					else if (pieceOfString.compare(";") == 0)
+					{
+						hasSemicolon();
+						if (directiveName.compare("listen") == 0 && isNumber(directiveValue) == false)
+							syntaxError("error syntaxe: listen have to be decimal numer");
+						insertInDictionary(dictionary, directiveName, directiveValue);
+					}
+					else
+					{
+						hasValue(directiveValue, pieceOfString);
+					}
 			}
-			else if (pieceOfString.compare("location") == 0)
+			catch(int error)
 			{
-				hasLocation(directiveName, pieceOfString);
+				return (error);
 			}
-			else if (pieceOfString.compare("{") == 0)
-			{
-				hasBracketOpen(directiveName, directiveValue);
-				if (directiveName.compare("location") == 0)
-				{
-					addDictionaryInList(dictionary);
-					insertInDictionary(dictionary, directiveName, directiveValue);
-				}
-			}
-			else if (pieceOfString.compare("}") == 0)
-			{
-				hasBracketClose();
-				addDictionaryInList(dictionary);
-			}
-			else if (checkIfSecretWord(pieceOfString) == true)
-			{
-				hasName(directiveName, pieceOfString, i);
-			}
-			else if (pieceOfString.compare(";") == 0)
-			{
-				hasSemicolon();
-				if (directiveName.compare("listen") == 0 && isNumber(directiveValue) == false)
-					syntaxError("error syntaxe: listen have to be decimal numer");
-				insertInDictionary(dictionary, directiveName, directiveValue);
-			}
-			else
-			{
-				hasValue(directiveValue, pieceOfString);
-			}
+				
 		}
 		else
 			i++;
-	}
-	if (_nbParenthese != 0 )
-	{
-		directiveName.~basic_string();
-		directiveValue.~basic_string();
-		syntaxError("error syntaxe: missing parenthe");
-	}
+		}
+	
+	checkParenthe();
 	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SUCCESSFULLY PARSING<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 	addListInNestedList(dictionary);
+	return (0);
+
 }
