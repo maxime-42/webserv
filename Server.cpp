@@ -20,15 +20,24 @@ void	Server::			test_error(int error_code, char const *msg)
 	{
 		std::cout  << msg << std::endl;
 		close(_server_fd);
+		throw(msg);
 		this->~Server();
 		exit (ERROR);
 	}
 }
 
-
 Server::					Server(int port):_port(port), _nfds(1)
 {
-	setup();
+	try
+	{
+		setup();
+	}
+	catch(char *msg_error)
+	{
+		std::cerr << msg_error << '\n';
+		this->~Server();
+		exit (ERROR);
+	}
 }
 
 void	Server::			setup()
@@ -158,33 +167,36 @@ void	Server::			accept_all_incoming_connections()
 
 void	Server::			start_svc()
 {
-	int ret;
-	int time_out =  (3 * 60 * 1000);
-	int	current_size;
-	while (true)
+	try
 	{
-		ret = poll(_tab_poll, _nfds, time_out);
-		test_error(ret, "poll() failed");
-		if (ret == 0)
-			test_error(ERROR, "poll() timed out.  End program.");
-		current_size = _nfds;
-		for (int index = 0; index < current_size; index++)
+		int ret;
+		int	current_size;
+		while (true)
 		{
-			if(_tab_poll[index].revents == 0)//loop as long the are not event happened
-				continue;
-			if (_tab_poll[index].fd == _server_fd)
-				accept_all_incoming_connections();
-			else
-				handle_existing_connections(&_tab_poll[index]);
+			ret = poll(_tab_poll, _nfds, TIMEOUT);
+			test_error(ret, "poll() failed");
+			if (ret == 0)
+				test_error(ERROR, "poll() timed out.  End program.");
+			current_size = _nfds;
+			for (int index = 0; index < current_size; index++)
+			{
+				if(_tab_poll[index].revents == 0)//loop as long the are not event happened
+					continue;
+				if (_tab_poll[index].fd == _server_fd)
+					accept_all_incoming_connections();
+				else
+					handle_existing_connections(&_tab_poll[index]);
+			}
+			squeeze_tab_poll();
 		}
-		squeeze_tab_poll();
 	}
+	catch(std::string const  & msg_error)
+	{
+		std::cerr << msg_error << '\n';
+	}
+	
 }
 
 
 int	 	Server::			get_server_fd() {return (_server_fd);}
 int	 	Server::			get_listen_fd() {return (_listen_fd);}
-
-
-// int		Server::			get_nb_fd_poll() {return (_nb_fd_poll);}
-// void	Server::			set_nb_fd_poll(int n) {_nb_fd_poll = n;}
