@@ -5,7 +5,12 @@
 */
 ParsingFile::								ParsingFile():_fileName("./configFile/default.conf"), _configFile(std::string())
 {
-	getStartProcess();
+	int result = getStartProcess();
+	if (result == ERROR)
+	{
+		this->~ParsingFile();
+		exit(ERROR);
+	}
 }
 
 /*
@@ -14,6 +19,7 @@ ParsingFile::								ParsingFile():_fileName("./configFile/default.conf"), _conf
 ParsingFile::								ParsingFile(std::string fileName):_fileName(fileName), _configFile(std::string())
 {	
 	getStartProcess();
+	
 }
 
 /*
@@ -21,12 +27,13 @@ ParsingFile::								ParsingFile(std::string fileName):_fileName(fileName), _con
 **	step two 	:	create table of keyword
 **	step three	:	parsing _configFile;
 */
-void	ParsingFile::						getStartProcess()
+int	ParsingFile::						getStartProcess()
 {
-	getFile();
-	createKeyWord();
+	
 	try
 	{
+		getFile();
+		createKeyWord();
 		_previousToken = initialized;
 		parsingProcess();
 		std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SUCCESSFULLY PARSING<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
@@ -34,7 +41,9 @@ void	ParsingFile::						getStartProcess()
 	catch(char const *  msg_error)
 	{
 		std::cerr << msg_error << std::endl;
+		return (ERROR);
 	}
+	return (SUCCESS);
 }
 
 ParsingFile::~ParsingFile(){}
@@ -101,9 +110,7 @@ void	ParsingFile:: getFile()
 	}
 	else
 	{
-		std::cout << "error open file" << std::endl;
-		this->~ParsingFile();
-		exit(ERROR);
+		throw("error open file");
 	}
 }
 

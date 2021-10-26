@@ -2,6 +2,7 @@
 #ifndef PARSINGFILE
 #define PARSINGFILE
 #define ERROR 1
+#define SUCCESS 0
 
 
 enum token_type
@@ -76,10 +77,7 @@ public:
 	bool						isNumber(std::string &str);
 	std::string					getElem(size_t lineServer, std::string elem);
 	size_t						numberOfSite();
-	void						getStartProcess();
-	// void	ParsingFile							identifyToken(std::string &token)
-
-
+	int							getStartProcess();
 };
 
 #endif 
