@@ -110,7 +110,7 @@
                 std::map<std::string, std::string> request;
                 std::map<std::string, std::string> reponse;
 
-                printf("%s\n", _buffer);
+                printf("[[[[[[[[[[[\n%s\n]]]]]]]]]]]]]]]\n", _buffer);
 
                 parse_request(std::string(_buffer), request); 
 
