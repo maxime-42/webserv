@@ -127,12 +127,6 @@ bool	ParsingFile:: 						isNumber(std::string &str)
 	return (true);
 }
 
-// void	ParsingFile::						syntaxError(char const *msgError)
-// {
-// 	std::cout << msgError<< std::endl;
-// 	throw int (ERROR);
-// }
-
 void	ParsingFile:: hasSemicolon()
 {
 	if (_previousToken == value)
