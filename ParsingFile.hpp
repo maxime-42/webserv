@@ -55,17 +55,16 @@ public:
 	void						displaySingleList(std::list<std::map < std::string, std::string > > &linkedList);
 
 	void						handleCommentes(std::string &line);
-	int							parsingFile();
+	void						parsingProcess();
 	void						checkServerSyntaxe(size_t &i);
 
 	std::string					getPieceOfstring(size_t &i);
 	void						hasServer();
-	void						syntaxError(char const *msgError);
 	bool						checkIfSecretWord(std::string &pieceOfString);
 
 	/****************those function operare to a specific token********************/
-	void						hasBracketOpen(int nbParenthese);
-	void						hasBracketClose(int nbParenthese);	
+	void						hasBracketOpen(int &nbParenthese);
+	void						hasBracketClose(int &nbParenthese);	
 	void 						hasName(std::string &directiveName, std::string & pieceOfString, size_t i);
 	void						hasValue(std::string &directiveValue, std::string & pieceOfString);
 	void						hasSemicolon();
@@ -78,7 +77,6 @@ public:
 	std::string					getElem(size_t lineServer, std::string elem);
 	size_t						numberOfSite();
 	void						getStartProcess();
-	void						checkParenthe(int &nbParenthese);
 	// void	ParsingFile							identifyToken(std::string &token)
 
 

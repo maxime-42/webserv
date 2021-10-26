@@ -23,13 +23,18 @@ ParsingFile::								ParsingFile(std::string fileName):_fileName(fileName), _con
 */
 void	ParsingFile::						getStartProcess()
 {
-	_previousToken = initialized;
-	std::vector<std::string>tokenArray;
 	getFile();
 	createKeyWord();
-	int ret = parsingFile();
-	if (ret == ERROR)
-		exit(ERROR);
+	try
+	{
+		_previousToken = initialized;
+		parsingProcess();
+		std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SUCCESSFULLY PARSING<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+	}
+	catch(char const *  msg_error)
+	{
+		std::cerr << msg_error << std::endl;
+	}
 }
 
 ParsingFile::~ParsingFile(){}
@@ -122,11 +127,11 @@ bool	ParsingFile:: 						isNumber(std::string &str)
 	return (true);
 }
 
-void	ParsingFile::						syntaxError(char const *msgError)
-{
-	std::cout << msgError<< std::endl;
-	throw(ERROR);
-}
+// void	ParsingFile::						syntaxError(char const *msgError)
+// {
+// 	std::cout << msgError<< std::endl;
+// 	throw int (ERROR);
+// }
 
 void	ParsingFile:: hasSemicolon()
 {
@@ -136,7 +141,7 @@ void	ParsingFile:: hasSemicolon()
 	}
 	else
 	{
-		syntaxError("error syntaxe: insertMap");
+		throw("error syntaxe: insertMap");
 	}
 }
 
@@ -145,7 +150,7 @@ void	ParsingFile:: 						hasName(std::string &directiveName, std::string & piece
 	int result = !isspace(_configFile[i]);
 	if (result != 0)
 	{
-		syntaxError("error syntaxe: hasName");
+		throw("error syntaxe: hasName");
 	}
 	if (_previousToken == semicolon || _previousToken == brackets_open || _previousToken == brackets_close)
 	{
@@ -169,7 +174,7 @@ void	ParsingFile:: hasValue(std::string &directiveValue, std::string & pieceOfSt
 	}
 	else
 	{
-		syntaxError("error syntaxe: hasValue");
+		throw("error syntaxe: hasValue");
 	}
 }
 
@@ -230,7 +235,7 @@ void	ParsingFile::						hasServer()
 	}
 	else
 	{
-		syntaxError("Syntaxe error : hasServer");
+		throw("Syntaxe error : hasServer");
 	}
 }
 
@@ -243,11 +248,11 @@ void	ParsingFile::						hasLocation(std::string &directiveName, std::string & pi
 	}
 	else
 	{
-		syntaxError("Syntaxe error : hasLocation");
+		throw("Syntaxe error : hasLocation");
 	}
 }
 
-void	ParsingFile::						hasBracketOpen(int nbParenthese)
+void	ParsingFile::						hasBracketOpen(int &nbParenthese)
 {
 	if ( _previousToken == server || _previousToken == location || _previousToken == value)
 	{
@@ -256,11 +261,11 @@ void	ParsingFile::						hasBracketOpen(int nbParenthese)
 	}
 	else
 	{
-		syntaxError("Syntaxe error : Server expected open bracket");
+		throw("Syntaxe error : Server expected open bracket");
 	}
 }
 
-void	ParsingFile::						hasBracketClose(int nbParenthese)
+void	ParsingFile::						hasBracketClose(int &nbParenthese)
 {
 	if ( _previousToken == semicolon || _previousToken == brackets_close || _previousToken == brackets_open)
 	{
@@ -268,7 +273,7 @@ void	ParsingFile::						hasBracketClose(int nbParenthese)
 		_previousToken = brackets_close;
 	}
 	else
-		syntaxError("Syntaxe error :  HasBracketClose");
+		throw("Syntaxe error :  HasBracketClose");
 }
 
 /*
@@ -316,20 +321,11 @@ void	ParsingFile::						insertInDictionary(std::map<std::string, std::string>	&d
 	directiveValue = std::string();	
 }
 
-void	ParsingFile::						checkParenthe(int &nbParenthese)
-{
-	if (nbParenthese != 0 )
-	{
-		syntaxError("error syntaxe: missing parenthe");
-	}
-}
-
-
 /*
 ** this function try to identify token, then act to depending token  
 ** token is pieceOfString
 */
-int										ParsingFile::parsingFile()
+void										ParsingFile::parsingProcess()
 {
 	std::string 							directiveName;
 	std::string 							directiveValue;
@@ -341,59 +337,51 @@ int										ParsingFile::parsingFile()
 		if (!isspace(_configFile[i]))
 		{
 			std::string pieceOfString = getPieceOfstring(i);
-			try {
-
-					if (pieceOfString.compare("server") == 0)
-					{
-						addListInNestedList(dictionary);
-						hasServer();
-					}
-					else if (pieceOfString.compare("location") == 0)
-					{
-						hasLocation(directiveName, pieceOfString);
-					}
-					else if (pieceOfString.compare("{") == 0)
-					{
-						hasBracketOpen(nbParenthese);
-						if (directiveName.compare("location") == 0)
-						{
-							addDictionaryInList(dictionary);
-							insertInDictionary(dictionary, directiveName, directiveValue);
-						}
-					}
-					else if (pieceOfString.compare("}") == 0)
-					{
-						hasBracketClose(nbParenthese);
-						addDictionaryInList(dictionary);
-					}
-					else if (checkIfSecretWord(pieceOfString) == true)
-					{
-						hasName(directiveName, pieceOfString, i);
-					}
-					else if (pieceOfString.compare(";") == 0)
-					{
-						hasSemicolon();
-						if (directiveName.compare("listen") == 0 && isNumber(directiveValue) == false)
-							syntaxError("error syntaxe: listen have to be decimal numer");
-						insertInDictionary(dictionary, directiveName, directiveValue);
-					}
-					else
-					{
-						hasValue(directiveValue, pieceOfString);
-					}
-			}
-			catch(int error)
+			if (pieceOfString.compare("server") == 0)
 			{
-				return (error);
+				addListInNestedList(dictionary);
+				hasServer();
+			}
+			else if (pieceOfString.compare("location") == 0)
+			{
+				hasLocation(directiveName, pieceOfString);
+			}
+			else if (pieceOfString.compare("{") == 0)
+			{
+				hasBracketOpen(nbParenthese);
+				if (directiveName.compare("location") == 0)
+				{
+					addDictionaryInList(dictionary);
+					insertInDictionary(dictionary, directiveName, directiveValue);
+				}
+			}
+			else if (pieceOfString.compare("}") == 0)
+			{
+				hasBracketClose(nbParenthese);
+				addDictionaryInList(dictionary);
+			}
+			else if (checkIfSecretWord(pieceOfString) == true)
+			{
+				hasName(directiveName, pieceOfString, i);
+			}
+			else if (pieceOfString.compare(";") == 0)
+			{
+				hasSemicolon();
+				if (directiveName.compare("listen") == 0 && isNumber(directiveValue) == false)
+					throw("error syntaxe: listen have to be decimal numer");
+				insertInDictionary(dictionary, directiveName, directiveValue);
+			}
+			else
+			{
+				hasValue(directiveValue, pieceOfString);
 			}
 		}
 		else
 			i++;
-		}
-	
-	checkParenthe( nbParenthese);
-	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SUCCESSFULLY PARSING<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+	}
+	if (nbParenthese != 0 )
+	{
+		throw("error syntaxe: missing parenthe");
+	}
 	addListInNestedList(dictionary);
-	return (0);
-
 }
