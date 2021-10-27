@@ -14,6 +14,7 @@ ports:<br>
     https://www.youtube.com/watch?v=Qxs2S4agyxk <br>
 
 HTTP Tutorial :<br>
+    https://www.youtube.com/watch?v=eesqK59rhGA<br>
     https://www.tutorialspoint.com/http/index.htm<br>
 
 Beej's Guide to Network Programming :<br>
