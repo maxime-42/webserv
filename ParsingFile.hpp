@@ -1,8 +1,7 @@
 
 #ifndef PARSINGFILE
 #define PARSINGFILE
-#define ERROR 1
-#define SUCCESS 0
+
 
 
 enum token_type
@@ -16,7 +15,7 @@ enum token_type
 	server,
 	initialized
 };
-
+#include "header.hpp"	
 #include <bitset>
 #include <iostream>
 #include <fstream>
@@ -76,7 +75,7 @@ public:
 	void						insertInDictionary(std::map<std::string, std::string> &dictionary, std::string &directiveName, std::string &directiveValue);
 	bool						isNumber(std::string &str);
 	std::string					getElem(size_t lineServer, std::string elem);
-	size_t						numberOfSite();
+	size_t						numberOfServer();
 	int							getStartProcess();
 };
 

@@ -5,6 +5,7 @@
 */
 ParsingFile::								ParsingFile():_fileName("./configFile/default.conf"), _configFile(std::string())
 {
+	std::cout << "*******************************\tT A K I N G \t D E F A U L T\t F I L E\t***********************" << std::endl;
 	int result = getStartProcess();
 	if (result == ERROR)
 	{
@@ -18,6 +19,7 @@ ParsingFile::								ParsingFile():_fileName("./configFile/default.conf"), _conf
 */
 ParsingFile::								ParsingFile(std::string fileName):_fileName(fileName), _configFile(std::string())
 {	
+	std::cout << "****************G E T F I L E\tF R O M\tP A R A M E T E R****************" << std::endl;
 	getStartProcess();
 	
 }
@@ -25,7 +27,7 @@ ParsingFile::								ParsingFile(std::string fileName):_fileName(fileName), _con
 /*
 **	step one 	:	get file in std::string "configFile"
 **	step two 	:	create table of keyword
-**	step three	:	parsing _configFile;
+**	step three	:	parsing file , file is locates in std::string _configFile;
 */
 int	ParsingFile::						getStartProcess()
 {
@@ -48,9 +50,9 @@ int	ParsingFile::						getStartProcess()
 
 ParsingFile::~ParsingFile(){}
 
-size_t	ParsingFile::						numberOfSite()
+size_t	ParsingFile::						numberOfServer()
 {
-	return (_singleList.size());
+	return (_serverList.size());
 }
 
 /********************************************************************************ACCESS TO ELEM it _serverList it is a neested list************************************************************************************/
@@ -63,7 +65,6 @@ std::string	ParsingFile::				getElem(size_t lineServer, std::string elem)
 	std::list < std::map < std::string, std::string > >::iterator itrSingle_list_pointer;
 	for (; first != _serverList.end(); first++)
 	{
-		lineServer--;
 		if (lineServer == 0)
 		{
 			std::list<std::map < std::string, std::string > > & single_list_pointer  = *first;
@@ -75,6 +76,7 @@ std::string	ParsingFile::				getElem(size_t lineServer, std::string elem)
 					return (it->second);
 			}
 		}
+		lineServer--;
 	}
 	return (std::string());	
 }
@@ -332,7 +334,7 @@ void										ParsingFile::parsingProcess()
 	std::string 							directiveValue;
 	std::map<std::string, std::string>		dictionary; 
 	int										nbParenthese = 0;//it increment when it meet open brack an decrement to bracket closed 
-	std::cout << "*********************************** ST A R T I N G	P A R S I N G...******************************************" << std::endl;
+	std::cout << "******************************* ST A R T I N G	 P A R S I N G ******************************************" << std::endl;
 	for (size_t i = 0; i < _configFile.size(); )
 	{
 		if (!isspace(_configFile[i]))
