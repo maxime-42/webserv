@@ -76,6 +76,8 @@ class Server
 		void					process_POST(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse);
 		void					process_DELETE(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse);
 		int						getPort();
+		void					Squeze_vect_sockect_fd(int to_find);
+
 };
 
 #endif

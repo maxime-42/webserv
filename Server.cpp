@@ -45,12 +45,26 @@ void	Server::			setup()
 	}
 }
 
+void	Server::						Squeze_vect_sockect_fd(int to_find)
+{
+	for (std::vector<int>::iterator it = _vect_socket_fd.begin(); it !=  _vect_socket_fd.end() ; it++)
+	{
+		if (*it == to_find)
+		{
+			std::cout << ">>>>>>>>>>>>>>>>>> we found it == " << *it << " <<<<<<<<<<<<<<<<<<" << std::endl;
+			// _vect_socket_fd.erase(it);
+			return ;
+		}
+	}
+}
 
 bool	Server:: 						receive_data(struct pollfd	*ptr_tab_poll)
 {	
-	int ret = recv(ptr_tab_poll->fd, _buffer, sizeof(_buffer), 0);
+	std::cout << "======================receive_data=======================" << std::endl;
+	int ret = recv(ptr_tab_poll->fd, _buffer, BUFFER_SIZE, 0);
 	if (ret < 0)
 	{
+		std::cout << "ret == " << ret << std::endl;
 		if (errno != EWOULDBLOCK)
 		{
 			_close_connexion = true;
@@ -58,7 +72,6 @@ bool	Server:: 						receive_data(struct pollfd	*ptr_tab_poll)
 		}
 		return (false);
 	}
-
 	if (ret == 0)
 	{
 		std::cout << "connection closed from remote side" << std::endl;
@@ -68,6 +81,7 @@ bool	Server:: 						receive_data(struct pollfd	*ptr_tab_poll)
 	std::cout << ret << " bytes received:\n ===============\n" << _buffer << "\n===============\n"<< std::endl;
 	return (true);
 }
+
 
 
 bool	Server::						handle_existing_connections(struct pollfd	*ptr_tab_poll)
@@ -88,6 +102,7 @@ bool	Server::						handle_existing_connections(struct pollfd	*ptr_tab_poll)
 		close(ptr_tab_poll->fd);
 		ptr_tab_poll->fd = ERROR;
 		_compress_array = true;
+		Squeze_vect_sockect_fd( ptr_tab_poll->fd);
 	}
 	return (_close_connexion);
 }
