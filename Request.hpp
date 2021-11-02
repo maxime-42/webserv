@@ -8,9 +8,13 @@ class Request
 
 	private:
 
-        void                    _process_GET();
-        void                    _process_POST();
-        void                    _process_DELETE();
+        std::map<std::string, std::string>  http_table();
+
+        void                                _process_GET();
+        void                                _process_POST();
+        void                                _process_DELETE();
+
+        void                                http_code(std::string code);
 
 	public:
 
