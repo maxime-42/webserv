@@ -12,8 +12,8 @@ Request::~Request() {}
     Elle n'a pas presque pas évoluer donc je pense qu'il y a encore des pbs
     mais le body est récupérer correctement.
 */
-void      Request::parse(std::string request_str) {
-
+void      Request::parse(std::string request_str)
+{
     std::istringstream iss(request_str);
     std::string key;
     std::string val;
@@ -25,30 +25,46 @@ void      Request::parse(std::string request_str) {
     header["url"] = val;
     iss >> val;
     header["http"] = val;
-    while(iss >> key) {
-        /*
-            Ici je check quels sont les objets que l'on recoit que je vais mettre dans header["body"]
-        */
-        if (key.compare("{") == 0)
+
+    size_t begin_key;
+    size_t end_key;
+
+    val.clear();
+    request_str.erase(0, request_str.find('\n') + 1);
+    while (request_str.size() > 0)
+    {
+        std::cout << "str = [" << request_str << "]\n";
+
+        if ((request_str.size() > 2) && (request_str.at(0) == 13) && (request_str.at(1) == '\n') && (request_str.at(2) == '{')) //at(0) == 13; at(1) == '\n' at(2) == '{' because a new line split the header from the body
         {
-            printf(">>>>>>>>>>> key=[%s]\tval =[%s]\n", key.c_str(), val.c_str());
-            header["body"] = key;
-            char c;
-            while (iss.get(c))
+            request_str.erase(0, 2); //+ 1 for the '\n'.
+            begin_key = request_str.find('}');
+            if (begin_key == std::string::npos)
             {
-                header["body"] += c;
-                if ((int)header["body"].size() >= atoi(header["Content-Length"].c_str()))
-                {
-                    break ;
-                }
+                break ;
             }
+            header["body"] = request_str.substr(0, begin_key + 1);
+            std::cout << "BODY:\n[" << header["body"] << "]\n";
+            request_str.erase(0, begin_key + 1); //+ 1 for the '\n'.
         }
-        else
+        begin_key = request_str.find(':');
+        if (begin_key == std::string::npos)
         {
-            iss >> val;
-            key.erase(std::remove(key.begin(), key.end(), ':'), key.end());
-            header[key] = val;
+            break ;
         }
+        key = request_str.substr(0, begin_key);
+        std::cout << "key = [" << key << "]\nbegin = " << begin_key << "\n";
+        request_str.erase(0, begin_key + 2); //+ 1 for the ':' and 2 (1 more) for ' ' next to the ':'.
+        end_key = request_str.find('\n');
+        //std::cout << "str[" << end_key << "] = [" << request_str.at(end_key) << "]\n";
+        if (end_key == std::string::npos)
+        {
+            break ;
+        }
+        val = request_str.substr(0, end_key - 1);
+        std::cout << "val = [" << val << "]\n";
+        header[key] = val;
+        request_str.erase(0, end_key + 1); //+ 1 for the '\n'.
     }
 
     if (header["url"][0] != '/')
@@ -56,6 +72,15 @@ void      Request::parse(std::string request_str) {
     if (header["http"] != "HTTP/1.1")
         std::cout << "Error 505 HTTP Version Not Supported" << std::endl;
 
+
+    // Just a display to check header value
+    std::map<std::string, std::string>::const_iterator it;
+    int i = 0;
+    for (it = header.begin(); it != header.end(); ++it)
+    {
+        std::cout << i << ":\n[" << it->first << "]\n>" << it->second << "<\n";
+        i++;
+    }
     (void)reponse;
 
 }
@@ -223,7 +248,7 @@ void    Request::_process_POST()
     initialize_mime_types(mime_types);
     for (it = mime_types.begin(); it != mime_types.end(); ++it)
     {
-        std::cout << it->second << "\n";
+        //std::cout << it->second << "\n";
         if (it->second == header["Content-Type"])
             break ;
     }
@@ -296,5 +321,21 @@ void        Request::_process_GET()
 
 void    Request::_process_DELETE()
 {
+    char const *file_to_delete = header["url"].c_str();
 
+    std::cout << "file to delete = (" << file_to_delete << ")\n";
+    if (header["url"].compare("/") == 0)
+    {
+        reponse["code"] = "204";
+        reponse["status"] = "No Content";
+        return ;
+    }
+    if (remove(file_to_delete) != 0)
+    {
+        reponse["code"] = "204";
+        reponse["status"] = "No Content";
+        return ;
+    }
+    reponse["code"] = "200";
+    reponse["status"] = "OK";
 }
