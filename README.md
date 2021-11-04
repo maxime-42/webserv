@@ -14,6 +14,7 @@ ports:<br>
     https://www.youtube.com/watch?v=Qxs2S4agyxk <br>
 
 HTTP Tutorial :<br>
+    https://www.youtube.com/watch?v=eesqK59rhGA<br>
     https://www.tutorialspoint.com/http/index.htm<br>
 
 Beej's Guide to Network Programming :<br>
@@ -44,11 +45,16 @@ https://www.youtube.com/watch?v=dEHZb9JsmOU&list=WL&index=84&t=161s<br>
 Difference between URI and URL :<br>
 https://www.youtube.com/watch?v=vpYct2npKD8<br>
 
-APIs | REST | REST APIs Demystified :<br>
+APIs | REST | REST APIs Demystified | service:<br>
 https://youtu.be/FOZtRzY5x8E<br>
+https://www.youtube.com/watch?v=FOZtRzY5x8E<br>
 
 Curl Command:<br>
 https://www.youtube.com/watch?v=7XUibDYw4mc<br>
 https://curl.se/docs/httpscripting.html<br>
-https://www.freecodecamp.org/news/how-to-start-using-curl-and-why-a-hands-on-introduction-ea1c913caaaa/<br>
-
+https://www.freecodecamp.org/news/how-to-start-using-curl-and-why-a-hands-on-introduction-ea1c913caaaa/<br><br>
+NGINX Configuration Guide<br>
+https://www.youtube.com/channel/UCVpkAgcqXXm28glMcc3HOEA/videos<br>
+https://www.journaldev.com/26342/nginx-location-directive<br>
+https://www.plesk.com/blog/various/nginx-configuration-guide/<br>
+https://www.youtube.com/watch?v=71bOe9EDrmg<br>
