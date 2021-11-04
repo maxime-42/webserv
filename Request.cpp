@@ -4,6 +4,19 @@ Request::Request() {}
 
 Request::~Request() {}
 
+int			Request::read(char buffer[BUFFER_SIZE]) {
+
+	size_t ret = 0;
+
+	for (size_t i = 0; buffer[i]; i++) {
+		request.push_back(buffer[i]);
+		ret++;
+	}
+
+	return ret;
+
+}
+
 void		Request::parse(std::string request_str) {
 
     std::istringstream iss(request_str);

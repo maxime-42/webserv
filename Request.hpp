@@ -2,6 +2,7 @@
 #define REQUEST_HPP
 
 #include "Server.hpp"
+#include <vector>
 
 class Request
 {
@@ -21,9 +22,12 @@ class Request
 		std::map<std::string, std::string> header;
 		std::map<std::string, std::string> reponse;
 
+		std::vector<char>			request;
+
 		Request();
 		~Request();
 
+		int						read(char buffer[BUFFER_SIZE]);
         void					parse(std::string request_str);
         void                    process();
         void                    send_reponse(int socket);
