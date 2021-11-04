@@ -24,7 +24,7 @@ class Request
 		Request();
 		~Request();
 
-        void                    parse(std::string request_str);
+        void					parse(std::string request_str);
         void                    process();
         void                    send_reponse(int socket);
 

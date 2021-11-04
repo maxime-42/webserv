@@ -4,7 +4,7 @@ Request::Request() {}
 
 Request::~Request() {}
 
-void      Request::parse(std::string request_str) {
+void		Request::parse(std::string request_str) {
 
     std::istringstream iss(request_str);
     std::string tmp;
@@ -16,34 +16,31 @@ void      Request::parse(std::string request_str) {
     getline(iss, header["method"], ' ');
     getline(iss, header["url"], ' ');
     getline(iss, header["http"], '\r');
-    if (header["method"] == "" || header["url"] == "" || header["http"] == "")
-        http_code("400");
-    if (header["url"][0] != '/')
-        http_code("400");
+    if (header["method"] == "" || header["url"] == "" || header["http"] == ""
+			|| header["http"].find("\n") != header["http"].npos || header["url"][0] != '/')
+        return http_code("400");
     if (header["http"] != "HTTP/1.1")
-        http_code("505");
+        return http_code("505");
 
     getline(iss, tmp, '\n');
     if (tmp != "")
-        http_code("401");
+        return http_code("400");
 
-    while(getline(iss, tmp, '\n')) {
+    while(getline(iss, tmp, '\n') && tmp != "\r") {
 
-        if (size_t pos = val.find(":") != tmp.npos) {
-            key = tmp.substr(0, pos);
-            val = tmp.substr(pos + 1, tmp.npos - pos);
-        }
-        else
-            http_code("402");
-
-        header[key] = val;
-        //key.erase(std::remove(key.begin(), key.end(), ':'), key.end());
+        size_t pos = tmp.find(":");
+        if (pos == tmp.npos)
+			return http_code("400");
+        key = tmp.substr(0, pos);
+        val = tmp.substr(pos + 1, tmp.npos - pos);
+		//val.erase(std::remove_if(val.begin(), val.end(), ::isspace), val.end());
+		if (key.find(" ") != key.npos)
+			return http_code("400");
     }
-
+	// --------  affichage  --------------------------------------------------------------------------
     for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it) {
         std::cout << it->first << ":" << it->second << std::endl;
     }
-    (void)reponse;
 }
 
 void        Request::process() {
@@ -118,7 +115,7 @@ void        Request::_process_GET()
         reponse["Content-Length"] = content_len.str();
 
         reponse["Content-Type"] = "text/plain; charset=utf-8";
-        if(header["url"].substr(header["url"].find_last_of(".") + 1) == "html")
+        if (header["url"].substr(header["url"].find_last_of(".") + 1) == "html")
             reponse["Content-Type"] = "text/html; charset=utf-8";
 
     }
@@ -134,12 +131,13 @@ void    Request::_process_DELETE()
 
 }
 
-void    Request::http_code(std::string http_code) {
+void	Request::http_code(std::string http_code) {
 
     std::map<std::string, std::string> http = http_table();
 
     reponse["code"] = http_code; 
     reponse["status"] = http[http_code];
+
 }
 
 std::map<std::string, std::string> Request::http_table()
