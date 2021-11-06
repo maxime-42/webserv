@@ -1,11 +1,21 @@
 #include "Request.hpp"
 
+/*
+ *	Global map containing all requests of all clients stored as vector<unsigned char>
+ *  Map key is the fd of poll_tab for that client 	
+ */
 std::map<int, std::vector<unsigned char> >	g_request;
+
+
+
 
 Request::Request() {}
 
 Request::~Request() {}
 
+/*	
+ *	Copy the portion of the request in the buffer to a vector<unsigned char>
+ */
 int			Request::read(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll) {
 
 	size_t ret = 0;
@@ -17,13 +27,16 @@ int			Request::read(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll) {
 		ret++;
 	}
 
-
 	return ret;
-
 }
 
+/*
+ *	Once the whole request has been read, it is parsed and transformed into a header map
+ *	If the request is not good, we throw the appropiate http error code with the appropiate message
+ */
 void		Request::parse(struct pollfd *ptr_tab_poll) {
 
+	// Conversion of vector<unsigned char> to string
 	std::string request_str(g_request[ptr_tab_poll->fd].begin(), g_request[ptr_tab_poll->fd].end());
     std::istringstream iss(request_str);
     std::string tmp;
@@ -67,9 +80,12 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
     }
 }
 
+/*
+ * 	If the requested method is supported, we call the appropiate function
+ */
 void        Request::process() {
 
-
+	// Reponse["code"] will only exist if the parsing threw an error. Execution stops then
     if (reponse.find("code") != reponse.end())
         return ;
 
@@ -84,6 +100,9 @@ void        Request::process() {
 
 }
 
+/*
+ *	Send the reponse with the proper HTTP headers and format
+ */
 void        Request::send_reponse(int socket) {
 
     reponse["http_version"] = "HTTP/1.1";
@@ -155,15 +174,9 @@ void    Request::_process_DELETE()
 
 }
 
-void	Request::http_code(std::string http_code) {
-
-    std::map<std::string, std::string> http = http_table();
-
-    reponse["code"] = http_code; 
-    reponse["status"] = http[http_code];
-
-}
-
+/*
+ * 	Checks if we had already reached the end of the request ( \r\n\r\n )
+ */
 bool	Request::end_reached(struct pollfd *ptr_tab_poll) {
 
 	size_t len = g_request[ptr_tab_poll->fd].size();
@@ -177,6 +190,19 @@ bool	Request::end_reached(struct pollfd *ptr_tab_poll) {
 			return true;
 	}
 	return false;
+
+}
+
+/*
+ *	Takes an HTTP code in string format and assigns it to the 
+ *	reponse, also retrieving the proper HTTP status
+ */
+void	Request::http_code(std::string http_code) {
+
+    std::map<std::string, std::string> http = http_table();
+
+    reponse["code"] = http_code; 
+    reponse["status"] = http[http_code];
 
 }
 
