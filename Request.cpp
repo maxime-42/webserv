@@ -1,24 +1,30 @@
 #include "Request.hpp"
 
+std::map<int, std::vector<unsigned char> >	g_request;
+
 Request::Request() {}
 
 Request::~Request() {}
 
-int			Request::read(char buffer[BUFFER_SIZE]) {
+int			Request::read(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll) {
 
 	size_t ret = 0;
 
+	g_request[ptr_tab_poll->fd];
+
 	for (size_t i = 0; buffer[i]; i++) {
-		request.push_back(buffer[i]);
+		g_request[ptr_tab_poll->fd].push_back(buffer[i]);
 		ret++;
 	}
+
 
 	return ret;
 
 }
 
-void		Request::parse(std::string request_str) {
+void		Request::parse(struct pollfd *ptr_tab_poll) {
 
+	std::string request_str(g_request[ptr_tab_poll->fd].begin(), g_request[ptr_tab_poll->fd].end());
     std::istringstream iss(request_str);
     std::string tmp;
     std::string key;
@@ -50,6 +56,11 @@ void		Request::parse(std::string request_str) {
 		if (key.find(" ") != key.npos)
 			return http_code("400");
     }
+
+
+	g_request[ptr_tab_poll->fd].clear(); // empty vector to allow incoming request from the same client
+	
+
 	// --------  affichage  --------------------------------------------------------------------------
     for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it) {
         std::cout << it->first << ":" << it->second << std::endl;
@@ -150,6 +161,22 @@ void	Request::http_code(std::string http_code) {
 
     reponse["code"] = http_code; 
     reponse["status"] = http[http_code];
+
+}
+
+bool	Request::end_reached(struct pollfd *ptr_tab_poll) {
+
+	size_t len = g_request[ptr_tab_poll->fd].size();
+
+	for (size_t i = 0; i < len; i++) {
+
+		if (g_request[ptr_tab_poll->fd][i] == '\r'
+				&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
+				&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
+				&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n'))
+			return true;
+	}
+	return false;
 
 }
 

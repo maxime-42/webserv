@@ -1,8 +1,10 @@
 #ifndef REQUEST_HPP
-#define REQUEST_HPP
+# define REQUEST_HPP
 
 #include "Server.hpp"
 #include <vector>
+
+//std::map<int, std::vector<unsigned char> >	g_request;
 
 class Request
 {
@@ -27,10 +29,11 @@ class Request
 		Request();
 		~Request();
 
-		int						read(char buffer[BUFFER_SIZE]);
-        void					parse(std::string request_str);
+		int						read(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll);
+        void					parse(struct pollfd *ptr_tab_poll);
         void                    process();
         void                    send_reponse(int socket);
+		bool					end_reached(struct pollfd *ptr_tab_poll);
 
 
 };

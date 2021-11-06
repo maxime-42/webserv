@@ -77,7 +77,7 @@ void	Server::			set_tab_poll(int fd)
 bool	Server:: receive_data(struct pollfd	*ptr_tab_poll)
 {	
 	int ret;
-	ret = recv(ptr_tab_poll->fd, _buffer, sizeof(_buffer) - 1, 0);
+	ret = recv(ptr_tab_poll->fd, _buffer, BUFFER_SIZE, 0);
 	if (ret < 0)
 	{
 		if (errno != EWOULDBLOCK)
@@ -106,13 +106,14 @@ void	Server::  handle_existing_connections(struct pollfd	*ptr_tab_poll)
 
 	if (receive_data(ptr_tab_poll))
 	{
-		if (request.read(_buffer) < BUFFER_SIZE - 1) {
+		if (request.read(_buffer, ptr_tab_poll) < BUFFER_SIZE
+				|| request.end_reached(ptr_tab_poll)) {
 
-			request.parse(std::string(_buffer));
+			request.parse(ptr_tab_poll);
 			request.process();
 			request.send_reponse(ptr_tab_poll->fd);
 			close(ptr_tab_poll->fd);
-//		}
+		}
 	}
 
 	if (_close_connexion)

@@ -1,5 +1,6 @@
 #ifndef	SERVER_HPP
-#define	SERVER_HPP
+# define SERVER_HPP
+
 #include <iostream>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -27,7 +28,7 @@
 #define ERROR		-1
 #define PORT	    8080
 #define SIZE_POLLFD	300
-#define BUFFER_SIZE	30000
+#define BUFFER_SIZE	8000
 #define TIMEOUT		(3 * 60 * 1000)
 #define NB_PENDING	SIZE_POLLFD
 
@@ -36,7 +37,7 @@ class Server
     private:
         int						_server_fd;
         int						_listen_fd;
-        char					_buffer[BUFFER_SIZE];
+        char					_buffer[BUFFER_SIZE + 1];
         struct	sockaddr_in		_address;
         int						_port;
         int						_timeout;
