@@ -89,12 +89,16 @@ bool	Server::						handle_existing_connections(struct pollfd	*ptr_tab_poll)
 	Request								request;
 
 	_close_connexion = false;
-	while (receive_data(ptr_tab_poll))
+	if (receive_data(ptr_tab_poll))
 	{
-		request.parse(std::string(_buffer));
-		request.process();
-		request.send_reponse(ptr_tab_poll->fd);
-		close(ptr_tab_poll->fd);
+		if (request.read(_buffer, ptr_tab_poll) < BUFFER_SIZE
+				|| request.end_reached(ptr_tab_poll)) {
+
+			request.parse(ptr_tab_poll);
+			request.process();
+			request.send_reponse(ptr_tab_poll->fd);
+			close(ptr_tab_poll->fd);
+		}
 	}
 	if (_close_connexion)
 	{
@@ -106,7 +110,6 @@ bool	Server::						handle_existing_connections(struct pollfd	*ptr_tab_poll)
 	}
 	return (_close_connexion);
 }
-
 
 void	Server::						accept_all_incoming_connections()
 {
