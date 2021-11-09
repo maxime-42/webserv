@@ -11,16 +11,18 @@ _WHITE		=\e[97m
 NAME        = server
 
 CC            = clang++
-CFLAGS        = -Werror -Wextra -Wall --std=c++98 -g -fsanitize=address
+CFLAGS        = -Werror -Wextra -Wall --std=c++98 -g #-fsanitize=address
 RM            = rm -rf
 
 DIR_SRCS    = ./
 DIR_OBJS    = ./objs/
 DIR_INC        = ./
 
-F_SRCS        =    main.cpp   \
-                Server.cpp    \
-				Request.cpp
+F_SRCS        =		main.cpp 			\
+                	Server.cpp			\
+					Request.cpp			\
+					ParsingFile.cpp		\
+					Service.cpp			\
 
 SRCS        = $(addprefix $(DIR_SRCS), $(F_SRCS))
 
