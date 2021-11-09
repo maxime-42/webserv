@@ -6,17 +6,34 @@
 
 /*
 ** If the are some problem while parsing file, nothing going to happen here, the program will shut down
-** because the class Parsing will run first 
+** because the class Parsing going to run first 
 */
 
 
-Service::Service(/* args */):_hasError(false)
+/*
+**	this do nothing else than display available serveur
+*/
+void	Service::								displayAvailableServer(/* args */)
+{
+	std::cout << "\nserveur available:" << std::endl;
+	for (std::list<Server>::iterator it = _listServer.begin(); it != _listServer.end(); it++)
+	{
+		std::cout << "server [" << it->get_server_fd() << "]" << std::endl;
+	}
+	std::cout << "\n" << std::endl;
+}
+
+
+Service::Service():_hasError(false)
 {
 	_compress_pollFds = false;
 	std::cout << "Default constructor Service" << std::endl;
 	setUpService();
+	displayAvailableServer();
 	(void)_parsing;
 }
+
+
 
 Service:: 										Service(std::string FileName):_parsing(FileName){}
 
@@ -31,7 +48,7 @@ void	Service::								checkError(int error_code,  const char *  msg)
 }
 
 /*
-** to every closed connection, the array of poll must be squeeze
+** to every closed connection, the array of poll must be squeeze too
 */
 void	Service::								squeeze_tab_poll()
 {
@@ -41,7 +58,7 @@ void	Service::								squeeze_tab_poll()
 		_compress_pollFds = false;
 		for (size_t i = 0; i < _nfds; i++)
 		{
-			if (_pollFds[i].fd == ERROR)
+			if (_pollFds[i].fd == SQUEEZE)
 			{
 				for(size_t j = i; j < _nfds - 1; j++)
 				{
@@ -71,6 +88,7 @@ void	Service::								setUpService()
 {
 	int 										port;
 	std::string 								elem;
+	std::cout << "Port available:" << std::endl;
 	for (_nfds = 0; _nfds < _parsing.numberOfServer(); _nfds++)
 	{
 		elem = _parsing.getElem(_nfds, "listen");

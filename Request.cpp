@@ -83,7 +83,8 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
 /*
  * 	If the requested method is supported, we call the appropiate function
  */
-void        Request::process() {
+void        Request::process()
+{
 
 	// Reponse["code"] will only exist if the parsing threw an error. Execution stops then
     if (reponse.find("code") != reponse.end())

@@ -31,6 +31,7 @@ private:
 	bool										receive_data(struct pollfd	*ptr_tab_poll);
 	void										squeeze_tab_poll();
 	void										addFdsToPollFds(std::vector<int> &vect_socket_fd, size_t from);
+	void										displayAvailableServer(/* args */);
 
 
 public:

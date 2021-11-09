@@ -45,6 +45,7 @@ int	ParsingFile::						getStartProcess()
 		std::cerr << msg_error << std::endl;
 		return (ERROR);
 	}
+
 	return (SUCCESS);
 }
 

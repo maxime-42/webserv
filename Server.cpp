@@ -51,8 +51,8 @@ void	Server::						Squeze_vect_sockect_fd(int to_find)
 	{
 		if (*it == to_find)
 		{
-			std::cout << ">>>>>>>>>>>>>>>>>> we found it == " << *it << " <<<<<<<<<<<<<<<<<<" << std::endl;
-			// _vect_socket_fd.erase(it);
+			std::cout << ">>>>>>>>>>>>>>>>>> erase file descriptor == " << *it << " from server : " << _server_fd << "<<<<<<<<<<<<<<<<<<" << std::endl;
+			_vect_socket_fd.erase(it);
 			return ;
 		}
 	}
@@ -60,11 +60,9 @@ void	Server::						Squeze_vect_sockect_fd(int to_find)
 
 bool	Server:: 						receive_data(struct pollfd	*ptr_tab_poll)
 {	
-	std::cout << "======================receive_data=======================" << std::endl;
 	int ret = recv(ptr_tab_poll->fd, _buffer, BUFFER_SIZE, 0);
 	if (ret < 0)
 	{
-		std::cout << "ret == " << ret << std::endl;
 		if (errno != EWOULDBLOCK)
 		{
 			_close_connexion = true;
@@ -91,22 +89,23 @@ bool	Server::						handle_existing_connections(struct pollfd	*ptr_tab_poll)
 	_close_connexion = false;
 	if (receive_data(ptr_tab_poll))
 	{
-		if (request.read(_buffer, ptr_tab_poll) < BUFFER_SIZE
-				|| request.end_reached(ptr_tab_poll)) {
+		if (request.read(_buffer, ptr_tab_poll) < BUFFER_SIZE || request.end_reached(ptr_tab_poll))
+		{
 
 			request.parse(ptr_tab_poll);
 			request.process();
 			request.send_reponse(ptr_tab_poll->fd);
 			close(ptr_tab_poll->fd);
+			_close_connexion = true;
 		}
 	}
 	if (_close_connexion)
 	{
 		std::cout << "close connection pollFd  = " << ptr_tab_poll->fd << "\n" <<std::endl;
 		close(ptr_tab_poll->fd);
-		ptr_tab_poll->fd = ERROR;
+		Squeze_vect_sockect_fd(ptr_tab_poll->fd);
+		ptr_tab_poll->fd = SQUEEZE;
 		_compress_array = true;
-		Squeze_vect_sockect_fd( ptr_tab_poll->fd);
 	}
 	return (_close_connexion);
 }
@@ -118,6 +117,7 @@ void	Server::						accept_all_incoming_connections()
 	while (new_sd != ERROR)
 	{
 		new_sd = accept(_server_fd, (sockaddr *)&_address, (socklen_t*)&addrlen);
+	
 		if (new_sd < 0)
 		{
  			if (errno != EWOULDBLOCK)
