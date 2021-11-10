@@ -46,8 +46,18 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
 
     reponse.clear();
 
+    header["args"] = "";
     getline(iss, header["method"], ' ');
+
+    /*
+        Pour header["url"] : Récupérer les arguments (?say=hi&to=mom) et les séparer du fichier
+    */
     getline(iss, header["url"], ' ');
+    if (header["url"].find('?') != std::string::npos)
+    {
+        header["args"] = header["url"].substr(header["url"].find('?') + 1, header["url"].size());
+        header["url"] = header["url"].substr(0, header["url"].find('?'));
+    }
     getline(iss, header["http"], '\r');
     if (header["method"] == "" || header["url"] == "" || header["http"] == ""
 			|| header["http"].find("\n") != header["http"].npos || header["url"][0] != '/')
@@ -311,7 +321,12 @@ void    Request::_process_POST()
         if (it->second == header["Content-Type"])
             break ;
     }
-    // TODO: Gestion si on trouve pas le type en question
+    // Si on trouve pas le type en question
+    if (it == mime_types.end())
+    {
+        reponse["code"] = "415";
+        reponse["status"] = "KO";
+    }
 
     std::cout << "CONTENT TYPE FROM MIME TYPES = [" << it->first << "]\n";
 
