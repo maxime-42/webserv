@@ -40,20 +40,25 @@ private:
 	std::vector<std::string> 											_keyWords;		//this vectore stock all keys word
 
 	std::list < std::list < std::map < std::string, std::string > > >	_serverList;		//this vectore stock all keys word
-
+	bool																_errorHappened;
 public:
 	ParsingFile();
 	ParsingFile(std::string fileName);
 	~ParsingFile();
-	void						getFile();
-	void						createKeyWord();
-	
+
+	bool						getErrorHappened();
+	std::string					getElem(size_t lineServer, std::string elem);
+	size_t						numberOfServer();
+
 	/****************this four function it is to debug********************/
 	void						displayServerTable();
 	void						displayToken(std::vector<std::string> &tokenVector);
 	void						displayDirectionary(std::map<std::string, std::string> &map);
 	void						displaySingleList(std::list<std::map < std::string, std::string > > &linkedList);
 
+private:
+	void						getFile();
+	void						createKeyWord();
 	void						handleCommentes(std::string &line);
 	void						parsingProcess();
 	void						checkServerSyntaxe(size_t &i);
@@ -74,8 +79,6 @@ public:
 	void						addDictionaryInList(std::map<std::string, std::string>	&dictionary);
 	void						insertInDictionary(std::map<std::string, std::string> &dictionary, std::string &directiveName, std::string &directiveValue);
 	bool						isNumber(std::string &str);
-	std::string					getElem(size_t lineServer, std::string elem);
-	size_t						numberOfServer();
 	int							getStartProcess();
 };
 
