@@ -102,6 +102,7 @@ void	Service::								setUpService()
 		_listServer.push_back(server);
 	}
 }
+
 /*
 ** add new file descriptor to poll array, 
 */
@@ -110,7 +111,7 @@ void	Service::								addFdsToPollFds(std::vector<int> &vect_socket_fd, size_t t
 	for (size_t i = tmpSize; i < vect_socket_fd.size(); i++)
 	{
 		_pollFds[_nfds].fd = vect_socket_fd[i];
-		_pollFds[_nfds].events = POLLIN;
+		_pollFds[_nfds].events = POLLIN;//Tell me when ready to read
 		_nfds++;
 	}
 }
@@ -150,13 +151,26 @@ void	Service::								handlerServer(size_t &index)
 	}
 }
 
+static bool										g_loopback = true;
+
+/*
+**when any signal arrived, it  stop loopback by set "_loopback" to false 
+*/
+void											handle_signal(int sig)
+{
+	g_loopback = false;
+	std::cout << "Caught signal number = " << sig << std::endl;
+}
+
 void	Service::								runService()
 {
 	int											ret;
 	try
 	{
-		while (true)
+		while (g_loopback)
 		{
+			for (int i = 1; i <= 64; i++) //handler any signal
+				signal(i, handle_signal);
 			ret = poll(_pollFds, _nfds, TIMEOUT);
 			checkError(ret, "poll() failed");
 			if (ret == 0)

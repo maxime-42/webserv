@@ -8,6 +8,7 @@
 #include <poll.h>
 #include <list>
 #include <algorithm>    // std::find
+#include <signal.h>
 
 class Service
 {
