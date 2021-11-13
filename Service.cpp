@@ -5,10 +5,9 @@
 */
 
 /*
-** If the are some problem while parsing file, nothing going to happen here, the program will shut down
+** If the are some problem while parsing file, the program will shut down
 ** because the class Parsing going to run first 
 */
-
 
 /*
 **	this do nothing else than display available serveur
@@ -23,21 +22,42 @@ void	Service::								displayAvailableServer(/* args */)
 	std::cout << "\n" << std::endl;
 }
 
-
-Service::Service():_hasError(false)
+/************************************ constructore********************************/
+/*
+**	check if any error happened while parsing file 
+**	if there had not error setup,  displayAvailableServer, and run service
+**	i display available port during the setup 
+*/
+Service::Service()
 {
+	if (_parsing.getErrorHappened() == true)//glance if the parsing has detected an error
+	{
+		std::cout << "EXIT PROGRAME" << std::endl;
+		return ;
+	}
 	_compress_pollFds = false;
-	std::cout << "Default constructor Service" << std::endl;
 	setUpService();
 	displayAvailableServer();
+	runService();
 	(void)_parsing;
 }
 
-
-
-Service:: 										Service(std::string FileName):_parsing(FileName){}
+Service:: 										Service(std::string FileName):_parsing(FileName)
+{
+	if (_parsing.getErrorHappened() == true)//glance if the parsing has detected an error
+	{
+		std::cout << "EXIT PROGRAME" << std::endl;
+		return ;
+	}
+	_compress_pollFds = false;
+	setUpService();
+	displayAvailableServer();
+	runService();
+}
 
 Service::~Service(){}
+
+/***************************************************************************************/
 
 void	Service::								checkError(int error_code,  const char *  msg)
 {
@@ -46,6 +66,7 @@ void	Service::								checkError(int error_code,  const char *  msg)
 		throw(msg);
 	}
 }
+
 
 /*
 ** to every closed connection, the array of poll must be squeeze too
@@ -72,11 +93,24 @@ void	Service::								squeeze_tab_poll()
 }
 
 
-/*
-**	return true if an error happened somewhere
-*/
-bool	Service::								getHasError	(){return (_hasError);}
 
+/*
+**	this function work related with "setUpService", it let to get port of server
+** "getElem" return data under string format so i convert this string to integer then return that integer
+** if "elem" is empty string it going to be assigned to 8080 by default
+*/
+int		Service::								getPort(int index)
+{
+	int 										port;
+	std::string 								elem;
+	elem = _parsing.getElem(index, "listen");
+	if (elem.empty())
+		elem = "8080";
+	std:: stringstream ss(elem);
+	ss >> port;
+	std::cout << "port = [" << port << "]" << std::endl;
+	return (port);
+}
 
 /*
 ** size of _listServer depend size of _parsing.numberOfServer()
@@ -87,14 +121,11 @@ bool	Service::								getHasError	(){return (_hasError);}
 void	Service::								setUpService()
 {
 	int 										port;
-	std::string 								elem;
+
 	std::cout << "Port available:" << std::endl;
 	for (_nfds = 0; _nfds < _parsing.numberOfServer(); _nfds++)
 	{
-		elem = _parsing.getElem(_nfds, "listen");
-		std:: stringstream ss(elem);
-		ss >> port;
-		std::cout << "port = [" << port << "]" << std::endl;
+		port = getPort(_nfds);
 		Server server(port);
 		server.setup();
 		_pollFds[_nfds].fd = server.get_server_fd();
@@ -150,6 +181,19 @@ void	Service::								handlerServer(size_t &index)
 		}
 	}
 }
+/*
+**g_loopback let the program loop when it assigned to true otherwise program going stop
+*/
+static bool										g_loopback = true;
+
+/*
+**when any signal arrived, it  stop loopback by set "g_loopback" to false 
+*/
+void											handle_signal(int sig)
+{
+	g_loopback = false;
+	std::cout << "Caught signal number = " << sig << std::endl;
+}
 
 static bool										g_loopback = true;
 
@@ -187,7 +231,6 @@ void	Service::								runService()
 	}
 	catch (const char * msg_error)
 	{
-		_hasError = true;
 		std::cerr << msg_error << '\n';
 	}
 }

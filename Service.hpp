@@ -18,7 +18,6 @@ private:
 	bool										_compress_pollFds;
 	struct pollfd								_pollFds[SIZE_POLLFD];
 	size_t										_nfds; //number file descriptor sever
-	bool										_hasError;
 	std::list<Server> 							_listServer;
 	ParsingFile									_parsing;
 
@@ -33,6 +32,7 @@ private:
 	void										squeeze_tab_poll();
 	void										addFdsToPollFds(std::vector<int> &vect_socket_fd, size_t from);
 	void										displayAvailableServer(/* args */);
+	int											getPort(int index);
 
 
 public:

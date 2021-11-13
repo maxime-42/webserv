@@ -1,37 +1,40 @@
 #include "ParsingFile.hpp"
 
 /*
-**	this construct it called when there are not any argument to the object
+**	this construct it called when there is no one given parameter to the program
 */
-ParsingFile::								ParsingFile():_fileName("./configFile/default.conf"), _configFile(std::string())
+ParsingFile::								ParsingFile():_fileName("./configFile/default.conf"), _configFile(std::string()), _errorHappened(false)
 {
-	std::cout << "*******************************\tT A K I N G \t D E F A U L T\t F I L E\t***********************" << std::endl;
+	std::cout << "*******************************\tTAKING \tDEFAULT\t FILE\t***********************" << std::endl;
 	int result = getStartProcess();
 	if (result == ERROR)
 	{
-		this->~ParsingFile();
-		exit(ERROR);
+		_errorHappened = true;
 	}
 }
 
 /*
-**	this construct it called when there is argument to the object
+**	this construct it called when given parameter to the program
 */
-ParsingFile::								ParsingFile(std::string fileName):_fileName(fileName), _configFile(std::string())
-{	
-	std::cout << "****************G E T F I L E\tF R O M\tP A R A M E T E R****************" << std::endl;
-	getStartProcess();
-	
+ParsingFile::								ParsingFile(std::string fileName):_fileName(fileName), _configFile(std::string()), _errorHappened(false)
+{
+	std::cout << "****************GET FILE\tFROM\tPARAMETER****************" << std::endl;
+	int result = getStartProcess();
+	if (result == ERROR)
+	{
+		_errorHappened = true;
+	}
 }
+
+bool	ParsingFile::						getErrorHappened(){return (_errorHappened);}
 
 /*
 **	step one 	:	get file in std::string "configFile"
 **	step two 	:	create table of keyword
-**	step three	:	parsing file , file is locates in std::string _configFile;
+**	step three	:	parsing file, file is located in std::string _configFile;
 */
 int	ParsingFile::						getStartProcess()
 {
-	
 	try
 	{
 		getFile();
@@ -45,7 +48,6 @@ int	ParsingFile::						getStartProcess()
 		std::cerr << msg_error << std::endl;
 		return (ERROR);
 	}
-
 	return (SUCCESS);
 }
 
@@ -57,7 +59,14 @@ size_t	ParsingFile::						numberOfServer()
 }
 
 /********************************************************************************ACCESS TO ELEM it _serverList it is a neested list************************************************************************************/
+/*
+**	if nothing has been find it return empty string
+** 	if nothing has been find, it return empty string
+**	maybe you need to glance diagram of parsing to really caught how i look up data in this nested list
 
+**	first loop it for the main list, second loop for it for the nested list.
+**	Each node of nested list there a dictionary which store data 
+*/
 std::string	ParsingFile::				getElem(size_t lineServer, std::string elem)
 {
 	std::map < std::string, std::string > dictionary;
@@ -79,15 +88,15 @@ std::string	ParsingFile::				getElem(size_t lineServer, std::string elem)
 		}
 		lineServer--;
 	}
-	return (std::string());	
+	return (std::string());	//empty string
 }
 
 /*********************************************************************************OPEN  FILE* *********************************************************************************/
 
 /*
-*	this function remove comments line
+**	this function remove comments line
+** comment line start with "#"
 */
-
 void	ParsingFile::						handleCommentes(std::string &line)
 {
 	size_t  begin = line.find("#");
@@ -96,7 +105,10 @@ void	ParsingFile::						handleCommentes(std::string &line)
 		line.erase(begin);
 	}
 }
-
+/*
+** get file and store it in std::string _configFile
+** get file line by line and then concated each line got previously
+*/
 void	ParsingFile:: getFile()
 {
 	std::string line;
@@ -151,7 +163,8 @@ void	ParsingFile:: hasSemicolon()
 
 void	ParsingFile:: 						hasName(std::string &directiveName, std::string & pieceOfString, size_t i)
 {
-	int result = !isspace(_configFile[i]);
+	int result = 0;
+	result = !isspace(_configFile[i]);
 	if (result != 0)
 	{
 		throw("error syntaxe: hasName");
@@ -161,6 +174,9 @@ void	ParsingFile:: 						hasName(std::string &directiveName, std::string & piece
 		directiveName = pieceOfString;
 		_previousToken = name;
 	}
+	else
+		throw("error syntaxe: hasName");
+
 }
 
 void	ParsingFile:: hasValue(std::string &directiveValue, std::string & pieceOfString)
@@ -277,7 +293,9 @@ void	ParsingFile::						hasBracketClose(int &nbParenthese)
 		_previousToken = brackets_close;
 	}
 	else
+	{
 		throw("Syntaxe error :  HasBracketClose");
+	}
 }
 
 /*
@@ -341,6 +359,7 @@ void										ParsingFile::parsingProcess()
 		if (!isspace(_configFile[i]))
 		{
 			std::string pieceOfString = getPieceOfstring(i);
+			// std::cout << "pieceOfString = [" << pieceOfString << "]" << std::endl;
 			if (pieceOfString.compare("server") == 0)
 			{
 				addListInNestedList(dictionary);
@@ -371,8 +390,8 @@ void										ParsingFile::parsingProcess()
 			else if (pieceOfString.compare(";") == 0)
 			{
 				hasSemicolon();
-				if (directiveName.compare("listen") == 0 && isNumber(directiveValue) == false)
-					throw("error syntaxe: listen have to be decimal numer");
+				// if (directiveName.compare("listen") == 0 && isNumber(directiveValue) == false)
+				// 	throw("error syntaxe: listen have to be decimal numer");
 				insertInDictionary(dictionary, directiveName, directiveValue);
 			}
 			else
