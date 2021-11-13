@@ -47,8 +47,9 @@ public:
 	~ParsingFile();
 
 	bool						getErrorHappened();
-	std::string					getElem(size_t lineServer, std::string elem);
+	// std::string					getElem(size_t lineServer, std::string elem);
 	size_t						numberOfServer();
+	std::list < std::list < std::map < std::string, std::string > > >getList();
 
 	/****************this four function it is to debug********************/
 	void						displayServerTable();

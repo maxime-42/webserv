@@ -23,6 +23,7 @@ F_SRCS        =		main.cpp 			\
 					Request.cpp			\
 					ParsingFile.cpp		\
 					Service.cpp			\
+					lookup_in_nested_list.cpp\
 
 SRCS        = $(addprefix $(DIR_SRCS), $(F_SRCS))
 

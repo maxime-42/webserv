@@ -2,7 +2,6 @@
 #include "ParsingFile.hpp"
 #include "Service.hpp"
 
-
 int	 main(int argc, const char** argv)
 {
 	if (argc > 2)

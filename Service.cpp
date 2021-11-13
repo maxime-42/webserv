@@ -103,7 +103,9 @@ int		Service::								getPort(int index)
 {
 	int 										port;
 	std::string 								elem;
-	elem = _parsing.getElem(index, "listen");
+	// elem = _parsing.getElem(index, "listen");
+	elem = getElem(_parsing.getList(), (size_t)index, "listen");
+
 	if (elem.empty())
 		elem = "8080";
 	std:: stringstream ss(elem);
@@ -184,17 +186,6 @@ void	Service::								handlerServer(size_t &index)
 /*
 **g_loopback let the program loop when it assigned to true otherwise program going stop
 */
-static bool										g_loopback = true;
-
-/*
-**when any signal arrived, it  stop loopback by set "g_loopback" to false 
-*/
-void											handle_signal(int sig)
-{
-	g_loopback = false;
-	std::cout << "Caught signal number = " << sig << std::endl;
-}
-
 static bool										g_loopback = true;
 
 /*

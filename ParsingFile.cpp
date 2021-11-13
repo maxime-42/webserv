@@ -58,39 +58,6 @@ size_t	ParsingFile::						numberOfServer()
 	return (_serverList.size());
 }
 
-/********************************************************************************ACCESS TO ELEM it _serverList it is a neested list************************************************************************************/
-/*
-**	if nothing has been find it return empty string
-** 	if nothing has been find, it return empty string
-**	maybe you need to glance diagram of parsing to really caught how i look up data in this nested list
-
-**	first loop it for the main list, second loop for it for the nested list.
-**	Each node of nested list there a dictionary which store data 
-*/
-std::string	ParsingFile::				getElem(size_t lineServer, std::string elem)
-{
-	std::map < std::string, std::string > dictionary;
-	std::map < std::string, std::string >::iterator it;
-	std::list < std::list < std::map < std::string, std::string > > >::iterator first = _serverList.begin() ;
-	std::list < std::map < std::string, std::string > >::iterator itrSingle_list_pointer;
-	for (; first != _serverList.end(); first++)
-	{
-		if (lineServer == 0)
-		{
-			std::list<std::map < std::string, std::string > > & single_list_pointer  = *first;
-			for (itrSingle_list_pointer = single_list_pointer.begin();  itrSingle_list_pointer != single_list_pointer.end(); itrSingle_list_pointer++)
-			{
-				dictionary = *itrSingle_list_pointer;
-				it = dictionary.find(elem);
-				if (it != dictionary.end())
-					return (it->second);
-			}
-		}
-		lineServer--;
-	}
-	return (std::string());	//empty string
-}
-
 /*********************************************************************************OPEN  FILE* *********************************************************************************/
 
 /*
@@ -129,6 +96,7 @@ void	ParsingFile:: getFile()
 	}
 }
 
+std::list < std::list < std::map < std::string, std::string > > > ParsingFile:: getList(){return(_serverList);}
 
 /*********************************************************************************ANALYSE SYNTAXE CONFIG FILE*********************************************************************************/
 
