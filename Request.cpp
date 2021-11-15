@@ -34,7 +34,7 @@ int			Request::read(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll) {
  *	Once the whole request has been read, it is parsed and transformed into a header map
  *	If the request is not good, we throw the appropiate http error code with the appropiate message.
 
-    TODO: Récupérer correctement les arguments. (Raph s'en occupe.)
+TODO: Récupérer correctement les arguments. (Raph s'en occupe.)
  */
 void		Request::parse(struct pollfd *ptr_tab_poll) {
 
@@ -50,8 +50,8 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
     getline(iss, header["method"], ' ');
 
     /*
-        Pour header["url"] : Récupérer les arguments (?say=hi&to=mom) et les séparer du fichier
-    */
+       Pour header["url"] : Récupérer les arguments (?say=hi&to=mom) et les séparer du fichier
+     */
     getline(iss, header["url"], ' ');
     if (header["url"].find('?') != std::string::npos)
     {
@@ -71,15 +71,15 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
     val.clear();
     request_str.erase(0, request_str.find('\n') + 1);
     /*
-        Loop to put all key and value in header.
-    */
+       Loop to put all key and value in header.
+     */
     while (request_str.size() > 0)
     {
         //std::cout << "str = [" << request_str << "]\n";
 
         /*
-            When we have a body in the request, the body is separate from the informations thanks to 13 then 10 ascii char.
-        */
+           When we have a body in the request, the body is separate from the informations thanks to 13 then 10 ascii char.
+         */
         if ((request_str.size() > 2) && (request_str.at(0) == 13) && (request_str.at(1) == '\n')) //at(0) == 13; at(1) == '\n' because a new line split the header from the body
         {
             request_str.erase(0, 2); //+ 1 for the '\n'.
@@ -88,8 +88,8 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
             request_str.erase(0, request_str.size()); //+ 1 for the '\n'.
         }
         /*
-            The key and the value are separate by ':'. The function is going to find the separator then fill header with the key and value
-        */
+           The key and the value are separate by ':'. The function is going to find the separator then fill header with the key and value
+         */
         begin_key = request_str.find(':');
         if (begin_key == std::string::npos)
         {
@@ -98,8 +98,8 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
         key = request_str.substr(0, begin_key);
         //std::cout << "key = [" << key << "]\nbegin = " << begin_key << "\n";
         /*
-            The request_str is the full informations the request receive. So the function erase the traited informations when header is filled.
-        */
+           The request_str is the full informations the request receive. So the function erase the traited informations when header is filled.
+         */
         request_str.erase(0, begin_key + 2); //+ 1 for the ':' and 2 (1 more) for ' ' next to the ':'.
         end_key = request_str.find('\n');
         //std::cout << "str[" << end_key << "] = [" << request_str.at(end_key) << "]\n";
@@ -114,7 +114,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
     }
 
 	g_request[ptr_tab_poll->fd].clear(); // empty vector to allow incoming request from the same client
-	
+
 
 	// --------  affichage  --------------------------------------------------------------------------
     for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it) {
@@ -171,8 +171,15 @@ void        Request::send_reponse(int socket) {
 
 }
 
+bool is_a_directory(const std::string &s)
+{
+  	struct stat buffer;
+  	return (stat (s.c_str(), &buffer) == 0 && buffer.st_mode & S_IFDIR);
+}
+
 void        Request::_process_GET()
 {
+	std::string	filestr;
     std::string path;
 
     if (header["url"] == "/")
@@ -181,40 +188,67 @@ void        Request::_process_GET()
         header["url"].erase(0,1);
 
     path += header["url"];
-
     std::ifstream	ifs(path.c_str());
-    if (ifs.fail())
-        http_code("404");
+
+	if (is_a_directory(path) && 1 /* autoindex is on  */) {
+
+		DIR *dir;
+		struct dirent *ent;
+		if ((dir = opendir (path.c_str())) != NULL) {
+
+			std::cout << " IS DIIIR " << std::endl;
+
+			filestr = "<!DOCTYPE html><html><body>";
+
+  			while ((ent = readdir (dir)) != NULL) {
+
+				filestr.append("<a href=\"" + path + "/");
+				filestr.append(ent->d_name);
+				filestr.append("\">");
+				filestr.append(ent->d_name);
+				filestr.append("</a><br>");
+  			}
+  			closedir (dir);
+			filestr.append("</body></html>");
+
+		} else {
+			return http_code("401");	
+		}
+	}
+    else if (ifs.fail()) {
+		std::cout << "holaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" << std::endl;
+        return http_code("404");
+	}
     else 
     {
 
         std::stringstream buf;
-        std::stringstream content_len;
         buf << ifs.rdbuf();
-        std::string	filestr = buf.str();
+        filestr = buf.str();
 
         ifs.close();
 
-        http_code("200");
-        reponse["body"] = filestr;
-        content_len << filestr.length();
-        reponse["Content-Length"] = content_len.str();
+	}
 
-        reponse["Content-Type"] = "text/plain; charset=utf-8";
-        if (header["url"].substr(header["url"].find_last_of(".") + 1) == "html")
-            reponse["Content-Type"] = "text/html; charset=utf-8";
+    http_code("200");
+    reponse["body"] = filestr;
+	std::stringstream content_len;
+	content_len	<< filestr.length();
+    reponse["Content-Length"] = content_len.str();
 
-    }
+    reponse["Content-Type"] = "text/plain; charset=utf-8";
+    if (is_a_directory(path) || header["url"].substr(header["url"].find_last_of(".") + 1) == "html")
+        reponse["Content-Type"] = "text/html; charset=utf-8";
 }
 
 /*
-    Cette fonction va permettre de déterminer quel type de fichier la requete POST
-    va nous demander de créer.
-    Elle va initialiser une map et relier chaque valeur de Content-type (valeur à
-    droite) avec le type de fichier à créer (valeur à gauche).
-    Le nom MIME vient des différents Content-type qui existe. La liste est non
-    exclusive
-*/
+   Cette fonction va permettre de déterminer quel type de fichier la requete POST
+   va nous demander de créer.
+   Elle va initialiser une map et relier chaque valeur de Content-type (valeur à
+   droite) avec le type de fichier à créer (valeur à gauche).
+   Le nom MIME vient des différents Content-type qui existe. La liste est non
+   exclusive
+ */
 void	initialize_mime_types(std::map<std::string, std::string> &mime_types)
 {
 	mime_types[".aac"]      = "audio/aac";
@@ -280,9 +314,9 @@ void	initialize_mime_types(std::map<std::string, std::string> &mime_types)
 }
 
 /*
-    Méthode pour créer un fichier et le remplir du body présent dans header[].
-    On lui envoie le type de fichier en argument (ex : .json)
-*/
+   Méthode pour créer un fichier et le remplir du body présent dans header[].
+   On lui envoie le type de fichier en argument (ex : .json)
+ */
 int    Request::create_file(std::string const file_type)
 {
     // Le fichier s'appelle actuellement "test"...
@@ -302,13 +336,13 @@ int    Request::create_file(std::string const file_type)
 }
 
 /*
-    Parsing (+OK) => body = le content que je dois mettre dans un fichier
-    Je suis en train de créer le fichier pour mettre le body dedans.
-    Etape 1 : récupérer l'index du ficher (ex : application/json => need .json) cf la fct init_mimes_type.
-    Etape 2 : Crée le fichier (cf la méthode create_file).
-    Etape 3 : Mettre le body dans le ficher.
-    Etape 4 : Renvoyez au client le fait que la requete a été validé !
-*/
+   Parsing (+OK) => body = le content que je dois mettre dans un fichier
+   Je suis en train de créer le fichier pour mettre le body dedans.
+   Etape 1 : récupérer l'index du ficher (ex : application/json => need .json) cf la fct init_mimes_type.
+   Etape 2 : Crée le fichier (cf la méthode create_file).
+   Etape 3 : Mettre le body dans le ficher.
+   Etape 4 : Renvoyez au client le fait que la requete a été validé !
+ */
 void    Request::_process_POST()
 {
     std::map<std::string, std::string> mime_types;
@@ -343,18 +377,18 @@ void    Request::_process_POST()
         reponse["status"] = "OK";
     }
     /*
-    Il faut voir les valeurs qu'on a envie de renvoyer. En voici certaines d'entre elle qui
-    vont surtout nous servir pour intégrer les CGI.
-    reponse["arg"] = "";
-    reponse["data"] = "";
-    reponse["files"] = "";
-    reponse["form"] = "";
-    */
+       Il faut voir les valeurs qu'on a envie de renvoyer. En voici certaines d'entre elle qui
+       vont surtout nous servir pour intégrer les CGI.
+       reponse["arg"] = "";
+       reponse["data"] = "";
+       reponse["files"] = "";
+       reponse["form"] = "";
+     */
 }
 
 /*
-    Delete request
-*/
+   Delete request
+ */
 void    Request::_process_DELETE()
 {
     char const *file_to_delete = header["url"].c_str();

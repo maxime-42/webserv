@@ -9,6 +9,8 @@
 */
 #include <iostream>
 #include <fstream>
+#include <dirent.h>
+#include <sys/stat.h>
 //std::map<int, std::vector<unsigned char> >	g_request;
 
 # define SUCCESS 0
