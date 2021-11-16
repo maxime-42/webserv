@@ -94,7 +94,8 @@ bool	Server::						handle_existing_connections(struct pollfd	*ptr_tab_poll)
 
 			request.parse(ptr_tab_poll);
 			request.process();
-			request.send_reponse(ptr_tab_poll->fd);
+			if (!(request.send_reponse(ptr_tab_poll->fd)))
+				std::cout << "send() failed !" << std::endl;
 			close(ptr_tab_poll->fd);
 			_close_connexion = true;
 		}

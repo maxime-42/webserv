@@ -40,9 +40,10 @@ class Request
 		~Request();
 
 		int						read(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll);
+		int						sendall(int s, const char *buf, int len);
         void					parse(struct pollfd *ptr_tab_poll);
         void                    process();
-        void                    send_reponse(int socket);
+        int						send_reponse(int socket);
 		bool					end_reached(struct pollfd *ptr_tab_poll);
         int                     create_file(std::string const file_type);
 
