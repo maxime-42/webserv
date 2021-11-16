@@ -428,8 +428,15 @@ bool	Request::end_reached(struct pollfd *ptr_tab_poll) {
  */
 void	Request::http_code(std::string http_code) {
 
+	int					int_code;
+	std::istringstream(http_code) >> int_code;
+
     std::map<std::string, std::string> http = http_table();
 
+	if (int_code > 400 && int_code < 405) {
+		header["url"] = "/error_pages/error_page_" + http_code + ".html";
+		_process_GET();
+	}
     reponse["code"] = http_code; 
     reponse["status"] = http[http_code];
 
