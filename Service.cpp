@@ -205,8 +205,8 @@ void	Service::								runService()
 	{
 		while (g_loopback)
 		{
-			for (int i = 1; i <= 64; i++) //handler any signal
-				signal(i, handle_signal);
+			// for (int i = 1; i <= 64; i++) //handler any signal
+				signal(SIGINT, handle_signal);
 			ret = poll(_pollFds, _nfds, TIMEOUT);
 			checkError(ret, "poll() failed");
 			if (ret == 0)
