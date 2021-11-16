@@ -1,5 +1,8 @@
 #include "Service.hpp"
 #include<sstream> 
+typedef std::list < std::list < std::map < std::string, std::string > > > t_nested_list;
+typedef std::list<std::map < std::string, std::string > > t_single_list;
+void	displayDirectionary(std::map<std::string, std::string> &map);
 
 /*
 ** All function in this file consist to retrieve info inside list of server
@@ -22,61 +25,73 @@ static std::string get_value_in_string(int value)
 **	this function take the list which has the server which has the port given in parameter 
 **	afterwards i look up over the list which has the specific port to get the element wanted
 */
-static std::string	look_over_list(std::list<std::map < std::string, std::string > > & single_list, std::string elemToFind)
+static bool	look_over_singleList(t_single_list & secondList, std::string elemToFind, std::map<std::string, std::string> &dictionary_find)
 {
 	std::map < std::string, std::string > dictionary;
 	std::map < std::string, std::string >::iterator itr_dictionary;
 	std::list < std::map < std::string, std::string > >::iterator itr_second_dimension;
-	for (itr_second_dimension = single_list.begin();  itr_second_dimension != single_list.end(); itr_second_dimension++)
+	for (itr_second_dimension = secondList.begin();  itr_second_dimension != secondList.end(); itr_second_dimension++)
 	{
 			dictionary = *itr_second_dimension;
 			itr_dictionary = dictionary.find(elemToFind);
 			if (itr_dictionary != dictionary.end())
 			{
-				return (itr_dictionary->second);
+				dictionary_find = dictionary;
+				return (true);
 			}
 	}
-	return (std::string());
+	return (false);
 }
 /*
-** get info in specific server, the server is identify by port
-** I look up the server wich has this specific port to get of the server
+**To know:
+** t_nested_list	= firstList = itr_firstList
+** t_single_list	= secondList = itr_secondList
 **
-***	first loop it for the main list, second loop for it for the nested list.
-**	Each node of nested list there a dictionary which store data 
+** this function let to get accurate info on server
+** the server is identify through a port
+** I look up the server which has this specific port to get info on it
 **
-** In the instruction of second loop , i firstly i try to find the port
-** In the second loop the instructions is to find the port, once  port find,  function "look_over_list" it called
-
+***	first loop it for the nested list, second loop for it for the single list.
+**	Each node of single list there a dictionary which store data 
+**
+** In the second loop the instructions is to :
+**	firstly find the port, once  port find,  function "look_over_list" it called
 */
-std::string  getInfo(std::list < std::list < std::map < std::string, std::string > > >nestedList, int port, std::string elemToFind)
+bool  getInfo(t_nested_list firstList, int port, std::string elemToFind, std::string &reponse)
 {
-	std::string to_return("");
-	std::string str_port = get_value_in_string(port);
+	bool has_find = false;
+	std::string str_port = get_value_in_string(port);//get value of port under string format
 	std::map < std::string, std::string > dictionary;
 	std::map < std::string, std::string >::iterator itr_dictionary;
-	std::list < std::list < std::map < std::string, std::string > > >::iterator itr_first_dimension = nestedList.begin(); 
-	std::list < std::map < std::string, std::string > >::iterator itr_second_dimension;
-	for (;  itr_first_dimension != nestedList.end(); itr_first_dimension++)
+	t_nested_list::iterator itr_firstList = firstList.begin(); 
+	t_single_list::iterator itr_secondList;
+	for (;  itr_firstList != firstList.end(); itr_firstList++)
 	{
-		std::list<std::map < std::string, std::string > > & single_list  = *itr_first_dimension;
-		for (itr_second_dimension = single_list.begin();  itr_second_dimension != single_list.end(); itr_second_dimension++)
+		t_single_list & secondList  = *itr_firstList;
+		for (itr_secondList = secondList.begin();  itr_secondList != secondList.end(); itr_secondList++)
 		{
-			dictionary = *itr_second_dimension;
-			itr_dictionary = dictionary.find("listen");
-			if (str_port.compare(itr_dictionary->second) == 0)
+			dictionary = *itr_secondList; //to get dictionary of each node
+			itr_dictionary = dictionary.find("listen");// identify port
+			if (itr_dictionary != dictionary.end() && str_port.compare(itr_dictionary->second) == 0)// if the port exist
 			{
-				to_return = look_over_list(single_list, elemToFind);
-				if (to_return.length())
-					return(to_return);
+				has_find = look_over_singleList(secondList, elemToFind, dictionary);// loopback in the  single list to retrieve the map which contain  the item to search
+				if (has_find == true)
+				{
+					itr_dictionary = dictionary.find(elemToFind);
+					reponse = itr_dictionary->second;
+					return(has_find); // the element has be found
+				}
 			}
 		}
 	}
-	return (std::string());	//empty string
+	return (has_find);	//return false , the element has not be found
 }
 
 /********************************************************************************ACCESS TO ELEM it _serverList it is a neested list************************************************************************************/
 /*
+**To know:
+** t_nested_list	= firstList = itr_firstList
+** t_single_list	= secondList = itr_secondList
 **	if nothing has been find it return empty string
 ** 	if nothing has been find, it return empty string
 **	maybe you need to glance diagram of parsing to really caught how i look up data in this nested list
@@ -84,23 +99,23 @@ std::string  getInfo(std::list < std::list < std::map < std::string, std::string
 **	first loop it for the main list, second loop for it for the nested list.
 **	It has to know each node of nested list there a dictionary which store data 
 */
-std::string							getElem(std::list < std::list < std::map < std::string, std::string > > > nestedList, size_t lineServer, std::string elem)
+std::string							getElem(t_nested_list firstList, size_t lineServer, std::string elem)
 {
 	std::map < std::string, std::string > dictionary;
-	std::map < std::string, std::string >::iterator it;
-	std::list < std::list < std::map < std::string, std::string > > >::iterator first = nestedList.begin() ;
-	std::list < std::map < std::string, std::string > >::iterator itrSingle_list_pointer;
-	for (; first != nestedList.end(); first++)
+	std::map < std::string, std::string >::iterator itr_directionary;
+	t_nested_list::iterator itr_firstList = firstList.begin() ;
+	t_single_list::iterator itr_secondList;
+	for (; itr_firstList != firstList.end(); itr_firstList++)
 	{
 		if (lineServer == 0)
 		{
-			std::list<std::map < std::string, std::string > > & single_list_pointer  = *first;
-			for (itrSingle_list_pointer = single_list_pointer.begin();  itrSingle_list_pointer != single_list_pointer.end(); itrSingle_list_pointer++)
+			t_single_list & secondList  = *itr_firstList;//
+			for (itr_secondList = secondList.begin();  itr_secondList != secondList.end(); itr_secondList++)
 			{
-				dictionary = *itrSingle_list_pointer;
-				it = dictionary.find(elem);
-				if (it != dictionary.end())
-					return (it->second);
+				dictionary = *itr_secondList;
+				itr_directionary = dictionary.find(elem);
+				if (itr_directionary != dictionary.end())
+					return (itr_directionary->second);
 			}
 		}
 		lineServer--;
