@@ -187,7 +187,7 @@ void        Request::_process_GET()
     else if (header["url"][0] == '/')
         header["url"].erase(0,1);
 
-    path += header["url"];
+    path = header["url"];
     std::ifstream	ifs(path.c_str());
 
 	if (is_a_directory(path) && 1 /* autoindex is on  */) {
@@ -196,13 +196,11 @@ void        Request::_process_GET()
 		struct dirent *ent;
 		if ((dir = opendir (path.c_str())) != NULL) {
 
-			std::cout << " IS DIIIR " << std::endl;
-
 			filestr = "<!DOCTYPE html><html><body>";
 
   			while ((ent = readdir (dir)) != NULL) {
 
-				filestr.append("<a href=\"" + path + "/");
+				filestr.append("<a href=\"/" + path + "/");
 				filestr.append(ent->d_name);
 				filestr.append("\">");
 				filestr.append(ent->d_name);
@@ -214,20 +212,15 @@ void        Request::_process_GET()
 		} else {
 			return http_code("401");	
 		}
-	}
-    else if (ifs.fail()) {
-		std::cout << "holaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" << std::endl;
+	} else if (ifs.fail()) {
         return http_code("404");
-	}
-    else 
-    {
+	} else {
 
         std::stringstream buf;
         buf << ifs.rdbuf();
         filestr = buf.str();
 
         ifs.close();
-
 	}
 
     http_code("200");
