@@ -17,14 +17,15 @@ std::string										getElem(std::list < std::list < std::map < std::string, std
 class Service
 {
 private:
+	ParsingFile 								*_instance;
 	char										_buffer[BUFFER_SIZE];
 	bool										_close_connexion;
 	bool										_compress_pollFds;
 	struct pollfd								_pollFds[SIZE_POLLFD];
 	size_t										_nfds; //number file descriptor sever
 	std::list<Server> 							_listServer;
-	ParsingFile									_parsing;
-
+	// ParsingFile									_parsing;
+	
 private:
 	void										setUpService();
 	void										handlerServer(size_t &index);
@@ -41,8 +42,8 @@ private:
 
 public:
 	Service();
-	~Service();
 	Service(std::string FileName);
+	~Service();
 	bool										getHasError();
 	void										runService();
 

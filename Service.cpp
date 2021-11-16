@@ -30,7 +30,8 @@ void	Service::								displayAvailableServer(/* args */)
 */
 Service::Service()
 {
-	if (_parsing.getErrorHappened() == true)//glance if the parsing has detected an error
+	 _instance = ParsingFile::getInstance();
+	if (_instance->getErrorHappened() == true)//glance if the parsing has detected an error
 	{
 		std::cout << "EXIT PROGRAME" << std::endl;
 		return ;
@@ -39,12 +40,12 @@ Service::Service()
 	setUpService();
 	displayAvailableServer();
 	runService();
-	(void)_parsing;
 }
 
-Service:: 										Service(std::string FileName):_parsing(FileName)
+Service:: 										Service(std::string FileName)
 {
-	if (_parsing.getErrorHappened() == true)//glance if the parsing has detected an error
+	_instance = ParsingFile::getInstance(FileName); 
+	if (_instance->getErrorHappened() == true)//glance if the parsing has detected an error
 	{
 		std::cout << "EXIT PROGRAME" << std::endl;
 		return ;
@@ -55,7 +56,7 @@ Service:: 										Service(std::string FileName):_parsing(FileName)
 	runService();
 }
 
-Service::~Service(){}
+Service::~Service(){delete _instance;}
 
 /***************************************************************************************/
 
@@ -104,7 +105,7 @@ int		Service::								getPort(int index)
 	int 										port;
 	std::string 								elem;
 	// elem = _parsing.getElem(index, "listen");
-	elem = getElem(_parsing.getList(), (size_t)index, "listen");
+	elem = getElem(_instance->getList(), (size_t)index, "listen");
 
 	if (elem.empty())
 		elem = "8080";
@@ -125,7 +126,7 @@ void	Service::								setUpService()
 	int 										port;
 
 	std::cout << "Port available:" << std::endl;
-	for (_nfds = 0; _nfds < _parsing.numberOfServer(); _nfds++)
+	for (_nfds = 0; _nfds < _instance->numberOfServer(); _nfds++)
 	{
 		port = getPort(_nfds);
 		Server server(port);

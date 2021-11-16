@@ -1,9 +1,29 @@
 #include "ParsingFile.hpp"
 
 /*
+** THIS IS A SINGLETON CLASS : Singleton design pattern is a software design principle that is used to restrict the instantiation of a class to one object
+*/
+
+static  ParsingFile  *_instance = NULL;
+
+ParsingFile * ParsingFile::					getInstance()
+{
+	if (_instance == NULL)
+		_instance =	new ParsingFile();
+	return (_instance);
+}
+
+ParsingFile * ParsingFile::					getInstance(std::string fileName)
+{
+	if (_instance == NULL)
+		_instance =	new ParsingFile(fileName);
+	return (_instance);
+}
+
+/*
 **	this construct it called when there is no one given parameter to the program
 */
-ParsingFile::								ParsingFile():_fileName("./configFile/default.conf"), _configFile(std::string()), _errorHappened(false)
+ParsingFile::								ParsingFile(): _fileName("./configFile/default.conf"), _configFile(std::string()), _errorHappened(false)
 {
 	std::cout << "*******************************\tTAKING \tDEFAULT\t FILE\t***********************" << std::endl;
 	int result = getStartProcess();
@@ -16,7 +36,7 @@ ParsingFile::								ParsingFile():_fileName("./configFile/default.conf"), _conf
 /*
 **	this construct it called when given parameter to the program
 */
-ParsingFile::								ParsingFile(std::string fileName):_fileName(fileName), _configFile(std::string()), _errorHappened(false)
+ParsingFile::								ParsingFile(std::string fileName): _fileName(fileName), _configFile(std::string()), _errorHappened(false)
 {
 	std::cout << "****************GET FILE\tFROM\tPARAMETER****************" << std::endl;
 	int result = getStartProcess();
@@ -33,7 +53,7 @@ bool	ParsingFile::						getErrorHappened(){return (_errorHappened);}
 **	step two 	:	create table of keyword
 **	step three	:	parsing file, file is located in std::string _configFile;
 */
-int	ParsingFile::						getStartProcess()
+int	ParsingFile::							getStartProcess()
 {
 	try
 	{
@@ -51,7 +71,7 @@ int	ParsingFile::						getStartProcess()
 	return (SUCCESS);
 }
 
-ParsingFile::~ParsingFile(){}
+ParsingFile::~ParsingFile(){ }
 
 size_t	ParsingFile::						numberOfServer()
 {
@@ -96,7 +116,7 @@ void	ParsingFile:: getFile()
 	}
 }
 
-std::list < std::list < std::map < std::string, std::string > > > ParsingFile:: getList(){return(_serverList);}
+t_nested_list								ParsingFile:: getList(){return(_serverList);}
 
 /*********************************************************************************ANALYSE SYNTAXE CONFIG FILE*********************************************************************************/
 

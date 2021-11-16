@@ -2,8 +2,6 @@
 #ifndef PARSINGFILE
 #define PARSINGFILE
 
-
-
 enum token_type
 {
 	brackets_open = 0,
@@ -28,28 +26,41 @@ enum token_type
 #include <algorithm>
 #include <list>
 
+/*
+** THIS IS A SINGLETON CLASS : Singleton design pattern is a software design principle that is used to restrict the instantiation of a class to one object
+*/
+
+
+typedef std::list < std::list < std::map < std::string, std::string > > > t_nested_list;
+typedef std::list<std::map < std::string, std::string > > t_single_list;
+
 class ParsingFile
 {
+
 private:
 	std::string															_fileName;
-	std::list<std::map < std::string, std::string > >					_singleList;
+	t_single_list														_singleList;
 
 	std::string															_configFile;
 
 	token_type															_previousToken;//this function always stock the previous token
 	std::vector<std::string> 											_keyWords;		//this vectore stock all keys word
 
-	std::list < std::list < std::map < std::string, std::string > > >	_serverList;		//this vectore stock all keys word
+	t_nested_list														_serverList;		//this vectore stock all keys word
 	bool																_errorHappened;
-public:
 	ParsingFile();
 	ParsingFile(std::string fileName);
+
+
+public:
+
+	static	ParsingFile													*getInstance();
+	static	ParsingFile 												*getInstance(std::string fileName);
 	~ParsingFile();
 
-	bool						getErrorHappened();
-	// std::string					getElem(size_t lineServer, std::string elem);
-	size_t						numberOfServer();
-	std::list < std::list < std::map < std::string, std::string > > >getList();
+	bool																getErrorHappened();
+	size_t																numberOfServer();
+	t_nested_list														getList();
 
 	/****************this four function it is to debug********************/
 	void						displayServerTable();
