@@ -201,13 +201,16 @@ void        Request::_process_GET()
 {
 	std::string	filestr;
     std::string path;
+	std::string	root;
 
+	// set root as described in config file
+	root = "root/";
     if (header["url"] == "/")
-        header["url"] = "index.html";
+        path = "index.html";
     else if (header["url"][0] == '/')
-        header["url"].erase(0,1);
+        path = header["url"].erase(0,1);
+	path = root + path;
 
-    path = header["url"];
     std::ifstream	ifs(path.c_str());
 
 	if (is_a_directory(path) && 1 /* autoindex is on  */) {
