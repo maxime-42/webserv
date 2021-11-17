@@ -117,9 +117,11 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
 
 
 	// --------  affichage  --------------------------------------------------------------------------
+	/*
     for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it) {
         std::cout << it->first << ":" << it->second << std::endl;
     }
+	*/
 }
 
 /*
@@ -205,11 +207,15 @@ void        Request::_process_GET()
 
 	// set root as described in config file
 	root = "root/";
+	chdir(root.c_str());
+
     if (header["url"] == "/")
         path = "index.html";
     else if (header["url"][0] == '/')
         path = header["url"].erase(0,1);
-	path = root + path;
+//	path = root + path;
+
+	std::cout << "path is " << path << std::endl;
 
     std::ifstream	ifs(path.c_str());
 
@@ -253,7 +259,7 @@ void        Request::_process_GET()
     reponse["Content-Length"] = content_len.str();
 
     reponse["Content-Type"] = "text/plain; charset=utf-8";
-    if (is_a_directory(path) || header["url"].substr(header["url"].find_last_of(".") + 1) == "html")
+    if (is_a_directory(path) || path.substr(path.find_last_of(".") + 1) == "html")
         reponse["Content-Type"] = "text/html; charset=utf-8";
 }
 

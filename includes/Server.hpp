@@ -29,7 +29,7 @@
 #define PORT		8080
 #define SIZE_POLLFD	300
 #define BUFFER_SIZE	30000
-#define TIMEOUT		(3 * 60 * 1000)
+#define TIMEOUT		-1
 #define NB_PENDING	SIZE_POLLFD
 
 class Server
