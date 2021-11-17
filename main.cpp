@@ -12,6 +12,8 @@ bool		find_location(t_single_list & secondList, std::string &elemToFind, void *p
 void		print_string_dictionnary(std::map<std::string, std::string> &first);
 void		test_getInfo();
 
+void	test_getInfo_location();
+void	test_getInfo_directive();
 
 int	 main(int argc, const char** argv)
 {
@@ -27,8 +29,8 @@ int	 main(int argc, const char** argv)
 	}
 	else
 	{
-		test_getInfo();
-		Service svc;
+		// test_getInfo();
+		// Service svc;
 	}
 	(void)argc;
 	(void)argv;
