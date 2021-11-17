@@ -11,12 +11,12 @@ _WHITE		=\e[97m
 NAME        = server
 
 CC            = clang++
-CFLAGS        = -Werror -Wextra -Wall --std=c++98 -g #-fsanitize=address
+CFLAGS        = -Werror -Wextra -Wall --std=c++98 -g3 -fsanitize=address
 RM            = rm -rf
 
-DIR_SRCS    = ./
-DIR_OBJS    = ./objs/
-DIR_INC        = ./
+DIR_SRCS    = srcs/
+DIR_OBJS    = objs/
+DIR_INC     = includes/
 
 F_SRCS        =		main.cpp 			\
                 	Server.cpp			\

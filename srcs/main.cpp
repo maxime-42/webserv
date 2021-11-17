@@ -27,7 +27,7 @@ int	 main(int argc, const char** argv)
 	}
 	else
 	{
-		test_getInfo();
+		// test_getInfo();
 		Service svc;
 	}
 	(void)argc;
