@@ -30,12 +30,17 @@ int			Request::read(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll) {
 	return ret;
 }
 
+bool is_hex(std::string const& s)
+{
+  return s.find_first_not_of("0123456789abcdefABCDEF") == std::string::npos;
+}
+
 /*
  *	Once the whole request has been read, it is parsed and transformed into a header map
  *	If the request is not good, we throw the appropiate http error code with the appropiate message.
 
 TODO: Récupérer correctement les arguments. (Raph s'en occupe.)
- */
+*/
 void		Request::parse(struct pollfd *ptr_tab_poll) {
 
 	// Conversion of vector<unsigned char> to string
@@ -53,7 +58,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
 
     /*
        Pour header["url"] : Récupérer les arguments (?say=hi&to=mom) et les séparer du fichier
-     */
+       */
     getline(iss, header["url"], ' ');
     if (header["url"].find('?') != std::string::npos)
     {
@@ -74,24 +79,51 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
     request_str.erase(0, request_str.find('\n') + 1);
     /*
        Loop to put all key and value in header.
-     */
+       */
     while (request_str.size() > 0)
     {
         //std::cout << "str = [" << request_str << "]\n";
 
         /*
            When we have a body in the request, the body is separate from the informations thanks to 13 then 10 ascii char.
-         */
+           */
         if ((request_str.size() > 2) && (request_str.at(0) == 13) && (request_str.at(1) == '\n')) //at(0) == 13; at(1) == '\n' because a new line split the header from the body
         {
-            request_str.erase(0, 2); //+ 1 for the '\n'.
-            header["body"] = request_str.substr(0, request_str.size());
-            //std::cout << "BODY:\n[" << header["body"] << "]\n";
-            request_str.erase(0, request_str.size()); //+ 1 for the '\n'.
+			if (header.find("Content-Encoding") != header.end() && header["Content-Encoding"] == "chunked") {
+
+				std::stringstream ss;
+				std::string	buf;
+				char		c;
+				size_t		bytes;
+
+				getline(iss, buf, '\r'); 
+				if (buf.compare(0, 2, "0x") == 0)
+					buf.erase(0, 2);
+				if (buf.find("\n") != buf.npos || !is_hex(buf))
+					return http_code("400");
+
+				ss << std::hex << buf;
+				ss >> bytes;
+
+				for (size_t i = 0; i < bytes; i++) {
+					iss.get(c);
+					header["body"] += c;
+				}
+				getline(iss, buf, '\n');
+				if (buf != "\r")
+					return http_code("400");
+
+			} else {
+
+            	request_str.erase(0, 2); //+ 1 for the '\n'.
+            	header["body"] = request_str.substr(0, request_str.size());
+            	//std::cout << "BODY:\n[" << header["body"] << "]\n";
+            	request_str.erase(0, request_str.size()); //+ 1 for the '\n'.
+			}
         }
         /*
            The key and the value are separate by ':'. The function is going to find the separator then fill header with the key and value
-         */
+           */
         begin_key = request_str.find(':');
         if (begin_key == std::string::npos)
         {
@@ -101,7 +133,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
         //std::cout << "key = [" << key << "]\nbegin = " << begin_key << "\n";
         /*
            The request_str is the full informations the request receive. So the function erase the traited informations when header is filled.
-         */
+           */
         request_str.erase(0, begin_key + 2); //+ 1 for the ':' and 2 (1 more) for ' ' next to the ':'.
         end_key = request_str.find('\n');
         //std::cout << "str[" << end_key << "] = [" << request_str.at(end_key) << "]\n";
@@ -119,11 +151,11 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
 
 
 	// --------  affichage  --------------------------------------------------------------------------
-	
+
     for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it) {
         std::cout << it->first << ":" << it->second << std::endl;
     }
-	
+
 }
 
 /*
@@ -216,7 +248,7 @@ void        Request::_process_GET()
     } else if (header["url"][0] == '/') {
         path = header["url"].erase(0,1);
 	}
-//	path = root + path;
+	//	path = root + path;
 
     std::ifstream	ifs(path.c_str());
 
@@ -271,7 +303,7 @@ void        Request::_process_GET()
    droite) avec le type de fichier à créer (valeur à gauche).
    Le nom MIME vient des différents Content-type qui existe. La liste est non
    exclusive
- */
+   */
 void	initialize_mime_types(std::map<std::string, std::string> &mime_types)
 {
 	mime_types[".aac"]      = "audio/aac";
@@ -339,7 +371,7 @@ void	initialize_mime_types(std::map<std::string, std::string> &mime_types)
 /*
    Méthode pour créer un fichier et le remplir du body présent dans header[].
    On lui envoie le type de fichier en argument (ex : .json)
- */
+   */
 int    Request::create_file(std::string const file_type)
 {
     // Le fichier s'appelle actuellement "test"...
@@ -365,7 +397,7 @@ int    Request::create_file(std::string const file_type)
    Etape 2 : Crée le fichier (cf la méthode create_file).
    Etape 3 : Mettre le body dans le ficher.
    Etape 4 : Renvoyez au client le fait que la requete a été validé !
- */
+   */
 void    Request::_process_POST()
 {
     std::map<std::string, std::string> mime_types;
@@ -406,12 +438,12 @@ void    Request::_process_POST()
        reponse["data"] = "";
        reponse["files"] = "";
        reponse["form"] = "";
-     */
+       */
 }
 
 /*
    Delete request
- */
+   */
 void    Request::_process_DELETE()
 {
     char const *file_to_delete = header["url"].c_str();
