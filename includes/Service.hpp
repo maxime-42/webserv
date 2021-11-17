@@ -1,6 +1,7 @@
 #ifndef SERVICE_HPP
 #define SERVICE_HPP
 
+#define DEFAULT_FILE "./configFile/default.conf"
 #include "header.hpp"
 #include "Server.hpp"
 #include "Request.hpp"
@@ -9,18 +10,23 @@
 #include <list>
 #include <algorithm>    // std::find
 #include <signal.h>
+#include <string>     // std::string, std::to_string
+
+// std::string  									getInfo(std::list < std::list < std::map < std::string, std::string > > > nestedList, int port, std::string toFind);
+std::string										getElem(std::list < std::list < std::map < std::string, std::string > > > nestedList, size_t lineServer, std::string elem);
 
 class Service
 {
 private:
+	ParsingFile 								&_instance;
 	char										_buffer[BUFFER_SIZE];
 	bool										_close_connexion;
 	bool										_compress_pollFds;
 	struct pollfd								_pollFds[SIZE_POLLFD];
 	size_t										_nfds; //number file descriptor sever
 	std::list<Server> 							_listServer;
-	ParsingFile									_parsing;
-
+	// ParsingFile									_parsing;
+	
 private:
 	void										setUpService();
 	void										handlerServer(size_t &index);
@@ -37,8 +43,8 @@ private:
 
 public:
 	Service();
-	~Service();
 	Service(std::string FileName);
+	~Service();
 	bool										getHasError();
 	void										runService();
 

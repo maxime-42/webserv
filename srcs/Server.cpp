@@ -77,7 +77,7 @@ bool	Server:: 						receive_data(struct pollfd	*ptr_tab_poll)
 		return(false);
 	}
 	std::cout << ret << " bytes received:\n ===============\n" << _buffer << "\n===============\n"<< std::endl;
-	return (true);
+	return (true);	
 }
 
 
@@ -89,11 +89,13 @@ bool	Server::						handle_existing_connections(struct pollfd	*ptr_tab_poll)
 	_close_connexion = false;
 	if (receive_data(ptr_tab_poll))
 	{
-		if (request.read(_buffer, ptr_tab_poll) < BUFFER_SIZE || request.end_reached(ptr_tab_poll))
+		request.read(_buffer, ptr_tab_poll);
+		if (/*request.read(_buffer, ptr_tab_poll) < BUFFER_SIZE ||*/ request.end_reached(ptr_tab_poll))
 		{
-			request.parse(ptr_tab_poll, getPort());
+			request.parse(ptr_tab_poll, _port);
 			request.process();
-			request.send_reponse(ptr_tab_poll->fd);
+			if (!(request.send_reponse(ptr_tab_poll->fd)))
+				std::cout << "send() failed !" << std::endl;
 			close(ptr_tab_poll->fd);
 			_close_connexion = true;
 		}

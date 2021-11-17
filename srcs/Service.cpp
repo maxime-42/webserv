@@ -28,9 +28,10 @@ void	Service::								displayAvailableServer(/* args */)
 **	if there had not error setup,  displayAvailableServer, and run service
 **	i display available port during the setup 
 */
-Service::Service()
+Service::Service():_instance(ParsingFile::getInstance("./configFile/default.conf"))
 {
-	if (_parsing.getErrorHappened() == true)//glance if the parsing has detected an error
+	std::cout << "instance ParsingFile 3 addr = " << &_instance << std::endl; 
+	if (_instance.getErrorHappened() == true)//glance if the parsing has detected an error
 	{
 		std::cout << "EXIT PROGRAME" << std::endl;
 		return ;
@@ -39,12 +40,12 @@ Service::Service()
 	setUpService();
 	displayAvailableServer();
 	runService();
-	(void)_parsing;
 }
 
-Service:: 										Service(std::string FileName):_parsing(FileName)
+Service:: 										Service(std::string FileName):_instance(ParsingFile::getInstance(FileName))
 {
-	if (_parsing.getErrorHappened() == true)//glance if the parsing has detected an error
+	std::cout << "instance ParsingFile 3 addr = " << &_instance << std::endl;
+	if (_instance.getErrorHappened() == true)//glance if the parsing has detected an error
 	{
 		std::cout << "EXIT PROGRAME" << std::endl;
 		return ;
@@ -103,7 +104,9 @@ int		Service::								getPort(int index)
 {
 	int 										port;
 	std::string 								elem;
-	elem = _parsing.getElem(index, "listen");
+	// elem = _parsing.getElem(index, "listen");
+	elem = getElem(_instance.getList(), (size_t)index, "listen");
+
 	if (elem.empty())
 		elem = "8080";
 	std:: stringstream ss(elem);
@@ -123,7 +126,7 @@ void	Service::								setUpService()
 	int 										port;
 
 	std::cout << "Port available:" << std::endl;
-	for (_nfds = 0; _nfds < _parsing.numberOfServer(); _nfds++)
+	for (_nfds = 0; _nfds < _instance.numberOfServer(); _nfds++)
 	{
 		port = getPort(_nfds);
 		Server server(port);
@@ -187,7 +190,7 @@ void	Service::								handlerServer(size_t &index)
 static bool										g_loopback = true;
 
 /*
-**when any signal arrived, it  stop loopback by set "g_loopback" to false 
+**when any signal arrived, it  stop loopback by set "_loopback" to false 
 */
 void											handle_signal(int sig)
 {
@@ -202,8 +205,8 @@ void	Service::								runService()
 	{
 		while (g_loopback)
 		{
-			for (int i = 1; i <= 64; i++) //handler any signal
-				signal(i, handle_signal);
+			// for (int i = 1; i <= 64; i++) //handler any signal
+				signal(SIGINT, handle_signal);
 			ret = poll(_pollFds, _nfds, TIMEOUT);
 			checkError(ret, "poll() failed");
 			if (ret == 0)

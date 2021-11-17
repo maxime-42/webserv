@@ -3,12 +3,16 @@
 
 #include "Server.hpp"
 #include <vector>
+#include "lookup_in_nested_list.hpp"
 
 /*
 	TODO: check if we need to implement here or if there already in Server.hpp
 */
 #include <iostream>
 #include <fstream>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <string>  
 //std::map<int, std::vector<unsigned char> >	g_request;
 
 # define SUCCESS 0
@@ -38,9 +42,10 @@ class Request
 		~Request();
 
 		int						read(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll);
+		int						sendall(int s, const char *buf, int len);
         void					parse(struct pollfd *ptr_tab_poll, int port);
         void                    process();
-        void                    send_reponse(int socket);
+        int						send_reponse(int socket);
 		bool					end_reached(struct pollfd *ptr_tab_poll);
         int                     create_file(std::string const file_type);
 

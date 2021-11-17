@@ -1,9 +1,28 @@
 #include "ParsingFile.hpp"
 
 /*
+** THIS IS A SINGLETON CLASS : Singleton design pattern is a software design principle that is used to restrict the instantiation of a class to one object
+*/
+
+
+ void ParsingFile:: operator=(ParsingFile &other) {(void)other;}// Singletons should prevent copy or assign
+
+ParsingFile ::ParsingFile  (const ParsingFile & other) {(void)other;};// Singletons should not be cloneable, so it private.
+
+
+static  std::string  s_fileName;
+
+ParsingFile & ParsingFile::					getInstance(std::string fileName)
+{
+	// s_fileName = fileName;
+	static  ParsingFile  _instance(fileName);
+	return (_instance);
+}
+
+/*
 **	this construct it called when there is no one given parameter to the program
 */
-ParsingFile::								ParsingFile():_fileName("./configFile/default.conf"), _configFile(std::string()), _errorHappened(false)
+ParsingFile::								ParsingFile(): _fileName("./configFile/default.conf"), _configFile(std::string()), _errorHappened(false)
 {
 	std::cout << "*******************************\tTAKING \tDEFAULT\t FILE\t***********************" << std::endl;
 	int result = getStartProcess();
@@ -16,8 +35,10 @@ ParsingFile::								ParsingFile():_fileName("./configFile/default.conf"), _conf
 /*
 **	this construct it called when given parameter to the program
 */
-ParsingFile::								ParsingFile(std::string fileName):_fileName(fileName), _configFile(std::string()), _errorHappened(false)
+ParsingFile::								ParsingFile(std::string fileName): _fileName(fileName), _configFile(std::string()), _errorHappened(false)
 {
+	s_fileName = fileName;
+
 	std::cout << "****************GET FILE\tFROM\tPARAMETER****************" << std::endl;
 	int result = getStartProcess();
 	if (result == ERROR)
@@ -33,7 +54,7 @@ bool	ParsingFile::						getErrorHappened(){return (_errorHappened);}
 **	step two 	:	create table of keyword
 **	step three	:	parsing file, file is located in std::string _configFile;
 */
-int	ParsingFile::						getStartProcess()
+int	ParsingFile::							getStartProcess()
 {
 	try
 	{
@@ -41,7 +62,7 @@ int	ParsingFile::						getStartProcess()
 		createKeyWord();
 		_previousToken = initialized;
 		parsingProcess();
-		std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SUCCESSFULLY PARSING<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+		std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SUCCESSFULLY PARSING<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n" << std::endl;
 	}
 	catch(char const *  msg_error)
 	{
@@ -51,46 +72,29 @@ int	ParsingFile::						getStartProcess()
 	return (SUCCESS);
 }
 
-ParsingFile::~ParsingFile(){}
+ParsingFile::~ParsingFile(){ }
+ size_t	ParsingFile::						numberOfServer()
+{
 
-size_t	ParsingFile::						numberOfServer()
+	return (getInstance(s_fileName).interface_numberOfServer());
+}
+
+
+size_t	ParsingFile::						interface_numberOfServer()
 {
 	return (_serverList.size());
 }
 
-/********************************************************************************ACCESS TO ELEM it _serverList it is a neested list************************************************************************************/
-/*
-**	if nothing has been find it return empty string
-** 	if nothing has been find, it return empty string
-**	maybe you need to glance diagram of parsing to really caught how i look up data in this nested list
 
-**	first loop it for the main list, second loop for it for the nested list.
-**	Each node of nested list there a dictionary which store data 
-*/
-std::string	ParsingFile::				getElem(size_t lineServer, std::string elem)
+t_nested_list	&							ParsingFile:: getList()
 {
-	std::map < std::string, std::string > dictionary;
-	std::map < std::string, std::string >::iterator it;
-	std::list < std::list < std::map < std::string, std::string > > >::iterator first = _serverList.begin() ;
-	std::list < std::map < std::string, std::string > >::iterator itrSingle_list_pointer;
-	for (; first != _serverList.end(); first++)
-	{
-		if (lineServer == 0)
-		{
-			std::list<std::map < std::string, std::string > > & single_list_pointer  = *first;
-			for (itrSingle_list_pointer = single_list_pointer.begin();  itrSingle_list_pointer != single_list_pointer.end(); itrSingle_list_pointer++)
-			{
-				dictionary = *itrSingle_list_pointer;
-				it = dictionary.find(elem);
-				if (it != dictionary.end())
-					return (it->second);
-			}
-		}
-		lineServer--;
-	}
-	return (std::string());	//empty string
+	return(getInstance(s_fileName).interface_getList());
 }
 
+t_nested_list	&							ParsingFile:: interface_getList()
+{
+	return(_serverList);
+}
 /*********************************************************************************OPEN  FILE* *********************************************************************************/
 
 /*
