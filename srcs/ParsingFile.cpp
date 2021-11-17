@@ -91,10 +91,17 @@ t_nested_list	&							ParsingFile:: getList()
 	return(getInstance(s_fileName).interface_getList());
 }
 
-t_nested_list	&							ParsingFile:: interface_getList()
+t_nested_list	&							ParsingFile:: interface_getList(){	return(_serverList);}
+
+std::map<std::string, std::string> & ParsingFile::		get_globalConfig()
 {
-	return(_serverList);
+	return (getInstance(s_fileName).interface_get_globalConfig());
 }
+std::map<std::string, std::string> & ParsingFile::		interface_get_globalConfig()
+{
+	return (_globalConfig);
+}
+
 /*********************************************************************************OPEN  FILE* *********************************************************************************/
 
 /*
@@ -173,7 +180,8 @@ void	ParsingFile:: 						hasName(std::string &directiveName, std::string & piece
 	{
 		throw("error syntaxe: hasName");
 	}
-	if (_previousToken == semicolon || _previousToken == brackets_open || _previousToken == brackets_close)
+	// if (_previousToken == semicolon || _previousToken == brackets_open || _previousToken == brackets_close)
+	if (_previousToken == semicolon || _previousToken == brackets_open || _previousToken == brackets_close || _previousToken == initialized)
 	{
 		directiveName = pieceOfString;
 		_previousToken = name;
@@ -253,7 +261,8 @@ std::string	ParsingFile::					getPieceOfstring(size_t &i)
 
 void	ParsingFile::						hasServer()
 {
-	if (_previousToken == initialized || _previousToken == brackets_close)
+	// if (_previousToken == initialized || _previousToken == brackets_close)
+	if (_previousToken == initialized || _previousToken == brackets_close || _previousToken == semicolon)
 	{
 		_previousToken = server;
 	}
@@ -351,6 +360,7 @@ void	ParsingFile::						insertInDictionary(std::map<std::string, std::string>	&d
 ** this function try to identify token, then act to depending token  
 ** token is pieceOfString
 */
+
 void										ParsingFile::parsingProcess()
 {
 	std::string 							directiveName;
@@ -396,7 +406,12 @@ void										ParsingFile::parsingProcess()
 				hasSemicolon();
 				// if (directiveName.compare("listen") == 0 && isNumber(directiveValue) == false)
 				// 	throw("error syntaxe: listen have to be decimal numer");
-				insertInDictionary(dictionary, directiveName, directiveValue);
+				if (nbParenthese == 0)
+				{
+					_globalConfig[directiveName] = directiveValue;
+				}
+				else
+					insertInDictionary(dictionary, directiveName, directiveValue);
 			}
 			else
 			{

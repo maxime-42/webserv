@@ -25,7 +25,6 @@ private:
 	struct pollfd								_pollFds[SIZE_POLLFD];
 	size_t										_nfds; //number file descriptor sever
 	std::list<Server> 							_listServer;
-	// ParsingFile									_parsing;
 	
 private:
 	void										setUpService();

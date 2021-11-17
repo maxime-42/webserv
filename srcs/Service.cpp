@@ -196,19 +196,22 @@ void											handle_signal(int sig)
 {
 	g_loopback = false;
 	std::cout << "Caught signal number = " << sig << std::endl;
+
 }
+
 
 void	Service::								runService()
 {
 	int											ret;
+
 	try
 	{
 		while (g_loopback)
 		{
-			// for (int i = 1; i <= 64; i++) //handler any signal
-				signal(SIGINT, handle_signal);
+			signal(SIGINT, handle_signal);
 			ret = poll(_pollFds, _nfds, TIMEOUT);
 			checkError(ret, "poll() failed");
+			
 			if (ret == 0)
 				throw("poll() timed out");
 			for (size_t index = 0; index < _nfds; index++) //loop through the array of file descriptor to monitoring an event 

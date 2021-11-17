@@ -48,23 +48,27 @@ private:
 
 	t_nested_list														_serverList;		//this vectore stock all keys word
 	bool																_errorHappened;
+	std::map<std::string, std::string>									_globalConfig;
+
+
 	ParsingFile();
 	ParsingFile(std::string fileName);
 	void operator=(ParsingFile &other);
   	ParsingFile (const ParsingFile &other);
 	size_t																interface_numberOfServer();
-	t_nested_list	&													 interface_getList();
+	t_nested_list	&													interface_getList();
+	std::map<std::string, std::string> & 								interface_get_globalConfig();
 
 
 public:
 	static	ParsingFile													&getInstance();
 	static	ParsingFile 												&getInstance(std::string fileName);
-	~ParsingFile();
+	static size_t														numberOfServer();
+	static	t_nested_list	&											getList();
+	static	std::map<std::string, std::string> & 						get_globalConfig();
 
 	bool																getErrorHappened();
-	static size_t														numberOfServer();
-
-	static t_nested_list	&													getList();
+	~ParsingFile();
 
 	/****************this four function it is to debug********************/
 	void						displayServerTable();
