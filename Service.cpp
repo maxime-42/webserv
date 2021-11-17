@@ -28,10 +28,10 @@ void	Service::								displayAvailableServer(/* args */)
 **	if there had not error setup,  displayAvailableServer, and run service
 **	i display available port during the setup 
 */
-Service::Service()
+Service::Service():_instance(ParsingFile::getInstance("./configFile/default.conf"))
 {
-	 _instance = ParsingFile::getInstance();
-	if (_instance->getErrorHappened() == true)//glance if the parsing has detected an error
+	std::cout << "instance ParsingFile 3 addr = " << &_instance << std::endl; 
+	if (_instance.getErrorHappened() == true)//glance if the parsing has detected an error
 	{
 		std::cout << "EXIT PROGRAME" << std::endl;
 		return ;
@@ -42,10 +42,10 @@ Service::Service()
 	runService();
 }
 
-Service:: 										Service(std::string FileName)
+Service:: 										Service(std::string FileName):_instance(ParsingFile::getInstance(FileName))
 {
-	_instance = ParsingFile::getInstance(FileName); 
-	if (_instance->getErrorHappened() == true)//glance if the parsing has detected an error
+	std::cout << "instance ParsingFile 3 addr = " << &_instance << std::endl;
+	if (_instance.getErrorHappened() == true)//glance if the parsing has detected an error
 	{
 		std::cout << "EXIT PROGRAME" << std::endl;
 		return ;
@@ -56,7 +56,7 @@ Service:: 										Service(std::string FileName)
 	runService();
 }
 
-Service::~Service(){delete _instance;}
+Service::~Service(){}
 
 /***************************************************************************************/
 
@@ -105,7 +105,7 @@ int		Service::								getPort(int index)
 	int 										port;
 	std::string 								elem;
 	// elem = _parsing.getElem(index, "listen");
-	elem = getElem(_instance->getList(), (size_t)index, "listen");
+	elem = getElem(_instance.getList(), (size_t)index, "listen");
 
 	if (elem.empty())
 		elem = "8080";
@@ -126,7 +126,7 @@ void	Service::								setUpService()
 	int 										port;
 
 	std::cout << "Port available:" << std::endl;
-	for (_nfds = 0; _nfds < _instance->numberOfServer(); _nfds++)
+	for (_nfds = 0; _nfds < _instance.numberOfServer(); _nfds++)
 	{
 		port = getPort(_nfds);
 		Server server(port);

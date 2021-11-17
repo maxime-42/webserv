@@ -1,6 +1,7 @@
 #ifndef SERVICE_HPP
 #define SERVICE_HPP
 
+#define DEFAULT_FILE "./configFile/default.conf"
 #include "header.hpp"
 #include "Server.hpp"
 #include "Request.hpp"
@@ -17,7 +18,7 @@ std::string										getElem(std::list < std::list < std::map < std::string, std
 class Service
 {
 private:
-	ParsingFile 								*_instance;
+	ParsingFile 								&_instance;
 	char										_buffer[BUFFER_SIZE];
 	bool										_close_connexion;
 	bool										_compress_pollFds;

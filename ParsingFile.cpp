@@ -4,19 +4,18 @@
 ** THIS IS A SINGLETON CLASS : Singleton design pattern is a software design principle that is used to restrict the instantiation of a class to one object
 */
 
-static  ParsingFile  *_instance = NULL;
 
-ParsingFile * ParsingFile::					getInstance()
-{
-	if (_instance == NULL)
-		_instance =	new ParsingFile();
-	return (_instance);
-}
+ void ParsingFile:: operator=(ParsingFile &other) {(void)other;}// Singletons should prevent copy or assign
 
-ParsingFile * ParsingFile::					getInstance(std::string fileName)
+ParsingFile ::ParsingFile  (const ParsingFile & other) {(void)other;};// Singletons should not be cloneable, so it private.
+
+
+static  std::string  s_fileName;
+
+ParsingFile & ParsingFile::					getInstance(std::string fileName)
 {
-	if (_instance == NULL)
-		_instance =	new ParsingFile(fileName);
+	// s_fileName = fileName;
+	static  ParsingFile  _instance(fileName);
 	return (_instance);
 }
 
@@ -38,6 +37,8 @@ ParsingFile::								ParsingFile(): _fileName("./configFile/default.conf"), _con
 */
 ParsingFile::								ParsingFile(std::string fileName): _fileName(fileName), _configFile(std::string()), _errorHappened(false)
 {
+	s_fileName = fileName;
+
 	std::cout << "****************GET FILE\tFROM\tPARAMETER****************" << std::endl;
 	int result = getStartProcess();
 	if (result == ERROR)
@@ -61,7 +62,7 @@ int	ParsingFile::							getStartProcess()
 		createKeyWord();
 		_previousToken = initialized;
 		parsingProcess();
-		std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SUCCESSFULLY PARSING<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+		std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SUCCESSFULLY PARSING<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n" << std::endl;
 	}
 	catch(char const *  msg_error)
 	{
@@ -72,12 +73,28 @@ int	ParsingFile::							getStartProcess()
 }
 
 ParsingFile::~ParsingFile(){ }
+ size_t	ParsingFile::						numberOfServer()
+{
 
-size_t	ParsingFile::						numberOfServer()
+	return (getInstance(s_fileName).interface_numberOfServer());
+}
+
+
+size_t	ParsingFile::						interface_numberOfServer()
 {
 	return (_serverList.size());
 }
 
+
+t_nested_list	&							ParsingFile:: getList()
+{
+	return(getInstance(s_fileName).interface_getList());
+}
+
+t_nested_list	&							ParsingFile:: interface_getList()
+{
+	return(_serverList);
+}
 /*********************************************************************************OPEN  FILE* *********************************************************************************/
 
 /*
@@ -116,7 +133,6 @@ void	ParsingFile:: getFile()
 	}
 }
 
-t_nested_list								ParsingFile:: getList(){return(_serverList);}
 
 /*********************************************************************************ANALYSE SYNTAXE CONFIG FILE*********************************************************************************/
 

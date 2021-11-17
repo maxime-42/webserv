@@ -50,17 +50,21 @@ private:
 	bool																_errorHappened;
 	ParsingFile();
 	ParsingFile(std::string fileName);
+	void operator=(ParsingFile &other);
+  	ParsingFile (const ParsingFile &other);
+	size_t																interface_numberOfServer();
+	t_nested_list	&													 interface_getList();
 
 
 public:
-
-	static	ParsingFile													*getInstance();
-	static	ParsingFile 												*getInstance(std::string fileName);
+	static	ParsingFile													&getInstance();
+	static	ParsingFile 												&getInstance(std::string fileName);
 	~ParsingFile();
 
 	bool																getErrorHappened();
-	size_t																numberOfServer();
-	t_nested_list														getList();
+	static size_t														numberOfServer();
+
+	static t_nested_list	&													getList();
 
 	/****************this four function it is to debug********************/
 	void						displayServerTable();

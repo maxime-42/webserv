@@ -157,77 +157,36 @@ bool		find_directive(t_single_list & secondList, std::string &elemToFind, void *
 		itr_dictionary = dictionary.find(elemToFind);// identify port
 		if (itr_dictionary != dictionary.end())
 		{
-			std::cout << "kelll BYYY == " << itr_dictionary->second << std::endl;
 			ptrString = (std::string *) ptrReponse;
 			*ptrString = itr_dictionary->second;
-			std::cout << "ptr string === " << *ptrString << std::endl;
 			return (true);
 		}
 	}
 	return (false);
-	(void)ptrReponse;
-	(void)ptrReponse;
-;
 }
 
-// bool		find_location(std::map < std::string, std::string > dictionary, std::string &elemToFind, void *ptrReponse)
-// {
-// 	std::map < std::string, std::string >::iterator itr_dictionary;
-
-// 	itr_dictionary = dictionary.find("location");// identify port
-// 	if (itr_dictionary != dictionary.end() && elemToFind.compare(itr_dictionary->second) == 0)
-// 	{
-// 		std::map<std::string, std::string> *ptrMap = (std::map<std::string, std::string> *) ptrReponse;
-// 		(*ptrMap) = dictionary;
-// 		return (true);
-// 	}
-// 	return (false);
-// }
-
-bool  getInfo(t_nested_list firstList, int port, std::string elemToFind, void *reponse, bool(*callback)(t_single_list & secondList, std::string &elemToFind, void *ptrReponse))
+bool  getInfo(int port, std::string elemToFind, void *reponse, bool(*callback)(t_single_list & secondList, std::string &elemToFind, void *ptrReponse))
 {
 	bool has_find = false;
+	t_nested_list firstList =  ParsingFile::getList();
 	std::string str_port = get_value_in_string(port);//get value of port under string format
 	std::map < std::string, std::string > dictionary;
 	std::map < std::string, std::string >::iterator itr_dictionary;
-	t_nested_list::iterator itr_firstList = firstList.begin(); 
 	t_single_list::iterator itr_secondList;
-	for (;  itr_firstList != firstList.end(); itr_firstList++)
+	for (t_nested_list::iterator itr_firstList = firstList.begin();  itr_firstList != firstList.end(); itr_firstList++)
 	{
-
 		t_single_list & secondList  = *itr_firstList;
 		for (itr_secondList = secondList.begin();  itr_secondList != secondList.end(); itr_secondList++)
 		{
-			
 			dictionary = *itr_secondList; //to get dictionary of each node
 			itr_dictionary = dictionary.find("listen");// identify port
 			if (itr_dictionary != dictionary.end() && str_port.compare(itr_dictionary->second) == 0)
 			{
-				std::cout << " key = [" << itr_dictionary->first << "]" << " value = [" << itr_dictionary->second <<   "]" << std::endl;
-			// 		// callback(*itr_secondList, &reponse, dictionary);
-			// 	// return ();
 				has_find = callback(secondList, elemToFind, reponse);
 				if (has_find)
 					return (has_find);
 			}
-
-			// if (itr_dictionary != dictionary.end() && str_port.compare(itr_dictionary->second) == 0)// if the port exist
-			// {
-			// 	has_find = look_over_singleList(secondList, elemToFind, dictionary);// loopback in the  single list to retrieve the map which contain  the item to search
-			// 	if (has_find == true)		
-			// 	{
-			// 		// itr_dictionary = dictionary.find(elemToFind);
-			// 		// reponse = itr_dictionary->second;
-			// 		return(has_find); // the element has be found
-			// 	}
-			// }
 		}
 	}
-	(void)itr_secondList;
-	(void)itr_dictionary;
-	(void)dictionary;
-	(void)elemToFind;
-	(void)reponse;
-	(void)callback;
 	return (has_find);	//return false , the element has not be found
 }
