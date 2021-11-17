@@ -1,8 +1,4 @@
-#include "Service.hpp"
-#include<sstream> 
-#include "header.hpp"
-typedef std::list < std::list < std::map < std::string, std::string > > > t_nested_list;
-typedef std::list<std::map < std::string, std::string > > t_single_list;
+#include "lookup_in_nested_list.hpp"
 
 void	displayDirectionary(std::map<std::string, std::string> &map);
 

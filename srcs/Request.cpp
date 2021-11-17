@@ -126,11 +126,31 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
 	
 }
 
+void	print_string_dictionnary(std::map<std::string, std::string> &first)
+{
+	for (std::map<std::string, std::string>::iterator  itr = first.begin(); itr != first.end(); ++itr) 
+	{
+        std::cout << '\t' << itr->first << '\t' << itr->second << '\n';
+	}
+	std::cout << "\n" << std::endl;
+}
+
 /*
  * 	If the requested method is supported, we call the appropiate function
  */
 void        Request::process()
 {
+    std::map<std::string, std::string> reponse;
+	bool ret = getInfo(3300, "/", &reponse, find_location);
+	if (ret)
+	{
+		std::cout << ">>>>>Exit<<<<" << std::endl;
+		print_string_dictionnary(reponse);
+	}
+	else
+	{
+		std::cout << "<<< Nooot exit<<<<" << std::endl;
+	}
 
 	// Reponse["code"] will only exist if the parsing threw an error. Execution stops then
     if (reponse.find("code") != reponse.end())
