@@ -44,7 +44,9 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
     std::string key;
     std::string val;
 
+	header.clear();
     reponse.clear();
+	g_request[ptr_tab_poll->fd].clear();
 
     header["args"] = "";
     getline(iss, header["method"], ' ');
@@ -117,11 +119,11 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
 
 
 	// --------  affichage  --------------------------------------------------------------------------
-	/*
+	
     for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it) {
         std::cout << it->first << ":" << it->second << std::endl;
     }
-	*/
+	
 }
 
 /*
@@ -209,13 +211,12 @@ void        Request::_process_GET()
 	root = "root/";
 	chdir(root.c_str());
 
-    if (header["url"] == "/")
+    if (header["url"] == "/") {
         path = "index.html";
-    else if (header["url"][0] == '/')
+    } else if (header["url"][0] == '/') {
         path = header["url"].erase(0,1);
+	}
 //	path = root + path;
-
-	std::cout << "path is " << path << std::endl;
 
     std::ifstream	ifs(path.c_str());
 
