@@ -16,13 +16,13 @@ Request::~Request() {}
 /*	
  *	Copy the portion of the request in the buffer to a vector<unsigned char>
  */
-int			Request::read(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll) {
+int			Request::read(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll, int bytes_to_read) {
 
 	size_t ret = 0;
 
 	g_request[ptr_tab_poll->fd];
 
-	for (size_t i = 0; buffer[i]; i++) {
+	for (int i = 0; i < bytes_to_read; i++) {
 		g_request[ptr_tab_poll->fd].push_back(buffer[i]);
 		ret++;
 	}
@@ -32,7 +32,7 @@ int			Request::read(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll) {
 
 bool is_hex(std::string const& s)
 {
-  return s.find_first_not_of("0123456789abcdefABCDEF") == std::string::npos;
+  	return s.find_first_not_of("0123456789abcdefABCDEF") == std::string::npos;
 }
 
 /*
@@ -48,6 +48,9 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
     std::istringstream iss(request_str);
     std::string key;
     std::string val;
+
+	std::cout << "REQUEST HEADER" << std::endl << std::endl;
+	std::cout << request_str << std::endl << std::endl;
 
 	header.clear();
     reponse.clear();
@@ -69,8 +72,10 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
     if (header["method"] == "" || header["url"] == "" || header["http"] == ""
 			|| header["http"].find("\n") != header["http"].npos || header["url"][0] != '/')
         return http_code("400");
-    if (header["http"] != "HTTP/1.1")
+    if (header["http"] != "HTTP/1.1") {
+		std::cout << " YO YO YO YO YO THAT'S A FCKIN 505 NO MATTER WHAT" << std::endl;
         return http_code("505");
+	}
 
     size_t begin_key;
     size_t end_key;
@@ -89,7 +94,9 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
            */
         if ((request_str.size() > 2) && (request_str.at(0) == 13) && (request_str.at(1) == '\n')) //at(0) == 13; at(1) == '\n' because a new line split the header from the body
         {
-			if (header.find("Content-Encoding") != header.end() && header["Content-Encoding"] == "chunked") {
+			if (header.find("Transfer-Encoding") != header.end() && header["Transfer-Encoding"] == "chunked") {
+
+				std::cout << "YO YO YO YO " << std::endl;
 
 				std::stringstream ss;
 				std::string	buf;
@@ -97,21 +104,29 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
 				size_t		bytes;
 
 				getline(iss, buf, '\r'); 
-				if (buf.compare(0, 2, "0x") == 0)
-					buf.erase(0, 2);
-				if (buf.find("\n") != buf.npos || !is_hex(buf))
-					return http_code("400");
+				do {
+					if (buf.compare(0, 2, "0x") == 0)
+						buf.erase(0, 2);
+					if (buf.find("\n") != buf.npos || !is_hex(buf))
+						return http_code("400");
 
-				ss << std::hex << buf;
-				ss >> bytes;
+					ss << std::hex << buf;
+					ss >> bytes;
 
-				for (size_t i = 0; i < bytes; i++) {
-					iss.get(c);
-					header["body"] += c;
-				}
-				getline(iss, buf, '\n');
-				if (buf != "\r")
-					return http_code("400");
+					std::cout << bytes << " bytes to read" << std::endl;
+
+					getline(iss, buf, '\n');
+					if (buf != "")
+						return http_code("400");
+					for (size_t i = 0; i < bytes; i++) {
+						iss.get(c);
+						header["body"] += c;
+					}
+					getline(iss, buf, '\n');
+					if (buf != "\r")
+						return http_code("400");
+					getline(iss, buf, '\r');
+				} while (!iss.eof());
 
 			} else {
 
@@ -149,13 +164,16 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
 
 	g_request[ptr_tab_poll->fd].clear(); // empty vector to allow incoming request from the same client
 
+	std::cout << "REQUEST BODY" << std::endl << std::endl;
+	std::cout << header["body"] << std::endl << std::endl;
 
 	// --------  affichage  --------------------------------------------------------------------------
 
-    for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it) {
-        std::cout << it->first << ":" << it->second << std::endl;
-    }
-
+	/*
+       for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it) {
+       std::cout << it->first << ":" << it->second << std::endl;
+       }
+	   */
 }
 
 void	print_string_dictionnary(std::map<std::string, std::string> &first)
@@ -172,6 +190,7 @@ void	print_string_dictionnary(std::map<std::string, std::string> &first)
  */
 void        Request::process()
 {
+	/*
     std::map<std::string, std::string> reponse;
 	bool ret = getInfo(3300, "/", &reponse, find_location);
 	if (ret)
@@ -183,7 +202,7 @@ void        Request::process()
 	{
 		std::cout << "<<< Nooot exit<<<<" << std::endl;
 	}
-
+*/
 	// Reponse["code"] will only exist if the parsing threw an error. Execution stops then
     if (reponse.find("code") != reponse.end())
         return ;
@@ -491,14 +510,32 @@ void    Request::_process_DELETE()
 bool	Request::end_reached(struct pollfd *ptr_tab_poll) {
 
 	size_t len = g_request[ptr_tab_poll->fd].size();
+	std::string request_str(g_request[ptr_tab_poll->fd].begin(), g_request[ptr_tab_poll->fd].end());
 
-	for (size_t i = 0; i < len; i++) {
+	if (request_str.find("Transfer-Encoding:chunked") != std::string::npos
+			|| request_str.find("Transfer-Encoding: chunked") != std::string::npos) {
 
-		if (g_request[ptr_tab_poll->fd][i] == '\r'
-				&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
-				&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
-				&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n'))
-			return true;
+		for (size_t i = 0; i < len; i++) {
+
+			if (g_request[ptr_tab_poll->fd][i] == '\r'
+					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
+					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '0')
+					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
+					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
+					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
+					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n'))
+				return true;
+		}
+	} else {
+
+		for (size_t i = 0; i < len; i++) {
+
+			if (g_request[ptr_tab_poll->fd][i] == '\r'
+					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
+					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
+					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n'))
+				return true;
+		}
 	}
 	return false;
 
