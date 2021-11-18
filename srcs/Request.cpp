@@ -33,9 +33,6 @@ int			Request::read(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll) {
 /*
  *	Once the whole request has been read, it is parsed and transformed into a header map
  *	If the request is not good, we throw the appropiate http error code with the appropiate message.
-
-    TODO: 
-        Trouver le pattern body (pb in case of upload there is a strange sentence)
  */
 void		Request::parse(struct pollfd *ptr_tab_poll, int port) {
 
@@ -90,9 +87,23 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port) {
         if ((request_str.size() > 2) && (request_str.at(0) == 13) && (request_str.at(1) == '\n')) //at(0) == 13; at(1) == '\n' because a new line split the header from the body
         {
             request_str.erase(0, 2); //+ 1 for the '\n'.
-            header["body"] = request_str.substr(0, request_str.size());
-            //std::cout << "BODY:\n[" << header["body"] << "]\n";
-            request_str.erase(0, request_str.size()); //+ 1 for the '\n'.
+            /*
+                In case where the client is uploading something, there can have a big '-' line, that is not the body.
+            */
+            //std::cout << "request for body = \n" << request_str << "]\n";
+            if (strncmp(request_str.c_str(), "-----------------------------", 28) == 0)
+            {
+                //std::cout << "char[28] = [" << request_str.at(28) << "] 29 = (" << request_str.at(29) << ")\n";
+                begin_key = request_str.find('\n');
+                request_str.erase(0, begin_key + 1); //+ 1 for the '\n'.
+                
+            }
+            else
+            {
+                header["body"] = request_str.substr(0, request_str.size());
+                //std::cout << "BODY:\n[" << header["body"] << "]\n";
+                request_str.erase(0, request_str.size()); //+ 1 for the '\n'.
+            }
         }
         /*
            The key and the value are separate by ':'. The function is going to find the separator then fill header with the key and value
@@ -233,7 +244,8 @@ int		Request::sendall(int s, const char *buf, int len)
     int bytesleft = len; // how many we have left to send
     int n;
 
-    while(total < len) {
+    while (total < len)
+    {
         n = send(s, buf+total, bytesleft, 0);
         if (n == -1) { break; }
         total += n;
@@ -416,6 +428,57 @@ void	initialize_mime_types(std::map<std::string, std::string> &mime_types)
 	mime_types[".7z"]       = "application/x-7z-compressed";
 }
 
+std::string Request::find_url_and_name_from_file(std::string const file_type)
+{
+    std::cout << "FIND URL + NAME FUNCTION BEGIN\n";
+    std::string url_file = header["url"].substr(0, header["url"].size() - 7);
+    std::string file_name = "newfile" + file_type;
+
+    /*
+        Starting by check if the file the webserv server have to create have a name.
+    */
+    if (header["Content-Disposition"].size() > 0)
+    {
+        std::cout << "Content-Disposition finded" << std::endl;
+        file_name = header["Content-Disposition"].substr(header["Content-Disposition"].find("filename=") + 10, header["Content-Disposition"].find("\"") + 1);
+    }
+
+    /*
+        Search if there is a /root in the config file to initialise the url_file and know where the server have to create the file.
+    */
+   	std::map<std::string, std::string> location_rep;
+	bool ret = getInfo(atoi(header["port"].c_str()), header["url"], &location_rep, find_location);
+	if (ret)
+	{
+		std::cout << "Location successfully find" << std::endl;
+        /*
+            If there is some information at a location from the url, search if there is a /root informations in the config file
+        */
+        std::map<std::string, std::string>::const_iterator it;
+        for (it = location_rep.begin(); it != location_rep.end(); ++it)
+        {
+            /*
+                TODO: Check if the /root is first ou second
+            */
+            //std::cout << "it-first = [" << it->first << "]" << "\n";
+            //std::cout << "it-second = [" << it->second << "]" << "\n";
+            if (it->second == "root")
+            {
+                url_file = it->second + "/";
+                /*
+                    DEBUG
+                */
+                std::cout << "url_file is there is a /root = [" << url_file << "]\n";
+                break ;
+            }
+        }
+	}
+
+    std::cout << "url  file = [" << url_file << "]\n";
+    std::cout << "file name = [" << file_name << "]\n";
+    return (url_file + file_name);
+}
+
 /*
    Méthode pour créer un fichier et le remplir du body présent dans header[].
    On lui envoie le type de fichier en argument (ex : .json)
@@ -427,14 +490,9 @@ void	initialize_mime_types(std::map<std::string, std::string> &mime_types)
 int    Request::create_file(std::string const file_type)
 {
     std::cout << "CREATE FILE FUNCTION BEGIN\n";
-    std::string file_name = "VIDE";
-    // Le fichier s'appelle actuellement "test"...
-    if (header["Content-Disposition"].size() > 0)
-        file_name = header["url"] + header["Content-Disposition"].substr(header["Content-Disposition"].find("filename=") + 10, header["Content-Disposition"].size() - 1);
-    
-    std::cout << "file name = EGALEEEEEEEEE = [" << file_name << "]\n";
-    
-    std::string const nomFichier(file_name + file_type);
+
+    std::string const nomFichier(find_url_and_name_from_file(file_type));
+    std::cout << "nomfichier = EGALEEEEEEEEE = [" << nomFichier << "]\n";
     std::ofstream monFlux(nomFichier.c_str());
 
     if(monFlux)
@@ -443,6 +501,9 @@ int    Request::create_file(std::string const file_type)
     }
     else
     {
+        /*
+            DEBUG : (TODO: delete the ERREUR msg)
+        */
         std::cout << "ERREUR: Impossible d'ouvrir le fichier." << std::endl;
         return (FAILURE);
     }
@@ -470,10 +531,11 @@ void    Request::_process_POST()
             break ;
     }
     // Si on trouve pas le type en question
-    if (it == mime_types.end())
+    if ((it == mime_types.end()))
     {
         reponse["code"] = "415";
         reponse["status"] = "KO";
+        return ;
     }
 
     std::cout << "CONTENT TYPE FROM MIME TYPES = [" << it->first << "]\n";
@@ -482,6 +544,9 @@ void    Request::_process_POST()
     reponse["Content-Type"]     = header["Content-Type"];
     if (create_file(it->first) != SUCCESS)
     {
+        /*
+            TODO : Afficher la page error avec le bon numéro
+        */
         reponse["code"] = "400";
         reponse["status"] = "KO";
     }
@@ -505,7 +570,8 @@ void    Request::_process_POST()
  */
 void    Request::_process_DELETE()
 {
-    char const *file_to_delete = header["url"].c_str();
+    std::string const nomFichier(find_url_and_name_from_file(""));
+    char const *file_to_delete = nomFichier.c_str();
 
     //std::cout << "file to delete = (" << file_to_delete << ")\n";
     if (header["url"].compare("/") == 0)
