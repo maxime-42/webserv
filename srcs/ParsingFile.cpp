@@ -164,9 +164,6 @@ void	ParsingFile:: 						checkPort(std::string &str_port)
 	if (ret == false)
 		throw("error : port must be a integer");
 	int int_port = convert_string_to_integer(str_port);
-	// ret = check_duplicated(_ports, int_port);
-	// if (ret == true)
-	// 	throw("error : port must be uniquely");
 	_ports.push_back(int_port);
 }
 
@@ -388,7 +385,7 @@ void										ParsingFile::parsingProcess()
 			// std::cout << "pieceOfString = [" << pieceOfString << "]" << std::endl;
 			if (pieceOfString.compare("server") == 0)
 			{
-				addListInNestedList(dictionary);
+				// addListInNestedList(dictionary);
 				hasServer();
 			}
 			else if (pieceOfString.compare("location") == 0)
@@ -407,7 +404,11 @@ void										ParsingFile::parsingProcess()
 			else if (pieceOfString.compare("}") == 0)
 			{
 				hasBracketClose(nbParenthese);
-				addDictionaryInList(dictionary);
+				if (nbParenthese == 0){
+					addListInNestedList(dictionary);
+				}
+				else
+					addDictionaryInList(dictionary);
 			}
 			else if (checkIfSecretWord(pieceOfString) == true)
 			{
@@ -438,5 +439,5 @@ void										ParsingFile::parsingProcess()
 	{
 		throw("error syntaxe: missing parenthe");
 	}
-	addListInNestedList(dictionary);
+	// addListInNestedList(dictionary);
 }

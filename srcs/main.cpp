@@ -2,6 +2,7 @@
 #include "ParsingFile.hpp"
 #include "Service.hpp"
 #include "header.hpp"
+void							displayServerTable();
 
 int	 main(int argc, const char** argv)
 {
@@ -13,10 +14,12 @@ int	 main(int argc, const char** argv)
 	}
 	else
 	{
+		ParsingFile &parse = ParsingFile::getInstance("/home/lenox/branch_maxime/configFile/default.conf");
 		// test_getInfo();
-
-		Service svc;
+		displayServerTable();
+		// Service svc;
 		// (void)map;
+		(void)parse;
 	}
 	(void)argc;
 	(void)argv;
