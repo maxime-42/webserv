@@ -3,6 +3,7 @@
 
 #include "Server.hpp"
 #include <vector>
+#include "lookup_in_nested_list.hpp"
 
 /*
 	TODO: check if we need to implement here or if there already in Server.hpp

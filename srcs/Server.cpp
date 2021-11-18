@@ -77,7 +77,7 @@ bool	Server:: 						receive_data(struct pollfd	*ptr_tab_poll)
 		return(false);
 	}
 	std::cout << ret << " bytes received:\n ===============\n" << _buffer << "\n===============\n"<< std::endl;
-	return (true);
+	return (true);	
 }
 
 
