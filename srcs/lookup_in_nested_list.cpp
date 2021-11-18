@@ -1,13 +1,4 @@
-#include "Service.hpp"
-#include<sstream> 
-#include "header.hpp"
-#include <string.h>
-
-typedef std::list < std::list < std::map < std::string, std::string > > > t_nested_list;
-typedef std::list<std::map < std::string, std::string > > t_single_list;
-int								convert_string_to_integer(std::string &str);
-
-void	displayDirectionary(std::map<std::string, std::string> &map);
+#include "lookup_in_nested_list.hpp"
 
 /*
 ** All function in this file consist to retrieve info inside list of server
@@ -89,7 +80,7 @@ bool		find_directive(t_single_list & secondList, std::string &elemToFind, void *
 **	Each node of single list there a dictionary which store data 
 **
 ** In the second loop the instructions is to :
-**	firstly find the port, once  port find,  "callback" it called
+**	firstly find the port, once  port find  "callback" it called
 */
 bool  getInfo(int port, std::string elemToFind, void *reponse, bool(*callback)(t_single_list & secondList, std::string &elemToFind, void *ptrReponse))
 {

@@ -13,6 +13,7 @@ enum token_type
 	server,
 	initialized
 };
+
 #include "header.hpp"	
 #include <bitset>
 #include <iostream>
@@ -29,13 +30,11 @@ enum token_type
 /*
 ** THIS IS A SINGLETON CLASS : Singleton design pattern is a software design principle that is used to restrict the instantiation of a class to one object
 */
+#include "lookup_in_nested_list.hpp"
 
 
 typedef std::list < std::list < std::map < std::string, std::string > > > t_nested_list;
 typedef std::list<std::map < std::string, std::string > > t_single_list;
-int								convert_string_to_integer(std::string &str);
-bool	 						isNumber(std::string &str);
-bool							check_duplicated(std::vector<int>&vect, int item_to_search);
 
 class ParsingFile
 {
