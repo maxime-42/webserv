@@ -366,6 +366,7 @@ void	ParsingFile::						insertInDictionary(std::map<std::string, std::string>	&d
 }
 
 /*
+**to understand pretty good this function you should glance on the diagram of parsing
 ** this function try to identify token, then act to depending token  
 ** token is pieceOfString
 */
@@ -385,7 +386,6 @@ void										ParsingFile::parsingProcess()
 			// std::cout << "pieceOfString = [" << pieceOfString << "]" << std::endl;
 			if (pieceOfString.compare("server") == 0)
 			{
-				// addListInNestedList(dictionary);
 				hasServer();
 			}
 			else if (pieceOfString.compare("location") == 0)
@@ -421,9 +421,7 @@ void										ParsingFile::parsingProcess()
 					checkPort(directiveValue);
 				// 	throw("error syntaxe: listen have to be decimal numer");
 				if (nbParenthese == 0)
-				{
 					_globalConfig[directiveName] = directiveValue;
-				}
 				else
 					insertInDictionary(dictionary, directiveName, directiveValue);
 			}
@@ -439,5 +437,4 @@ void										ParsingFile::parsingProcess()
 	{
 		throw("error syntaxe: missing parenthe");
 	}
-	// addListInNestedList(dictionary);
 }
