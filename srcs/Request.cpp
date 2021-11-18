@@ -69,8 +69,8 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
         header["url"] = header["url"].substr(0, header["url"].find('?'));
     }
     getline(iss, header["http"], '\r');
-    if (header["method"] == "" || header["url"] == "" || header["http"] == ""
-			|| header["http"].find("\n") != header["http"].npos || header["url"][0] != '/')
+    if (header["method"] == "" || header["url"] == "" || header["http"] == "" || header["url"][0] != '/'
+			|| header["http"].find("\n") != std::string::npos || header["http"].find(" ") != std::string::npos)
         return http_code("400");
     if (header["http"] != "HTTP/1.1") {
 		std::cout << " YO YO YO YO YO THAT'S A FCKIN 505 NO MATTER WHAT" << std::endl;
