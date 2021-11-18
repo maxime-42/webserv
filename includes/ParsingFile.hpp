@@ -33,6 +33,9 @@ enum token_type
 
 typedef std::list < std::list < std::map < std::string, std::string > > > t_nested_list;
 typedef std::list<std::map < std::string, std::string > > t_single_list;
+int								convert_string_to_integer(std::string &str);
+bool	 						isNumber(std::string &str);
+bool							check_duplicated(std::vector<int>&vect, int item_to_search);
 
 class ParsingFile
 {
@@ -49,6 +52,7 @@ private:
 	t_nested_list														_serverList;		//this vectore stock all keys word
 	bool																_errorHappened;
 	std::map<std::string, std::string>									_globalConfig;
+	std::vector<int>													_ports;	//this vector going to containt all port of config file
 
 
 	ParsingFile();
@@ -58,7 +62,7 @@ private:
 	size_t																interface_numberOfServer();
 	t_nested_list	&													interface_getList();
 	std::map<std::string, std::string> & 								interface_get_globalConfig();
-
+	std::vector<int> & 													interface_get_ports();
 
 public:
 	static	ParsingFile													&getInstance();
@@ -66,8 +70,11 @@ public:
 	static size_t														numberOfServer();
 	static	t_nested_list	&											getList();
 	static	std::map<std::string, std::string> & 						get_globalConfig();
+	static std::vector<int> &											get_ports();
 
 	bool																getErrorHappened();
+
+
 	~ParsingFile();
 
 	/****************this four function it is to debug********************/
@@ -86,6 +93,7 @@ private:
 	std::string					getPieceOfstring(size_t &i);
 	void						hasServer();
 	bool						checkIfSecretWord(std::string &pieceOfString);
+	void						checkPort(std::string &str_port);
 
 	/****************those function operare to a specific token********************/
 	void						hasBracketOpen(int &nbParenthese);
@@ -98,7 +106,6 @@ private:
 	void						addListInNestedList(std::map<std::string, std::string>	&dictionary);
 	void						addDictionaryInList(std::map<std::string, std::string>	&dictionary);
 	void						insertInDictionary(std::map<std::string, std::string> &dictionary, std::string &directiveName, std::string &directiveValue);
-	bool						isNumber(std::string &str);
 	int							getStartProcess();
 };
 

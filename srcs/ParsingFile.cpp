@@ -73,7 +73,10 @@ int	ParsingFile::							getStartProcess()
 }
 
 ParsingFile::~ParsingFile(){ }
- size_t	ParsingFile::						numberOfServer()
+
+/***************************************************************alll get function ****************************************/
+
+size_t	ParsingFile::						numberOfServer()
 {
 
 	return (getInstance(s_fileName).interface_numberOfServer());
@@ -91,15 +94,21 @@ t_nested_list	&							ParsingFile:: getList()
 	return(getInstance(s_fileName).interface_getList());
 }
 
-t_nested_list	&							ParsingFile:: interface_getList(){	return(_serverList);}
+t_nested_list	&	ParsingFile::						interface_getList(){	return(_serverList);}
 
 std::map<std::string, std::string> & ParsingFile::		get_globalConfig()
 {
 	return (getInstance(s_fileName).interface_get_globalConfig());
 }
-std::map<std::string, std::string> & ParsingFile::		interface_get_globalConfig()
+
+std::map<std::string, std::string> & ParsingFile::		interface_get_globalConfig(){	return (_globalConfig);}
+
+
+std::vector<int> & ParsingFile:: 						interface_get_ports () {return (_ports);}
+
+std::vector<int> & ParsingFile:: 						get_ports () 
 {
-	return (_globalConfig);
+	return (getInstance(s_fileName).interface_get_ports());
 }
 
 /*********************************************************************************OPEN  FILE* *********************************************************************************/
@@ -143,22 +152,25 @@ void	ParsingFile:: getFile()
 
 /*********************************************************************************ANALYSE SYNTAXE CONFIG FILE*********************************************************************************/
 
+
+
 /*
-** Returns true if given string in parameter is a number else false
+** to be sure about unity of port
+** first check if
 */
-bool	ParsingFile:: 						isNumber(std::string &str)
+void	ParsingFile:: 						checkPort(std::string &str_port)
 {
-	int result;
-	for (size_t i = 0; i < str.size(); i++)
-	{
-		result = isdigit(str[i]);
-		if (result == 0)
-		{
-			return (false);
-		}
-	}
-	return (true);
+	bool ret = isNumber(str_port);
+	if (ret == false)
+		throw("error : port must be a integer");
+	int int_port = convert_string_to_integer(str_port);
+	// ret = check_duplicated(_ports, int_port);
+	// if (ret == true)
+	// 	throw("error : port must be uniquely");
+	_ports.push_back(int_port);
 }
+
+
 
 void	ParsingFile:: hasSemicolon()
 {
@@ -404,7 +416,8 @@ void										ParsingFile::parsingProcess()
 			else if (pieceOfString.compare(";") == 0)
 			{
 				hasSemicolon();
-				// if (directiveName.compare("listen") == 0 && isNumber(directiveValue) == false)
+				if (directiveName.compare("listen") == 0 )
+					checkPort(directiveValue);
 				// 	throw("error syntaxe: listen have to be decimal numer");
 				if (nbParenthese == 0)
 				{

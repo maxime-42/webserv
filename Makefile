@@ -25,6 +25,7 @@ F_SRCS        =		main.cpp 			\
 					lookup_in_nested_list.cpp\
 					Service.cpp			\
 					to_debug.cpp\
+					utile.cpp\
 
 SRCS        = $(addprefix $(DIR_SRCS), $(F_SRCS))
 

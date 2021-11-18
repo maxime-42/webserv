@@ -134,6 +134,7 @@ void	Server::						accept_all_incoming_connections()
 	}
 }
 
+void		Server::						set_port(int port){_port = port;}
 
 
 int		Server::						getPort(){	return (_port);}
