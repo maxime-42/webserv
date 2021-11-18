@@ -54,6 +54,8 @@ private:
 	std::map<std::string, std::string>									_globalConfig;
 	std::vector<int>													_ports;	//this vector going to containt all port of config file
 
+	std::map<std::string, std::string>									_defautConfig;
+
 
 	ParsingFile();
 	ParsingFile(std::string fileName);
@@ -63,6 +65,9 @@ private:
 	t_nested_list	&													interface_getList();
 	std::map<std::string, std::string> & 								interface_get_globalConfig();
 	std::vector<int> & 													interface_get_ports();
+	std::map<std::string, std::string> & 			 					interface_get_defaut_config();
+
+	void 																set_defaut_config();
 
 public:
 	static	ParsingFile													&getInstance();
@@ -71,6 +76,7 @@ public:
 	static	t_nested_list	&											getList();
 	static	std::map<std::string, std::string> & 						get_globalConfig();
 	static std::vector<int> &											get_ports();
+	static std::map<std::string, std::string> & 						get_defaut_config();
 
 	bool																getErrorHappened();
 

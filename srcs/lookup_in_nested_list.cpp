@@ -1,6 +1,8 @@
 #include "Service.hpp"
 #include<sstream> 
 #include "header.hpp"
+#include <string.h>
+
 typedef std::list < std::list < std::map < std::string, std::string > > > t_nested_list;
 typedef std::list<std::map < std::string, std::string > > t_single_list;
 int								convert_string_to_integer(std::string &str);
@@ -115,18 +117,21 @@ bool  getInfo(int port, std::string elemToFind, void *reponse, bool(*callback)(t
 	return (has_find);	//return false , the element has not be found
 }
 
-#include <string.h>
-
+/*
+**	split "url" with help to  function "strtok", 
+**	"strtok" function return a token on each backloop
+**	then concaten '/' and token which going to generate new string "elemToFind"
+*/
 bool			get_location_url(int port, std::string url, void *ptrReponse)
 {
 	bool		ret;
 	char		*token = strtok((char *)url.c_str(), "/");
+
 	while (token != NULL)
 	{
-		std::string	item = "/";
-		item.append(token);
-		// std::cout << "item = [" << item << "]" << std::endl;
-		ret = getInfo(port, item, ptrReponse, find_location);
+		std::string	elemToFind = "/";
+		elemToFind.append(token);
+		ret = getInfo(port, elemToFind, ptrReponse, find_location);
 		if (ret == true)
 			return (true);
 		token = strtok(NULL, "/");

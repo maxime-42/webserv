@@ -12,17 +12,19 @@ ParsingFile ::ParsingFile  (const ParsingFile & other) {(void)other;};// Singlet
 
 static  std::string  s_fileName;
 
-ParsingFile & ParsingFile::					getInstance(std::string fileName)
+ParsingFile & ParsingFile::								getInstance(std::string fileName)
 {
 	// s_fileName = fileName;
 	static  ParsingFile  _instance(fileName);
 	return (_instance);
 }
 
+
+
 /*
 **	this construct it called when there is no one given parameter to the program
 */
-ParsingFile::								ParsingFile(): _fileName("./configFile/default.conf"), _configFile(std::string()), _errorHappened(false)
+ParsingFile::											ParsingFile(): _fileName("./configFile/default.conf"), _configFile(std::string()), _errorHappened(false)
 {
 	std::cout << "*******************************\tTAKING \tDEFAULT\t FILE\t***********************" << std::endl;
 	int result = getStartProcess();
@@ -35,7 +37,7 @@ ParsingFile::								ParsingFile(): _fileName("./configFile/default.conf"), _con
 /*
 **	this construct it called when given parameter to the program
 */
-ParsingFile::								ParsingFile(std::string fileName): _fileName(fileName), _configFile(std::string()), _errorHappened(false)
+ParsingFile::											ParsingFile(std::string fileName): _fileName(fileName), _configFile(std::string()), _errorHappened(false)
 {
 	s_fileName = fileName;
 
@@ -47,14 +49,14 @@ ParsingFile::								ParsingFile(std::string fileName): _fileName(fileName), _co
 	}
 }
 
-bool	ParsingFile::						getErrorHappened(){return (_errorHappened);}
+bool	ParsingFile::									getErrorHappened(){return (_errorHappened);}
 
 /*
 **	step one 	:	get file in std::string "configFile"
 **	step two 	:	create table of keyword
 **	step three	:	parsing file, file is located in std::string _configFile;
 */
-int	ParsingFile::							getStartProcess()
+int	ParsingFile::										getStartProcess()
 {
 	try
 	{
@@ -76,20 +78,22 @@ ParsingFile::~ParsingFile(){ }
 
 /***************************************************************alll get function ****************************************/
 
-size_t	ParsingFile::						numberOfServer()
+
+
+size_t	ParsingFile::									numberOfServer()
 {
 
 	return (getInstance(s_fileName).interface_numberOfServer());
 }
 
 
-size_t	ParsingFile::						interface_numberOfServer()
+size_t	ParsingFile::									interface_numberOfServer()
 {
 	return (_serverList.size());
 }
 
 
-t_nested_list	&							ParsingFile:: getList()
+t_nested_list	&										ParsingFile:: getList()
 {
 	return(getInstance(s_fileName).interface_getList());
 }
@@ -111,13 +115,26 @@ std::vector<int> & ParsingFile:: 						get_ports ()
 	return (getInstance(s_fileName).interface_get_ports());
 }
 
+void	ParsingFile::									set_defaut_config()
+{
+	_defautConfig["allow"] = "PUT GET DELETE POST";
+	_defautConfig["listen"] = "8080";
+	_defautConfig["cli_max_size"] = "4096";
+	_defautConfig["error page"] = " 404 error.html";
+	
+}
+
+std::map<std::string, std::string> & ParsingFile::		get_defaut_config(){return(getInstance(s_fileName).interface_get_defaut_config());}
+
+std::map<std::string, std::string> & ParsingFile:: 		interface_get_defaut_config () {return (_defautConfig);}
+
 /*********************************************************************************OPEN  FILE* *********************************************************************************/
 
 /*
 **	this function remove comments line
 ** comment line start with "#"
 */
-void	ParsingFile::						handleCommentes(std::string &line)
+void	ParsingFile::									handleCommentes(std::string &line)
 {
 	size_t  begin = line.find("#");
 	if (begin != std::string::npos)
@@ -158,7 +175,7 @@ void	ParsingFile:: getFile()
 ** to be sure about unity of port
 ** first check if
 */
-void	ParsingFile:: 						checkPort(std::string &str_port)
+void	ParsingFile:: 									checkPort(std::string &str_port)
 {
 	bool ret = isNumber(str_port);
 	if (ret == false)
@@ -181,7 +198,7 @@ void	ParsingFile:: hasSemicolon()
 	}
 }
 
-void	ParsingFile:: 						hasName(std::string &directiveName, std::string & pieceOfString, size_t i)
+void	ParsingFile:: 									hasName(std::string &directiveName, std::string & pieceOfString, size_t i)
 {
 	int result = 0;
 	result = !isspace(_configFile[i]);
@@ -200,7 +217,7 @@ void	ParsingFile:: 						hasName(std::string &directiveName, std::string & piece
 
 }
 
-void	ParsingFile:: hasValue(std::string &directiveValue, std::string & pieceOfString)
+void	ParsingFile:: 									hasValue(std::string &directiveValue, std::string & pieceOfString)
 {
 	if (_previousToken == name || _previousToken == location || _previousToken == value)
 	{
@@ -246,7 +263,7 @@ void	ParsingFile::	createKeyWord()
 ** 		paramter i is index of string _configFile
 ** 		i it is increment depending  numbers characters to copy
 */
-std::string	ParsingFile::					getPieceOfstring(size_t &i)
+std::string	ParsingFile::								getPieceOfstring(size_t &i)
 {
 	size_t	nbCharacterTocopy = 0;
 	size_t start = i;
@@ -268,7 +285,7 @@ std::string	ParsingFile::					getPieceOfstring(size_t &i)
 	return (pieceOfString);
 }
 
-void	ParsingFile::						hasServer()
+void	ParsingFile::									hasServer()
 {
 	// if (_previousToken == initialized || _previousToken == brackets_close)
 	if (_previousToken == initialized || _previousToken == brackets_close || _previousToken == semicolon)
@@ -281,7 +298,7 @@ void	ParsingFile::						hasServer()
 	}
 }
 
-void	ParsingFile::						hasLocation(std::string &directiveName, std::string & pieceOfString)
+void	ParsingFile::									hasLocation(std::string &directiveName, std::string & pieceOfString)
 {
 	if (_previousToken == semicolon || _previousToken == brackets_open || _previousToken == brackets_close)
 	{
@@ -294,7 +311,7 @@ void	ParsingFile::						hasLocation(std::string &directiveName, std::string & pi
 	}
 }
 
-void	ParsingFile::						hasBracketOpen(int &nbParenthese)
+void	ParsingFile::									hasBracketOpen(int &nbParenthese)
 {
 	if ( _previousToken == server || _previousToken == location || _previousToken == value)
 	{
@@ -307,7 +324,7 @@ void	ParsingFile::						hasBracketOpen(int &nbParenthese)
 	}
 }
 
-void	ParsingFile::						hasBracketClose(int &nbParenthese)
+void	ParsingFile::									hasBracketClose(int &nbParenthese)
 {
 	if ( _previousToken == semicolon || _previousToken == brackets_close || _previousToken == brackets_open)
 	{
@@ -324,7 +341,7 @@ void	ParsingFile::						hasBracketClose(int &nbParenthese)
 ** check if given string in paramter of function is secret word
 ** secret word is inside vector _keyWords
 */
-bool	ParsingFile::						checkIfSecretWord(std::string &pieceOfString)
+bool	ParsingFile::									checkIfSecretWord(std::string &pieceOfString)
 {
 	int resultCompar = -1;
 
@@ -335,7 +352,7 @@ bool	ParsingFile::						checkIfSecretWord(std::string &pieceOfString)
 	return (resultCompar == 0 ? true : false);
 }
 
-void	ParsingFile::						addListInNestedList(std::map<std::string, std::string>	&dictionary)
+void	ParsingFile::									addListInNestedList(std::map<std::string, std::string>	&dictionary)
 {
 	if (_previousToken == brackets_close)
 	{
@@ -345,7 +362,7 @@ void	ParsingFile::						addListInNestedList(std::map<std::string, std::string>	&
 	}
 }
 
-void	ParsingFile::						addDictionaryInList(std::map<std::string, std::string>	&dictionary)
+void	ParsingFile::									addDictionaryInList(std::map<std::string, std::string>	&dictionary)
 {
 	if (dictionary.size())
 	{
@@ -358,7 +375,7 @@ void	ParsingFile::						addDictionaryInList(std::map<std::string, std::string>	&
 ** this function insert name and value in dictionary
 ** afterward initialize  name and value
 */
-void	ParsingFile::						insertInDictionary(std::map<std::string, std::string>	&dictionary, std::string &directiveName, std::string &directiveValue)
+void	ParsingFile::									insertInDictionary(std::map<std::string, std::string>	&dictionary, std::string &directiveName, std::string &directiveValue)
 {
 	dictionary[directiveName] = directiveValue;
 	directiveName = std::string();
@@ -371,7 +388,7 @@ void	ParsingFile::						insertInDictionary(std::map<std::string, std::string>	&d
 ** token is pieceOfString
 */
 
-void										ParsingFile::parsingProcess()
+void													ParsingFile::parsingProcess()
 {
 	std::string 							directiveName;
 	std::string 							directiveValue;
