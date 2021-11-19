@@ -11,7 +11,7 @@ _WHITE		=\e[97m
 NAME        = server
 
 CC            = clang++
-CFLAGS        = -Werror -Wextra -Wall --std=c++98 -g3 -fsanitize=address
+CFLAGS        = -Werror -Wextra -Wall --std=c++98 -g3 -fstandalone-debug  #-fsanitize=address
 RM            = rm -rf
 
 DIR_SRCS    = srcs/

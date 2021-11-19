@@ -49,7 +49,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
     std::string key;
     std::string val;
 
-	std::cout << "REQUEST HEADER" << std::endl << std::endl;
+	std::cout << "RAW REQUEST" << std::endl << std::endl;
 	std::cout << request_str << std::endl << std::endl;
 
 	header.clear();
@@ -72,10 +72,8 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
     if (header["method"] == "" || header["url"] == "" || header["http"] == "" || header["url"][0] != '/'
 			|| header["http"].find("\n") != std::string::npos || header["http"].find(" ") != std::string::npos)
         return http_code("400");
-    if (header["http"] != "HTTP/1.1") {
-		std::cout << " YO YO YO YO YO THAT'S A FCKIN 505 NO MATTER WHAT" << std::endl;
+    if (header["http"] != "HTTP/1.1")
         return http_code("505");
-	}
 
     size_t begin_key;
     size_t end_key;
@@ -96,37 +94,36 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
         {
 			if (header.find("Transfer-Encoding") != header.end() && header["Transfer-Encoding"] == "chunked") {
 
-				std::cout << "YO YO YO YO " << std::endl;
+				std::string			to_read;
+				size_t				bytes;
 
-				std::stringstream ss;
-				std::string	buf;
-				char		c;
-				size_t		bytes;
+				request_str.erase(0, 2); // erase \r\n
+				while (request_str.size() > 0) {
 
-				getline(iss, buf, '\r'); 
-				do {
-					if (buf.compare(0, 2, "0x") == 0)
-						buf.erase(0, 2);
-					if (buf.find("\n") != buf.npos || !is_hex(buf))
-						return http_code("400");
-
-					ss << std::hex << buf;
-					ss >> bytes;
-
-					std::cout << bytes << " bytes to read" << std::endl;
-
-					getline(iss, buf, '\n');
-					if (buf != "")
-						return http_code("400");
-					for (size_t i = 0; i < bytes; i++) {
-						iss.get(c);
-						header["body"] += c;
+					/*if (request_str.compare(0, 2, "0x") == 0)
+						request_str.erase(0, 2);*/
+					to_read = request_str.substr(0, request_str.find("\r"));
+					if (to_read == "") {
+						request_str.erase(0, 2);
+						continue;
 					}
-					getline(iss, buf, '\n');
-					if (buf != "\r")
+					if (!is_hex(to_read))
 						return http_code("400");
-					getline(iss, buf, '\r');
-				} while (!iss.eof());
+
+					std::istringstream(to_read) >> std::hex >> bytes;
+
+					if (request_str.at(request_str.find("\r") + 1) != '\n')
+						return http_code("401");
+					request_str.erase(0, request_str.find("\n") + 1);
+
+					header["body"] += request_str.substr(0, bytes);
+
+					try { if (request_str.at(bytes) != '\r' || request_str.at(bytes + 1) != '\n')
+						return http_code("402");
+					} catch (std::out_of_range) { break; }
+
+					request_str.erase(0, bytes + 2);
+				}
 
 			} else {
 
@@ -191,18 +188,18 @@ void	print_string_dictionnary(std::map<std::string, std::string> &first)
 void        Request::process()
 {
 	/*
-    std::map<std::string, std::string> reponse;
-	bool ret = getInfo(3300, "/", &reponse, find_location);
-	if (ret)
-	{
-		std::cout << ">>>>>Exit<<<<" << std::endl;
-		print_string_dictionnary(reponse);
-	}
-	else
-	{
-		std::cout << "<<< Nooot exit<<<<" << std::endl;
-	}
-*/
+       std::map<std::string, std::string> reponse;
+	   bool ret = getInfo(3300, "/", &reponse, find_location);
+	   if (ret)
+	   {
+	   std::cout << ">>>>>Exit<<<<" << std::endl;
+	   print_string_dictionnary(reponse);
+	   }
+	   else
+	   {
+	   std::cout << "<<< Nooot exit<<<<" << std::endl;
+	   }
+	   */
 	// Reponse["code"] will only exist if the parsing threw an error. Execution stops then
     if (reponse.find("code") != reponse.end())
         return ;
