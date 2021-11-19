@@ -92,7 +92,7 @@ bool	Server::						handle_existing_connections(struct pollfd	*ptr_tab_poll)
 	_close_connexion = false;
 	if ((ret = receive_data(ptr_tab_poll)) > 0)
 	{
-		request.read(_buffer, ptr_tab_poll, ret);
+		request.store(_buffer, ptr_tab_poll, ret);
 		if (/*request.read(_buffer, ptr_tab_poll) < BUFFER_SIZE ||*/ request.end_reached(ptr_tab_poll))
 		{
 

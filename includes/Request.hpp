@@ -40,7 +40,7 @@ class Request
 		Request();
 		~Request();
 
-		int						read(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll, int bytes);
+		int						store(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll, int bytes);
 		int						sendall(int s, const char *buf, int len);
         void					parse(struct pollfd *ptr_tab_poll);
         void                    process();

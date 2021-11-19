@@ -16,7 +16,7 @@ Request::~Request() {}
 /*	
  *	Copy the portion of the request in the buffer to a vector<unsigned char>
  */
-int			Request::read(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll, int bytes_to_read) {
+int			Request::store(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll, int bytes_to_read) {
 
 	size_t ret = 0;
 
@@ -49,8 +49,11 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
     std::string key;
     std::string val;
 
+//	std::transform(request_str.begin(), request_str.end(), request_str.begin(), ::toupper);
+
 	std::cout << "RAW REQUEST" << std::endl << std::endl;
 	std::cout << request_str << std::endl << std::endl;
+
 
 	header.clear();
     reponse.clear();
@@ -92,7 +95,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
            */
         if ((request_str.size() > 2) && (request_str.at(0) == 13) && (request_str.at(1) == '\n')) //at(0) == 13; at(1) == '\n' because a new line split the header from the body
         {
-			if (header.find("Transfer-Encoding") != header.end() && header["Transfer-Encoding"] == "chunked") {
+			if (header.find("TRANSFER-ENCODING") != header.end() && header["TRANSFER-ENCODING"] == "chunked") {
 
 				std::string			to_read;
 				size_t				bytes;
@@ -142,6 +145,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
             break ;
         }
         key = request_str.substr(0, begin_key);
+		std::transform(key.begin(), key.end(), key.begin(), ::toupper);
         //std::cout << "key = [" << key << "]\nbegin = " << begin_key << "\n";
         /*
            The request_str is the full informations the request receive. So the function erase the traited informations when header is filled.
@@ -166,11 +170,11 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
 
 	// --------  affichage  --------------------------------------------------------------------------
 
-	/*
+/*	
        for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it) {
        std::cout << it->first << ":" << it->second << std::endl;
        }
-	   */
+*/	   
 }
 
 void	print_string_dictionnary(std::map<std::string, std::string> &first)
@@ -501,6 +505,22 @@ void    Request::_process_DELETE()
     reponse["status"] = "OK";
 }
 
+// templated version of my_equal so it could work with both char and wchar_t
+struct my_equal {
+    bool operator()(char ch1, char ch2) {
+        return std::toupper(ch1) == std::toupper(ch2);
+    }
+};
+
+// find substring (case insensitive)
+int ci_find_substr( const std::string& str1, const std::string& str2 )
+{
+	std::string::const_iterator it = std::search( str1.begin(), str1.end(),
+        str2.begin(), str2.end(), my_equal() );
+    if ( it != str1.end() ) return it - str1.begin();
+    else return -1; // not found
+}
+
 /*
  * 	Checks if we had already reached the end of the request ( \r\n\r\n )
  */
@@ -509,8 +529,9 @@ bool	Request::end_reached(struct pollfd *ptr_tab_poll) {
 	size_t len = g_request[ptr_tab_poll->fd].size();
 	std::string request_str(g_request[ptr_tab_poll->fd].begin(), g_request[ptr_tab_poll->fd].end());
 
-	if (request_str.find("Transfer-Encoding:chunked") != std::string::npos
-			|| request_str.find("Transfer-Encoding: chunked") != std::string::npos) {
+	if (ci_find_substr(request_str, "transfer-encoding") != -1 && request_str.find("chunked") != std::string::npos)
+/*	if (request_str.find("TRANSFER-ENCODING") != std::string::npos
+			&& request_str.find("CHUNKED") != std::string::npos) */{
 
 		for (size_t i = 0; i < len; i++) {
 
