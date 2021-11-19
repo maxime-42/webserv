@@ -53,7 +53,8 @@ class Server
 		std::vector<int> &		get_vect_socket_fd();
 		void					accept_all_incoming_connections();
 		bool					handle_existing_connections(struct pollfd	*_tab_poll);
-
+		void					set_port(int port);
+		int						getPort();
 
 
 	private:
@@ -70,7 +71,6 @@ class Server
 		void					process_GET(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse);
 		void					process_POST(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse);
 		void					process_DELETE(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse);
-		int						getPort();
 		void					Squeze_vect_sockect_fd(int to_find);
 
 };
