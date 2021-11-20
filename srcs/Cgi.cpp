@@ -10,9 +10,9 @@ Cgi::Cgi(std::string script, std::string  path_script, char **env_main):_script(
 {
 	try
 	{
-		adjust_name_script();
+		complete_the_name_of_script();
 		set_args();
-		execCgi();
+		exec_Cgi();
 	}
 	catch(const char *e)
 	{
@@ -23,6 +23,10 @@ Cgi::Cgi(std::string script, std::string  path_script, char **env_main):_script(
 	
 }
 
+/*
+** free memory what as early alloc to "_arg"
+** this function free memory which was early alloc to "_arg"
+*/
 void	Cgi::clear_args()
 {
 	for (size_t i = 0; i < NUMBER_ARGUMENTS ; i++)
@@ -32,14 +36,19 @@ void	Cgi::clear_args()
 	}
 	free(_args);
 	_args = NULL;
-
 }
 
-void	Cgi::	adjust_name_script()
+/*
+** this function add  slash to the name of script
+** add likewise name of the current working directory to script
+*/
+
+void	Cgi::								complete_the_name_of_script()
 {
-	char 		*pwd = NULL;
+	char 									*pwd = NULL;
 	_script = "/" + _script;
 	pwd = getcwd(NULL, 0);
+	_pwd = pwd;//stock pwd 
 	if (pwd == NULL)
 	{
 		throw("error while getcwd");
@@ -52,8 +61,12 @@ void	Cgi::	adjust_name_script()
 	}
 }
 
+/*
+** recover the cgi binary file name and script name, store it in array "_args"
+** _args meaning argument
+*/
 
-void	Cgi::set_args()
+void	Cgi::								set_args()
 {
 
 	 _args = (char**)malloc(sizeof(char *) * (NUMBER_ARGUMENTS + 1));
@@ -68,20 +81,22 @@ void	Cgi::set_args()
 	_args[2] = NULL;
 }
 
+/*
+ * recover the HTTP_META_VARIABLES and store them in a malloc'd pointer to
+ * strings (char **).
+ * */
 void	Cgi::set_env()
 {
 
 }
 
-void	Cgi::check_error(int code, const char *error_msg)
+void	Cgi::								check_error(int code, const char *error_msg)
 {
 	if (code < 0)
 		throw(error_msg);
 }
 
-
-
-void		Cgi::	execCgi()
+void		Cgi::	exec_Cgi()
 {
  	int			pipeFd[2];
 	int			child_status;

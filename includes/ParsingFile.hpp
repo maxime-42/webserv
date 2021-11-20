@@ -94,6 +94,7 @@ private:
 	void						handleCommentes(std::string &line);
 	void						parsingProcess();
 	void						checkServerSyntaxe(size_t &i);
+	bool	 					isNumber(std::string &str);
 
 	std::string					getPieceOfstring(size_t &i);
 	void						hasServer();

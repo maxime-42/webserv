@@ -12,5 +12,4 @@ bool							find_location(t_single_list & secondList, std::string &elemToFind, vo
 bool							find_directive(t_single_list & secondList, std::string &elemToFind, void *ptrReponse);
 bool							getInfo(int port, std::string elemToFind, void *reponse, bool(*callback)(t_single_list & secondList, std::string &elemToFind, void *ptrReponse));
 
-bool	 						isNumber(std::string &str);
 #endif

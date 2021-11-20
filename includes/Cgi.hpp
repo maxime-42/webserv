@@ -19,10 +19,11 @@ private:
 	char									**_args;
 	char									**_env_main;
 	std::string								_data;
+	std::string								_pwd;
 	bool									_has_error;
 
 	Cgi(/* args */);
-	void	adjust_name_script();
+	void	complete_the_name_of_script();
 	void	set_args();
 	void	set_env();
 	void	check_error(int code, const char *error_msg);
@@ -31,12 +32,10 @@ private:
 public:
 	~Cgi();
 	Cgi(std::string script, std::string  path_script, char **env);
-	void		execCgi();
+	void		exec_Cgi();
 	void		clear_args();
 
 
 };
 
-// void			Cgi::initEnv(...);
-// void			Cgi::get_env(...);
 #endif

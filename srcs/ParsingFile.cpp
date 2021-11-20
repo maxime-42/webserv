@@ -170,6 +170,24 @@ void	ParsingFile:: getFile()
 /*********************************************************************************ANALYSE SYNTAXE CONFIG FILE*********************************************************************************/
 
 
+/*
+** Returns true if given string in parameter is a number else false
+*/
+
+bool	 		ParsingFile::							isNumber(std::string &str)
+{
+	int result;
+	for (size_t i = 0; i < str.size(); i++)
+	{
+		result = isdigit(str[i]);
+		if (result == 0)
+		{
+			return (false);
+		}
+	}
+	return (true);
+}
+
 
 /*
 ** to be sure about unity of port
