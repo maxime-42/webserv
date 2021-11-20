@@ -8,6 +8,7 @@
 **	this function converting an integer into a string
 **  the integer to converting is  given in parameter
 */
+
 static std::string get_value_in_string(int value)
 {
 	std:: stringstream ss;

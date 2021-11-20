@@ -177,10 +177,11 @@ void	ParsingFile:: getFile()
 */
 void	ParsingFile:: 									checkPort(std::string &str_port)
 {
+	int int_port ;
 	bool ret = isNumber(str_port);
 	if (ret == false)
 		throw("error : port must be a integer");
-	int int_port = convert_string_to_integer(str_port);
+	std:: stringstream(str_port) >> int_port; // convert string to integer
 	_ports.push_back(int_port);
 }
 

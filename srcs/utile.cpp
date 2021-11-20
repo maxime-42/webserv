@@ -20,13 +20,6 @@ bool	 						isNumber(std::string &str)
 	return (true);
 }
 
-int								convert_string_to_integer(std::string &str)
-{
-	int 						number;
-	std:: stringstream ss(str);
-	ss >> number;
-	return (number);
-}
 
 /*
 ** this function check if item is already in vector 
