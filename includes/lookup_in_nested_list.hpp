@@ -13,5 +13,4 @@ bool							find_directive(t_single_list & secondList, std::string &elemToFind, v
 bool							getInfo(int port, std::string elemToFind, void *reponse, bool(*callback)(t_single_list & secondList, std::string &elemToFind, void *ptrReponse));
 
 bool	 						isNumber(std::string &str);
-bool							check_duplicated(std::vector<int>&vect, int item_to_search);
 #endif
