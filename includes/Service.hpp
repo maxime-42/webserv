@@ -2,6 +2,7 @@
 #define SERVICE_HPP
 
 #define DEFAULT_FILE "./configFile/default.conf"
+#define	NONE_EVENT 0
 #include "header.hpp"
 #include "Server.hpp"
 #include "Request.hpp"
@@ -12,7 +13,6 @@
 #include <signal.h>
 #include <string>     // std::string, std::to_string
 
-// std::string  									getInfo(std::list < std::list < std::map < std::string, std::string > > > nestedList, int port, std::string toFind);
 std::string										getElem(std::list < std::list < std::map < std::string, std::string > > > nestedList, size_t lineServer, std::string elem);
 
 class Service

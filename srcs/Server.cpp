@@ -45,14 +45,18 @@ void	Server::			setup()
 	}
 }
 
+/*
+** this function remove socke given in parameter, it meaning this client is disconnected 
+** it useless to keeping it in "_sockect_clients" 
+*/
 void	Server::						Squeze_vect_sockect_fd(int to_find)
 {
-	for (std::vector<int>::iterator it = _vect_socket_fd.begin(); it !=  _vect_socket_fd.end() ; it++)
+	for (std::vector<int>::iterator it = _sockect_clients.begin(); it !=  _sockect_clients.end() ; it++)
 	{
 		if (*it == to_find)
 		{
 			std::cout << ">>>>>>>>>>>>>>>>>> erase file descriptor == " << *it << " from server : " << _server_fd << "<<<<<<<<<<<<<<<<<<" << std::endl;
-			_vect_socket_fd.erase(it);
+			_sockect_clients.erase(it);
 			return ;
 		}
 	}
@@ -114,22 +118,22 @@ bool	Server::						handle_existing_connections(struct pollfd	*ptr_tab_poll)
 
 void	Server::						accept_all_incoming_connections()
 {
-	int new_sd = 0;
+	int new_sockect = 0;
 	int addrlen = sizeof(_address);
-	while (new_sd != ERROR)
+	while (new_sockect != ERROR)
 	{
-		new_sd = accept(_server_fd, (sockaddr *)&_address, (socklen_t*)&addrlen);
+		new_sockect = accept(_server_fd, (sockaddr *)&_address, (socklen_t*)&addrlen);
 	
-		if (new_sd < 0)
+		if (new_sockect < 0)
 		{
  			if (errno != EWOULDBLOCK)
 				test_error(ERROR, "accept() failed");
-			new_sd = ERROR;
+			new_sockect = ERROR;
 		}
 		else
 		{
-			_vect_socket_fd.push_back(new_sd);
-			std::cout << "new incoming connection new_sd = " << new_sd << std::endl;
+			_sockect_clients.push_back(new_sockect);//add new socket in vector socket, it has all  client of own port
+			std::cout << "new incoming connection new_sockect = " << new_sockect << std::endl;
 		}
 	}
 }
@@ -140,4 +144,4 @@ void		Server::						set_port(int port){_port = port;}
 int		Server::						getPort(){	return (_port);}
 int	 	Server::						get_server_fd() {return (_server_fd);}
 int	 	Server::						get_hasError() {return (_hasError);}
-std::vector<int> &	Server::			get_vect_socket_fd(){return (_vect_socket_fd);}
+std::vector<int> &	Server::			get_sockect_clients(){return (_sockect_clients);}

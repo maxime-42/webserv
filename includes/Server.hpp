@@ -26,6 +26,11 @@
 #include <vector>
 #include "header.hpp"
 
+/*
+**	it going to have as much Server object inside linked list than it will have server block in config file
+**	it will help to have a program multiport
+*/
+
 
 class Server
 {
@@ -35,12 +40,10 @@ class Server
 		char					_buffer[BUFFER_SIZE];
 		int						_port;
 		bool					_close_connexion;
-		bool					_compress_array;
+		bool					_compress_array;// any time a clients disconnected  this variable will be set to true to squeeze poll array
 		bool					_hasError;
-		std::vector<int>		 _vect_socket_fd;
+		std::vector<int>		 _sockect_clients;//this vector will store  socket clients which reached server 
 		struct	sockaddr_in		_address;
-
-
 
 	public:
 		Server();
@@ -50,7 +53,7 @@ class Server
 
 		int						get_server_fd();
 		void					setup_poll(); 
-		std::vector<int> &		get_vect_socket_fd();
+		std::vector<int> &		get_sockect_clients();
 		void					accept_all_incoming_connections();
 		bool					handle_existing_connections(struct pollfd	*_tab_poll);
 		void					set_port(int port);
