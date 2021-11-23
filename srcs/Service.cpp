@@ -44,7 +44,7 @@ Service::Service():_instance(ParsingFile::getInstance("./configFile/default.conf
 
 Service:: 										Service(std::string FileName):_instance(ParsingFile::getInstance(FileName))
 {
-	std::cout << "instance ParsingFile 3 addr = " << &_instance << std::endl;
+	// std::cout << "instance ParsingFile 3 addr = " << &_instance << std::endl;
 	if (_instance.getErrorHappened() == true)//glance if the parsing has detected an error
 	{
 		std::cout << "EXIT PROGRAME" << std::endl;
@@ -96,26 +96,6 @@ void	Service::								squeeze_tab_poll()
 
 
 /*
-**	this function work related with "setUpService", it let to get port of server
-** "getElem" return data under string format so i convert this string to integer then return that integer
-** if "elem" is empty string it going to be assigned to 8080 by default
-*/
-int		Service::								getPort(int index)
-{
-	int 										port;
-	std::string 								elem;
-	// elem = _parsing.getElem(index, "listen");
-	elem = getElem(_instance.getList(), (size_t)index, "listen");
-
-	if (elem.empty())
-		elem = "8080";
-	std:: stringstream ss(elem);
-	ss >> port;
-	std::cout << "port = [" << port << "]" << std::endl;
-	return (port);
-}
-
-/*
 ** size of _listServer depend size of _parsing.numberOfServer()
 **	first you should understand idea of Parsing class
 **	each port is tie in a server object, it mean we create a server object for each port 
@@ -123,13 +103,17 @@ int		Service::								getPort(int index)
 
 void	Service::								setUpService()
 {
-	int 										port;
+	std::vector<int> &all_ports = ParsingFile::get_ports();
 
 	std::cout << "Port available:" << std::endl;
 	for (_nfds = 0; _nfds < _instance.numberOfServer(); _nfds++)
 	{
-		port = getPort(_nfds);
-		Server server(port);
+		Server server;
+		if (all_ports.size() > _nfds)
+		{
+			server.set_port(all_ports[_nfds]);
+		}
+		std::cout << "port = [" << server.getPort()  << "]" << std::endl;
 		server.setup();
 		_pollFds[_nfds].fd = server.get_server_fd();
 		_pollFds[_nfds].events = POLLIN; //Tell me when ready to read
@@ -196,18 +180,22 @@ void											handle_signal(int sig)
 {
 	g_loopback = false;
 	std::cout << "Caught signal number = " << sig << std::endl;
+
 }
+
 
 void	Service::								runService()
 {
 	int											ret;
+
 	try
 	{
 		while (g_loopback)
 		{
-			// for (int i = 1; i <= 64; i++) //handler any signal
-				signal(SIGINT, handle_signal);
+			signal(SIGINT, handle_signal);
 			ret = poll(_pollFds, _nfds, TIMEOUT);
+			if (ret == ERROR && errno == EINTR)
+				return ;
 			checkError(ret, "poll() failed");
 			if (ret == 0)
 				throw("poll() timed out");

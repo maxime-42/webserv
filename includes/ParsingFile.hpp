@@ -13,6 +13,7 @@ enum token_type
 	server,
 	initialized
 };
+
 #include "header.hpp"	
 #include <bitset>
 #include <iostream>
@@ -29,6 +30,7 @@ enum token_type
 /*
 ** THIS IS A SINGLETON CLASS : Singleton design pattern is a software design principle that is used to restrict the instantiation of a class to one object
 */
+#include "lookup_in_nested_list.hpp"
 
 
 typedef std::list < std::list < std::map < std::string, std::string > > > t_nested_list;
@@ -48,23 +50,37 @@ private:
 
 	t_nested_list														_serverList;		//this vectore stock all keys word
 	bool																_errorHappened;
+	std::map<std::string, std::string>									_globalConfig;
+	std::vector<int>													_ports;	//this vector going to containt all port of config file
+
+	std::map<std::string, std::string>									_defautConfig;
+
+
 	ParsingFile();
 	ParsingFile(std::string fileName);
 	void operator=(ParsingFile &other);
   	ParsingFile (const ParsingFile &other);
 	size_t																interface_numberOfServer();
-	t_nested_list	&													 interface_getList();
+	t_nested_list	&													interface_getList();
+	std::map<std::string, std::string> & 								interface_get_globalConfig();
+	std::vector<int> & 													interface_get_ports();
+	std::map<std::string, std::string> & 			 					interface_get_defaut_config();
 
+	void 																set_defaut_config();
 
 public:
 	static	ParsingFile													&getInstance();
 	static	ParsingFile 												&getInstance(std::string fileName);
-	~ParsingFile();
+	static size_t														numberOfServer();
+	static	t_nested_list	&											getList();
+	static	std::map<std::string, std::string> & 						get_globalConfig();
+	static std::vector<int> &											get_ports();
+	static std::map<std::string, std::string> & 						get_defaut_config();
 
 	bool																getErrorHappened();
-	static size_t														numberOfServer();
 
-	static t_nested_list	&													getList();
+
+	~ParsingFile();
 
 	/****************this four function it is to debug********************/
 	void						displayServerTable();
@@ -82,6 +98,7 @@ private:
 	std::string					getPieceOfstring(size_t &i);
 	void						hasServer();
 	bool						checkIfSecretWord(std::string &pieceOfString);
+	void						checkPort(std::string &str_port);
 
 	/****************those function operare to a specific token********************/
 	void						hasBracketOpen(int &nbParenthese);
@@ -94,7 +111,6 @@ private:
 	void						addListInNestedList(std::map<std::string, std::string>	&dictionary);
 	void						addDictionaryInList(std::map<std::string, std::string>	&dictionary);
 	void						insertInDictionary(std::map<std::string, std::string> &dictionary, std::string &directiveName, std::string &directiveValue);
-	bool						isNumber(std::string &str);
 	int							getStartProcess();
 };
 

@@ -12,7 +12,6 @@
 #include <fstream>
 #include <dirent.h>
 #include <sys/stat.h>
-#include <string>  
 //std::map<int, std::vector<unsigned char> >	g_request;
 
 # define SUCCESS 0
@@ -41,7 +40,7 @@ class Request
 		Request();
 		~Request();
 
-		int						read(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll);
+		int						store(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll, int bytes);
 		int						sendall(int s, const char *buf, int len);
         void					parse(struct pollfd *ptr_tab_poll, int port);
         void                    process();
@@ -49,6 +48,7 @@ class Request
 		bool					end_reached(struct pollfd *ptr_tab_poll);
         int                     create_file(std::string const file_type);
 		std::string				find_url_and_name_from_file(std::string const file_type);
+
 
 };
 
