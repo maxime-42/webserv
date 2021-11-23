@@ -35,13 +35,39 @@ bool is_hex(std::string const& s)
   	return s.find_first_not_of("0123456789abcdefABCDEF") == std::string::npos;
 }
 
+int         ft_skip_space(std::string request_str, size_t i, int mode)
+{
+    if (mode == 0)
+    {
+        size_t str_end = request_str.size();
+
+        while (i < str_end)
+        {
+            if (request_str[i] != ' ')
+            {
+                break ;
+            }
+            i++;
+        }
+        return (i);
+    }
+    while (i > 0)
+    {
+        if (request_str[i] != ' ')
+        {
+            break ;
+        }
+        i--;
+    }
+    return (i);
+}
+
 /*
  *	Once the whole request has been read, it is parsed and transformed into a header map
  *	If the request is not good, we throw the appropiate http error code with the appropiate message.
-
-TODO: Récupérer correctement les arguments. (Raph s'en occupe.)
-*/
-void		Request::parse(struct pollfd *ptr_tab_poll) {
+ */
+void		Request::parse(struct pollfd *ptr_tab_poll, int port)
+{
 
 	// Conversion of vector<unsigned char> to string
 	std::string request_str(g_request[ptr_tab_poll->fd].begin(), g_request[ptr_tab_poll->fd].end());
@@ -78,6 +104,10 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
     if (header["http"] != "HTTP/1.1")
         return http_code("505");
 
+    std::stringstream ss;
+    ss << port;  
+    ss >> header["port"];
+
     size_t begin_key;
     size_t end_key;
 
@@ -95,12 +125,22 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
            */
         if ((request_str.size() > 2) && (request_str.at(0) == 13) && (request_str.at(1) == '\n')) //at(0) == 13; at(1) == '\n' because a new line split the header from the body
         {
-			if (header.find("TRANSFER-ENCODING") != header.end() && header["TRANSFER-ENCODING"] == "chunked") {
+			request_str.erase(0, 2); // erase the 13 char ascii then the '\n'.
+            /*
+                In case where the client is uploading something, there can have a big '-' line, that is not the body.
+            */
+            if (strncmp(request_str.c_str(), "-----------------------------", 28) == 0)
+            {
+                //std::cout << "char[28] = [" << request_str.at(28) << "] 29 = (" << request_str.at(29) << ")\n";
+                begin_key = request_str.find('\n');
+                request_str.erase(0, begin_key + 1); //+ 1 for the '\n'.
+            }
+			else if (header.find("TRANSFER-ENCODING") != header.end() && header["TRANSFER-ENCODING"] == "chunked")
+            {
 
 				std::string			to_read;
 				size_t				bytes;
 
-				request_str.erase(0, 2); // erase \r\n
 				while (request_str.size() > 0) {
 
 					/*if (request_str.compare(0, 2, "0x") == 0)
@@ -128,9 +168,9 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
 					request_str.erase(0, bytes + 2);
 				}
 
-			} else {
-
-            	request_str.erase(0, 2); //+ 1 for the '\n'.
+			}
+            else
+            {
             	header["body"] = request_str.substr(0, request_str.size());
             	//std::cout << "BODY:\n[" << header["body"] << "]\n";
             	request_str.erase(0, request_str.size()); //+ 1 for the '\n'.
@@ -145,19 +185,23 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
             break ;
         }
         key = request_str.substr(0, begin_key);
-		std::transform(key.begin(), key.end(), key.begin(), ::toupper);
+        /*
+            DEBUG: What is that ?
+        */
+		//std::transform(key.begin(), key.end(), key.begin(), ::toupper);
+
         //std::cout << "key = [" << key << "]\nbegin = " << begin_key << "\n";
         /*
            The request_str is the full informations the request receive. So the function erase the traited informations when header is filled.
            */
-        request_str.erase(0, begin_key + 2); //+ 1 for the ':' and 2 (1 more) for ' ' next to the ':'.
+        request_str.erase(0, ft_skip_space(request_str, begin_key + 1, 0)); //+ 1 for the ':'. ft_skip_space will skip OWS space.
         end_key = request_str.find('\n');
         //std::cout << "str[" << end_key << "] = [" << request_str.at(end_key) << "]\n";
         if (end_key == std::string::npos)
         {
             break ;
         }
-        val = request_str.substr(0, end_key - 1);
+        val = request_str.substr(0, ft_skip_space(request_str, end_key - 1, 1)); // -1 for '\n'. ft_skip_space will skip OWS space
         //std::cout << "val = [" << val << "]\n";
         header[key] = val;
         request_str.erase(0, end_key + 1); //+ 1 for the '\n'.
@@ -170,20 +214,10 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
 
 	// --------  affichage  --------------------------------------------------------------------------
 
-/*	
-       for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it) {
-       std::cout << it->first << ":" << it->second << std::endl;
-       }
-*/	   
-}
 
-void	print_string_dictionnary(std::map<std::string, std::string> &first)
-{
-	for (std::map<std::string, std::string>::iterator  itr = first.begin(); itr != first.end(); ++itr) 
-	{
-        std::cout << '\t' << itr->first << '\t' << itr->second << '\n';
-	}
-	std::cout << "\n" << std::endl;
+       for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it) {
+               std::cout << it->first << ":" << it->second << std::endl;
+       }
 }
 
 /*
@@ -191,32 +225,71 @@ void	print_string_dictionnary(std::map<std::string, std::string> &first)
  */
 void        Request::process()
 {
-	/*
-       std::map<std::string, std::string> reponse;
-	   bool ret = getInfo(3300, "/", &reponse, find_location);
-	   if (ret)
-	   {
-	   std::cout << ">>>>>Exit<<<<" << std::endl;
-	   print_string_dictionnary(reponse);
-	   }
-	   else
-	   {
-	   std::cout << "<<< Nooot exit<<<<" << std::endl;
-	   }
-	   */
+    std::string rep;
+    int                                 actual_port = atoi(header["port"].c_str());
+
+    std::cout << "actual port = " << actual_port << std::endl; 
+
+	bool ret = getInfo(actual_port, "allow", &rep, find_directive);
+	if (ret)
+	{
+        /*
+            DEBUG: Si on trouve bien allow tout va bien ^^ ceci est du debug !
+        */
+		std::cout << ">>>>>Exit<<<<" << std::endl;
+        std::cout << ">>[" << rep << "]<<" << std::endl;
+	}
+	else
+	{
+        /*
+            TODO: Check with team is this is the appropriate message error
+            This error is quite impossible because we used our own config file value.
+        */
+		std::cout << "There is no allow information in the config file. Config file not allowed." << std::endl;
+        return ;
+
+	}
+
 	// Reponse["code"] will only exist if the parsing threw an error. Execution stops then
     if (reponse.find("code") != reponse.end())
         return ;
 
-    if (header["method"] == "GET") 
-        _process_GET();
+    if (header["method"] == "GET")
+    {
+        if (rep.find("GET") !=std::string::npos)
+        {
+            _process_GET();
+        }
+        else
+        {
+            return http_code("405");
+            ;
+        }
+    }
     else if (header["method"] == "POST")
-        _process_POST();
+    {
+        if (rep.find("POST") !=std::string::npos)
+        {
+            _process_POST();
+        }
+        else
+        {
+            return http_code("405");
+        }
+    }
     else if (header["method"] =="DELETE")
-        _process_DELETE();
+    {
+        if (rep.find("DELETE") !=std::string::npos)
+        {
+            _process_DELETE();
+        }
+        else
+        {
+            return http_code("405");
+        }
+    }
     else
         http_code("405");
-
 }
 
 int		Request::sendall(int s, const char *buf, int len)
@@ -408,14 +481,69 @@ void	initialize_mime_types(std::map<std::string, std::string> &mime_types)
 	mime_types[".7z"]       = "application/x-7z-compressed";
 }
 
+std::string Request::find_url_and_name_from_file(std::string const file_type)
+{
+    std::cout << "FIND URL + NAME FUNCTION BEGIN\n";
+    std::string url_file = header["url"].substr(0, header["url"].size() - 7);
+    std::string file_name = "newfile" + file_type;
+    std::cout << "START url  file = [" << url_file << "]\n" << "file name = [" << file_name << "]\n";
+
+    /*
+        Starting by check if the file the webserv server have to create have a name.
+    */
+    if (header["Content-Disposition"].size() > 0)
+    {
+        std::cout << "Content-Disposition finded" << std::endl;
+        int end_name = header["Content-Disposition"].find("\"") + 1;
+        file_name = header["Content-Disposition"].substr(header["Content-Disposition"].find("filename=") + 10, end_name);
+    }
+
+    std::cout << "111111 url  file = [" << url_file << "]\n" << "file name = [" << file_name << "]\n";
+    /*
+        Search if there is a /root in the config file to initialise the url_file and know where the server have to create the file.
+    */
+   	std::map<std::string, std::string> location_rep;
+	bool ret = get_location_url(atoi(header["port"].c_str()), header["url"], &location_rep);
+	if (ret)
+	{
+		std::cout << "Location successfully find" << std::endl;
+        /*
+            If there is some information at a location from the url, search if there is a /root informations in the config file
+        */
+        std::map<std::string, std::string>::const_iterator it;
+        for (it = location_rep.begin(); it != location_rep.end(); ++it)
+        {
+            /*
+                TODO: Check if the /root is first ou second
+            */
+            std::cout << "it-first = [" << it->first << "]" << "\n";
+            std::cout << "it-second = [" << it->second << "]" << "\n";
+            if (it->first.compare("root") == 0)
+            {
+                url_file = it->second + "/";
+                /*
+                    DEBUG
+                */
+                std::cout << "url_file is there is a /root = [" << url_file << "]\n";
+                break ;
+            }
+        }
+	}
+
+    std::cout << "END url  file = [" << url_file << "]\n" << "file name = [" << file_name << "]\n";
+    return (url_file + file_name);
+}
+
 /*
    Méthode pour créer un fichier et le remplir du body présent dans header[].
    On lui envoie le type de fichier en argument (ex : .json)
-   */
+ */
 int    Request::create_file(std::string const file_type)
 {
-    // Le fichier s'appelle actuellement "test"...
-    std::string const nomFichier("test" + file_type);
+    std::cout << "CREATE FILE FUNCTION BEGIN\n";
+
+    std::string const nomFichier(find_url_and_name_from_file(file_type));
+    std::cout << "nomfichier = EGALEEEEEEEEE = [" << nomFichier << "]\n";
     std::ofstream monFlux(nomFichier.c_str());
 
     if(monFlux)
@@ -424,6 +552,9 @@ int    Request::create_file(std::string const file_type)
     }
     else
     {
+        /*
+            DEBUG : (TODO: delete the ERREUR msg)
+        */
         std::cout << "ERREUR: Impossible d'ouvrir le fichier." << std::endl;
         return (FAILURE);
     }
@@ -432,12 +563,12 @@ int    Request::create_file(std::string const file_type)
 
 /*
    Parsing (+OK) => body = le content que je dois mettre dans un fichier
-   Je suis en train de créer le fichier pour mettre le body dedans.
    Etape 1 : récupérer l'index du ficher (ex : application/json => need .json) cf la fct init_mimes_type.
    Etape 2 : Crée le fichier (cf la méthode create_file).
    Etape 3 : Mettre le body dans le ficher.
    Etape 4 : Renvoyez au client le fait que la requete a été validé !
-   */
+
+ */
 void    Request::_process_POST()
 {
     std::map<std::string, std::string> mime_types;
@@ -451,10 +582,9 @@ void    Request::_process_POST()
             break ;
     }
     // Si on trouve pas le type en question
-    if (it == mime_types.end())
+    if ((it == mime_types.end()))
     {
-        reponse["code"] = "415";
-        reponse["status"] = "KO";
+        return http_code("415");
     }
 
     std::cout << "CONTENT TYPE FROM MIME TYPES = [" << it->first << "]\n";
@@ -463,13 +593,14 @@ void    Request::_process_POST()
     reponse["Content-Type"]     = header["Content-Type"];
     if (create_file(it->first) != SUCCESS)
     {
-        reponse["code"] = "400";
-        reponse["status"] = "KO";
+        /*
+            TODO : Afficher la page error avec le bon numéro
+        */
+        return http_code("400");
     }
     else
     {
-        reponse["code"] = "200";
-        reponse["status"] = "OK";
+        return http_code("200");
     }
     /*
        Il faut voir les valeurs qu'on a envie de renvoyer. En voici certaines d'entre elle qui
@@ -478,31 +609,27 @@ void    Request::_process_POST()
        reponse["data"] = "";
        reponse["files"] = "";
        reponse["form"] = "";
-       */
+     */
 }
 
 /*
    Delete request
-   */
+ */
 void    Request::_process_DELETE()
 {
-    char const *file_to_delete = header["url"].c_str();
+    std::string const nomFichier(find_url_and_name_from_file(""));
+    char const *file_to_delete = nomFichier.c_str();
 
     //std::cout << "file to delete = (" << file_to_delete << ")\n";
     if (header["url"].compare("/") == 0)
     {
-        reponse["code"] = "204";
-        reponse["status"] = "No Content";
-        return ;
+        return http_code("204");
     }
     if (remove(file_to_delete) != 0)
     {
-        reponse["code"] = "204";
-        reponse["status"] = "No Content";
-        return ;
+        return http_code("204");
     }
-    reponse["code"] = "200";
-    reponse["status"] = "OK";
+    return http_code("200");
 }
 
 // templated version of my_equal so it could work with both char and wchar_t

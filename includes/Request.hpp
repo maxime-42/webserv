@@ -42,11 +42,12 @@ class Request
 
 		int						store(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll, int bytes);
 		int						sendall(int s, const char *buf, int len);
-        void					parse(struct pollfd *ptr_tab_poll);
+        void					parse(struct pollfd *ptr_tab_poll, int port);
         void                    process();
         int						send_reponse(int socket);
 		bool					end_reached(struct pollfd *ptr_tab_poll);
         int                     create_file(std::string const file_type);
+		std::string				find_url_and_name_from_file(std::string const file_type);
 
 
 };
