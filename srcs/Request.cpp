@@ -179,9 +179,12 @@ void        Request::process()
 	else
 	{
         /*
-            TODO: Si on NE trouve PAS allow, alors qu'il devrait y en avoir un par defaut ?? Que faire?
+            TODO: Check with team is this is the appropriate message error
+            This error is quite impossible because we used our own config file value.
         */
-		std::cout << "<<< Nooot exit<<<<" << std::endl;
+		std::cout << "There is no allow information in the config file. Config file not allowed." << std::endl;
+        return ;
+
 	}
 
 	// Reponse["code"] will only exist if the parsing threw an error. Execution stops then
@@ -196,8 +199,7 @@ void        Request::process()
         }
         else
         {
-            // TODO: Display the appropriate message for saying GET method is not allow
-            // TODO: check http_code("XXX"); et find the XXX error
+            return http_code("405");
             ;
         }
     }
@@ -209,8 +211,7 @@ void        Request::process()
         }
         else
         {
-            // TODO: Display the appropriate message for saying POST method is not allow
-            ;
+            return http_code("405");
         }
     }
     else if (header["method"] =="DELETE")
@@ -221,8 +222,7 @@ void        Request::process()
         }
         else
         {
-            // TODO: Display the appropriate message for saying DELETE method is not allow
-            ;
+            return http_code("405");
         }
     }
     else
@@ -482,10 +482,6 @@ std::string Request::find_url_and_name_from_file(std::string const file_type)
 /*
    Méthode pour créer un fichier et le remplir du body présent dans header[].
    On lui envoie le type de fichier en argument (ex : .json)
-
-   TODO:
-        faut que je récupere l'url pour savoir ou l'enregistrer dans notre www
-        faut que je récupere Content-Disposition: filename="ecureuil.jpg" pour bien nommé le fichier upload
  */
 int    Request::create_file(std::string const file_type)
 {
@@ -533,9 +529,7 @@ void    Request::_process_POST()
     // Si on trouve pas le type en question
     if ((it == mime_types.end()))
     {
-        reponse["code"] = "415";
-        reponse["status"] = "KO";
-        return ;
+        return http_code("415");
     }
 
     std::cout << "CONTENT TYPE FROM MIME TYPES = [" << it->first << "]\n";
@@ -547,13 +541,11 @@ void    Request::_process_POST()
         /*
             TODO : Afficher la page error avec le bon numéro
         */
-        reponse["code"] = "400";
-        reponse["status"] = "KO";
+        return http_code("400");
     }
     else
     {
-        reponse["code"] = "200";
-        reponse["status"] = "OK";
+        return http_code("200");
     }
     /*
        Il faut voir les valeurs qu'on a envie de renvoyer. En voici certaines d'entre elle qui
@@ -576,18 +568,13 @@ void    Request::_process_DELETE()
     //std::cout << "file to delete = (" << file_to_delete << ")\n";
     if (header["url"].compare("/") == 0)
     {
-        reponse["code"] = "204";
-        reponse["status"] = "No Content";
-        return ;
+        return http_code("204");
     }
     if (remove(file_to_delete) != 0)
     {
-        reponse["code"] = "204";
-        reponse["status"] = "No Content";
-        return ;
+        return http_code("204");
     }
-    reponse["code"] = "200";
-    reponse["status"] = "OK";
+    return http_code("200");
 }
 
 /*
