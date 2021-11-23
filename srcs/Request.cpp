@@ -513,24 +513,17 @@ std::string Request::find_url_and_name_from_file(std::string const file_type)
         std::map<std::string, std::string>::const_iterator it;
         for (it = location_rep.begin(); it != location_rep.end(); ++it)
         {
-            /*
-                TODO: Check if the /root is first ou second
-            */
-            std::cout << "it-first = [" << it->first << "]" << "\n";
-            std::cout << "it-second = [" << it->second << "]" << "\n";
+            //std::cout << "it-first = [" << it->first << "]" << "\n";
+            //std::cout << "it-second = [" << it->second << "]" << "\n";
             if (it->first.compare("root") == 0)
             {
                 url_file = it->second + "/";
-                /*
-                    DEBUG
-                */
-                std::cout << "url_file is there is a /root = [" << url_file << "]\n";
                 break ;
             }
         }
 	}
 
-    std::cout << "END url  file = [" << url_file << "]\n" << "file name = [" << file_name << "]\n";
+    //std::cout << "END url  file = [" << url_file << "]\n" << "file name = [" << file_name << "]\n";
     return (url_file + file_name);
 }
 
