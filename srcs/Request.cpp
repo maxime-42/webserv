@@ -75,8 +75,9 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
     if (header["method"] == "" || header["url"] == "" || header["http"] == "" || header["url"][0] != '/'
 			|| header["http"].find("\n") != std::string::npos || header["http"].find(" ") != std::string::npos)
         return http_code("400");
-    if (header["http"] != "HTTP/1.1")
+    if (header["http"] != "HTTP/1.1") {
         return http_code("505");
+	}
 
 
 
