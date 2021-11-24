@@ -90,11 +90,21 @@ void	Cgi::set_env()
 
 }
 
+/*
+**	this function throw error if ever the variable "code" is less than zero
+*/
 void	Cgi::								check_error(int code, const char *error_msg)
 {
 	if (code < 0)
 		throw(error_msg);
 }
+/*
+** the behind this function is to get the stdout of process child in other file descriptor like pipeFd[TO_READ]
+** it mean there for to write the stdout of process child in  pipeFd[TO_WRITE]
+**	"child_status" gonna have the code of exite child process, if the exit code  is less than zero an error will throw
+** afterward the contain in pipeFd[TO_READ] will be copy in string "_data"
+** afterward 
+*/
 
 void		Cgi::	exec_Cgi()
 {
@@ -106,23 +116,25 @@ void		Cgi::	exec_Cgi()
 	check_error(pid, "error cgi fork faile\n");
 	if (pid == 0)
 	{
-		close(pipeFd[TO_READ]);
-		dup2(pipeFd[TO_WRITE], 1);
+		close(pipeFd[TO_READ]);/*closing of read side of pipe because it gonna write*/
+		dup2(pipeFd[TO_WRITE], 1);  /* connect the write side with stdout */
 		if (execve(_args[0], _args, _env_main) == -1) 
 			exit(ERROR);
-		exit(ERROR);
+		exit(SUCCESS);
 	}
 	else
 	{
-		close(pipeFd[TO_WRITE]);
+		close(pipeFd[TO_WRITE]);/*closing of write side of pipe because it read*/
 		int ret = wait(&child_status);
 		check_error(ret, "error wait");
 		check_error(child_status, "error execve");
-		char		c;
-		while (read(pipeFd[TO_READ], &c, 1) > 0)
+		char		c; /* this variable will skim to each character in pipeFd[TO_READ] */
+		while (read(pipeFd[TO_READ], &c, 1) > 0)/*from, here contains in pipeFd[TO_READ] gonna be copy in string "_data"*/
 		{
-			_data += c;
+			_data += c; 
 		}
 	}
 	std::cout << "data=[" << _data << "]" << std::endl;
 }
+
+std::string		Cgi::	get_data(){return (_data);}

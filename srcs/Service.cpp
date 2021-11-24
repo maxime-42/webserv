@@ -119,11 +119,13 @@ void	Service::								setUpService()
 }
 
 /*
-** add new file socket into poll array, 
+** this function try to add new socket into  poll array if the size had changed
+**	@paramter old_size is the previous size of @paramter vect_socket_client
+**	if  ever "vect_socket_client.size()" ist equal to "old_size"  nothing will happen
 */
-void	Service::								addFdsToPollFds(std::vector<int> &vect_socket_client, size_t tmpSize)
+void	Service::								addFdsToPollFds(std::vector<int> &vect_socket_client, size_t old_size)
 {
-	for (size_t i = tmpSize; i < vect_socket_client.size(); i++)
+	for (size_t i = old_size; i < vect_socket_client.size(); i++)
 	{
 		_pollFds[_nfds].fd = vect_socket_client[i];
 		_pollFds[_nfds].events = POLLIN;//Tell me when ready to read

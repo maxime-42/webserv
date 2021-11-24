@@ -8,6 +8,7 @@ _WHITE		=\e[97m
 #           MAKEFILE          #
 ###############################
 
+
 NAME        = server
 
 CC            = clang++

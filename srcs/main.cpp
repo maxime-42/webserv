@@ -10,12 +10,12 @@ int	 main(int argc, const char** argv, char **env)
 		std::cout << "Error: something go wrong about number arguments" << std::endl;
 	else if (argc == 2)
 	{
-		// Service svc(argv[1]);
+		Service svc(argv[1]);
 	}
 	else
 	{
 		Service svc;
-		// Cgi	cgi("myphp.php", "/usr/bin/php-cgi", env);
+		// Cgi	cgi("root/myphp.php", "/usr/bin/php-cgi", env);
 	}
 	(void)env;
 	(void)argc;
