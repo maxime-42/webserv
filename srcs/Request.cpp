@@ -267,7 +267,7 @@ std::string		time_to_string() {
 	std::string month[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
     std::time_t t = std::time(0);   // get time now
-    std::tm* now = std::localtime(&t);
+    std::tm* now = std::gmtime(&t);
 	std::stringstream ss;
 	ss	<< week[now->tm_wday] << ", "
 		<< now->tm_mday << " "
@@ -293,8 +293,10 @@ int        Request::send_reponse(int socket) {
         reply.append("\n");
     else {
 		reply.append("Date: " + time_to_string() + " \n");
+		reply.append("Server: Webserv/1.0 (Unix)\n");
         reply.append("Content-Type: " + reponse["Content-Type"] + " \n");
         reply.append("Content-Length: " + reponse["Content-Length"] + " \n");
+		reply.append("Connection: Closed\n");
         reply.append("\n");
         reply.append(reponse["body"]);
     }
