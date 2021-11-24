@@ -64,7 +64,7 @@ class Server
 		void					test_error(int error_code, const char  * msg);
 		void					set_tab_poll(int fd);
 		void					squeeze_tab_poll();
-		bool					receive_data(struct pollfd	*_tab_poll);
+		int						receive_data(struct pollfd	*_tab_poll);
 		void					setPort(int port);
 		int	 					get_hasError();
 		

@@ -16,13 +16,13 @@ Request::~Request() {}
 /*	
  *	Copy the portion of the request in the buffer to a vector<unsigned char>
  */
-int			Request::read(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll) {
+int			Request::store(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll, int bytes_to_read) {
 
 	size_t ret = 0;
 
 	g_request[ptr_tab_poll->fd];
 
-	for (size_t i = 0; buffer[i]; i++) {
+	for (int i = 0; i < bytes_to_read; i++) {
 		g_request[ptr_tab_poll->fd].push_back(buffer[i]);
 		ret++;
 	}
@@ -30,12 +30,17 @@ int			Request::read(char buffer[BUFFER_SIZE], struct pollfd *ptr_tab_poll) {
 	return ret;
 }
 
+bool is_hex(std::string const& s)
+{
+  	return s.find_first_not_of("0123456789abcdefABCDEF") == std::string::npos;
+}
+
 /*
  *	Once the whole request has been read, it is parsed and transformed into a header map
  *	If the request is not good, we throw the appropiate http error code with the appropiate message.
 
 TODO: Récupérer correctement les arguments. (Raph s'en occupe.)
- */
+*/
 void		Request::parse(struct pollfd *ptr_tab_poll) {
 
 	// Conversion of vector<unsigned char> to string
@@ -43,6 +48,12 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
     std::istringstream iss(request_str);
     std::string key;
     std::string val;
+
+	//	std::transform(request_str.begin(), request_str.end(), request_str.begin(), ::toupper);
+
+	std::cout << "RAW REQUEST" << std::endl << std::endl;
+	std::cout << request_str << std::endl << std::endl;
+
 
 	header.clear();
     reponse.clear();
@@ -53,7 +64,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
 
     /*
        Pour header["url"] : Récupérer les arguments (?say=hi&to=mom) et les séparer du fichier
-     */
+       */
     getline(iss, header["url"], ' ');
     if (header["url"].find('?') != std::string::npos)
     {
@@ -61,11 +72,35 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
         header["url"] = header["url"].substr(0, header["url"].find('?'));
     }
     getline(iss, header["http"], '\r');
-    if (header["method"] == "" || header["url"] == "" || header["http"] == ""
-			|| header["http"].find("\n") != header["http"].npos || header["url"][0] != '/')
+    if (header["method"] == "" || header["url"] == "" || header["http"] == "" || header["url"][0] != '/'
+			|| header["http"].find("\n") != std::string::npos || header["http"].find(" ") != std::string::npos)
         return http_code("400");
     if (header["http"] != "HTTP/1.1")
         return http_code("505");
+
+
+
+	/*
+ 	 * check that path is valid (does not go beyond root)
+ 	 */
+	std::string s = header["url"];
+	int	pathcount = 0;
+
+	s.erase(0, 1);
+
+	size_t pos = 0;
+	std::string token;
+	while ((pos = s.find("/")) != std::string::npos) {
+    	token = s.substr(0, pos);
+
+		pathcount = token == ".." ? --pathcount : ++pathcount;
+
+		if (pathcount < 0)
+			return http_code("400");
+
+    	s.erase(0, pos + 1);
+	}
+
 
     size_t begin_key;
     size_t end_key;
@@ -74,34 +109,71 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
     request_str.erase(0, request_str.find('\n') + 1);
     /*
        Loop to put all key and value in header.
-     */
+       */
     while (request_str.size() > 0)
     {
         //std::cout << "str = [" << request_str << "]\n";
 
         /*
            When we have a body in the request, the body is separate from the informations thanks to 13 then 10 ascii char.
-         */
+           */
         if ((request_str.size() > 2) && (request_str.at(0) == 13) && (request_str.at(1) == '\n')) //at(0) == 13; at(1) == '\n' because a new line split the header from the body
         {
-            request_str.erase(0, 2); //+ 1 for the '\n'.
-            header["body"] = request_str.substr(0, request_str.size());
-            //std::cout << "BODY:\n[" << header["body"] << "]\n";
-            request_str.erase(0, request_str.size()); //+ 1 for the '\n'.
+			if (header.find("TRANSFER-ENCODING") != header.end() && header["TRANSFER-ENCODING"] == "chunked") {
+
+				std::string			to_read;
+				size_t				bytes;
+
+				request_str.erase(0, 2); // erase \r\n
+				while (request_str.size() > 0) {
+
+					/*if (request_str.compare(0, 2, "0x") == 0)
+					  request_str.erase(0, 2);*/
+					to_read = request_str.substr(0, request_str.find("\r"));
+					if (to_read == "") {
+						request_str.erase(0, 2);
+						continue;
+					}
+					if (!is_hex(to_read))
+						return http_code("400");
+
+					std::istringstream(to_read) >> std::hex >> bytes;
+
+					if (request_str.at(request_str.find("\r") + 1) != '\n')
+						return http_code("401");
+					request_str.erase(0, request_str.find("\n") + 1);
+
+					header["body"] += request_str.substr(0, bytes);
+
+					try { if (request_str.at(bytes) != '\r' || request_str.at(bytes + 1) != '\n')
+						return http_code("402");
+					} catch (std::out_of_range) { break; }
+
+					request_str.erase(0, bytes + 2);
+				}
+
+			} else {
+
+            	request_str.erase(0, 2); //+ 1 for the '\n'.
+            	header["body"] = request_str.substr(0, request_str.size());
+            	//std::cout << "BODY:\n[" << header["body"] << "]\n";
+            	request_str.erase(0, request_str.size()); //+ 1 for the '\n'.
+			}
         }
         /*
            The key and the value are separate by ':'. The function is going to find the separator then fill header with the key and value
-         */
+           */
         begin_key = request_str.find(':');
         if (begin_key == std::string::npos)
         {
             break ;
         }
         key = request_str.substr(0, begin_key);
+		std::transform(key.begin(), key.end(), key.begin(), ::toupper);
         //std::cout << "key = [" << key << "]\nbegin = " << begin_key << "\n";
         /*
            The request_str is the full informations the request receive. So the function erase the traited informations when header is filled.
-         */
+           */
         request_str.erase(0, begin_key + 2); //+ 1 for the ':' and 2 (1 more) for ' ' next to the ':'.
         end_key = request_str.find('\n');
         //std::cout << "str[" << end_key << "] = [" << request_str.at(end_key) << "]\n";
@@ -117,13 +189,16 @@ void		Request::parse(struct pollfd *ptr_tab_poll) {
 
 	g_request[ptr_tab_poll->fd].clear(); // empty vector to allow incoming request from the same client
 
+	std::cout << "REQUEST BODY" << std::endl << std::endl;
+	std::cout << header["body"] << std::endl << std::endl;
 
 	// --------  affichage  --------------------------------------------------------------------------
-	
-    for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it) {
-        std::cout << it->first << ":" << it->second << std::endl;
-    }
-	
+
+	/*	
+       	for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it) {
+       	std::cout << it->first << ":" << it->second << std::endl;
+       	}
+		*/	   
 }
 
 void	print_string_dictionnary(std::map<std::string, std::string> &first)
@@ -140,18 +215,19 @@ void	print_string_dictionnary(std::map<std::string, std::string> &first)
  */
 void        Request::process()
 {
-    std::map<std::string, std::string> reponse;
-	bool ret = getInfo(3300, "/", &reponse, find_location);
-	if (ret)
-	{
-		std::cout << ">>>>>Exit<<<<" << std::endl;
-		print_string_dictionnary(reponse);
-	}
-	else
-	{
-		std::cout << "<<< Nooot exit<<<<" << std::endl;
-	}
-
+	/*
+       std::map<std::string, std::string> reponse;
+	   bool ret = getInfo(3300, "/", &reponse, find_location);
+	   if (ret)
+	   {
+	   std::cout << ">>>>>Exit<<<<" << std::endl;
+	   print_string_dictionnary(reponse);
+	   }
+	   else
+	   {
+	   std::cout << "<<< Nooot exit<<<<" << std::endl;
+	   }
+	   */
 	// Reponse["code"] will only exist if the parsing threw an error. Execution stops then
     if (reponse.find("code") != reponse.end())
         return ;
@@ -185,6 +261,25 @@ int		Request::sendall(int s, const char *buf, int len)
     return n==-1?-1:0; // return -1 on failure, 0 on success
 }
 
+std::string		time_to_string() {
+
+	std::string	week[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+	std::string month[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+    std::time_t t = std::time(0);   // get time now
+    std::tm* now = std::gmtime(&t);
+	std::stringstream ss;
+	ss	<< week[now->tm_wday] << ", "
+		<< now->tm_mday << " "
+        << (month[now->tm_mon]) << " "
+		<< (now->tm_year + 1900) << " " 
+		<< now->tm_hour << ":"
+		<< now->tm_min << ":"
+		<< now->tm_sec << " GMT";
+
+	return ss.str();
+}
+
 /*
  *	Send the reponse with the proper HTTP headers and format
  */
@@ -197,8 +292,11 @@ int        Request::send_reponse(int socket) {
     if (reponse.find("body") == reponse.end())
         reply.append("\n");
     else {
+		reply.append("Date: " + time_to_string() + " \n");
+		reply.append("Server: Webserv/1.0 (Unix)\n");
         reply.append("Content-Type: " + reponse["Content-Type"] + " \n");
         reply.append("Content-Length: " + reponse["Content-Length"] + " \n");
+		reply.append("Connection: Closed\n");
         reply.append("\n");
         reply.append(reponse["body"]);
     }
@@ -236,7 +334,7 @@ void        Request::_process_GET()
     } else if (header["url"][0] == '/') {
         path = header["url"].erase(0,1);
 	}
-//	path = root + path;
+	//	path = root + path;
 
     std::ifstream	ifs(path.c_str());
 
@@ -291,7 +389,7 @@ void        Request::_process_GET()
    droite) avec le type de fichier à créer (valeur à gauche).
    Le nom MIME vient des différents Content-type qui existe. La liste est non
    exclusive
- */
+   */
 void	initialize_mime_types(std::map<std::string, std::string> &mime_types)
 {
 	mime_types[".aac"]      = "audio/aac";
@@ -359,7 +457,7 @@ void	initialize_mime_types(std::map<std::string, std::string> &mime_types)
 /*
    Méthode pour créer un fichier et le remplir du body présent dans header[].
    On lui envoie le type de fichier en argument (ex : .json)
- */
+   */
 int    Request::create_file(std::string const file_type)
 {
     // Le fichier s'appelle actuellement "test"...
@@ -385,7 +483,7 @@ int    Request::create_file(std::string const file_type)
    Etape 2 : Crée le fichier (cf la méthode create_file).
    Etape 3 : Mettre le body dans le ficher.
    Etape 4 : Renvoyez au client le fait que la requete a été validé !
- */
+   */
 void    Request::_process_POST()
 {
     std::map<std::string, std::string> mime_types;
@@ -426,12 +524,12 @@ void    Request::_process_POST()
        reponse["data"] = "";
        reponse["files"] = "";
        reponse["form"] = "";
-     */
+       */
 }
 
 /*
    Delete request
- */
+   */
 void    Request::_process_DELETE()
 {
     char const *file_to_delete = header["url"].c_str();
@@ -453,21 +551,56 @@ void    Request::_process_DELETE()
     reponse["status"] = "OK";
 }
 
+// templated version of my_equal so it could work with both char and wchar_t
+struct my_equal {
+    bool operator()(char ch1, char ch2) {
+        return std::toupper(ch1) == std::toupper(ch2);
+    }
+};
+
+// find substring (case insensitive)
+int ci_find_substr( const std::string& str1, const std::string& str2 )
+{
+	std::string::const_iterator it = std::search( str1.begin(), str1.end(),
+        	str2.begin(), str2.end(), my_equal() );
+    if ( it != str1.end() ) return it - str1.begin();
+    else return -1; // not found
+}
+
 /*
  * 	Checks if we had already reached the end of the request ( \r\n\r\n )
  */
 bool	Request::end_reached(struct pollfd *ptr_tab_poll) {
 
 	size_t len = g_request[ptr_tab_poll->fd].size();
+	std::string request_str(g_request[ptr_tab_poll->fd].begin(), g_request[ptr_tab_poll->fd].end());
 
-	for (size_t i = 0; i < len; i++) {
+	if (ci_find_substr(request_str, "transfer-encoding") != -1 && request_str.find("chunked") != std::string::npos)
+		/*	if (request_str.find("TRANSFER-ENCODING") != std::string::npos
+			&& request_str.find("CHUNKED") != std::string::npos) */{
 
-		if (g_request[ptr_tab_poll->fd][i] == '\r'
-				&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
-				&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
-				&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n'))
-			return true;
-	}
+				for (size_t i = 0; i < len; i++) {
+
+					if (g_request[ptr_tab_poll->fd][i] == '\r'
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '0')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n'))
+						return true;
+				}
+			} else {
+
+				for (size_t i = 0; i < len; i++) {
+
+					if (g_request[ptr_tab_poll->fd][i] == '\r'
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n'))
+						return true;
+				}
+			}
 	return false;
 
 }

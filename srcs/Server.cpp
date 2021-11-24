@@ -62,7 +62,7 @@ void	Server::						Squeze_vect_sockect_fd(int to_find)
 	}
 }
 
-bool	Server:: 						receive_data(struct pollfd	*ptr_tab_poll)
+int		Server:: 						receive_data(struct pollfd	*ptr_tab_poll)
 {	
 	int ret = recv(ptr_tab_poll->fd, _buffer, BUFFER_SIZE, 0);
 	if (ret < 0)
@@ -72,28 +72,31 @@ bool	Server:: 						receive_data(struct pollfd	*ptr_tab_poll)
 			_close_connexion = true;
 			std::cout << "recv() failed" << std::endl;
 		}
-		return (false);
+		return (ret);
 	}
 	if (ret == 0)
 	{
 		std::cout << "connection closed from remote side" << std::endl;
 		_close_connexion = true;
-		return(false);
+		return(ret);
 	}
-	std::cout << ret << " bytes received:\n ===============\n" << _buffer << "\n===============\n"<< std::endl;
-	return (true);	
+	std::cout << ret << " bytes received:\n ===============\n";
+   	write(1, _buffer, ret);
+	std::cout << "\n===============\n"<< std::endl;
+	return (ret);	
 }
 
 
 
 bool	Server::						handle_existing_connections(struct pollfd	*ptr_tab_poll)
 {
-	Request								request;
+	Request		request;
+	int			ret;
 
 	_close_connexion = false;
-	if (receive_data(ptr_tab_poll))
+	if ((ret = receive_data(ptr_tab_poll)) > 0)
 	{
-		request.read(_buffer, ptr_tab_poll);
+		request.store(_buffer, ptr_tab_poll, ret);
 		if (/*request.read(_buffer, ptr_tab_poll) < BUFFER_SIZE ||*/ request.end_reached(ptr_tab_poll))
 		{
 
