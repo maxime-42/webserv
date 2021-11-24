@@ -261,6 +261,25 @@ int		Request::sendall(int s, const char *buf, int len)
     return n==-1?-1:0; // return -1 on failure, 0 on success
 }
 
+std::string		time_to_string() {
+
+	std::string	week[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+	std::string month[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+    std::time_t t = std::time(0);   // get time now
+    std::tm* now = std::localtime(&t);
+	std::stringstream ss;
+	ss	<< week[now->tm_wday] << ", "
+		<< now->tm_mday << " "
+        << (month[now->tm_mon]) << " "
+		<< (now->tm_year + 1900) << " " 
+		<< now->tm_hour << ":"
+		<< now->tm_min << ":"
+		<< now->tm_sec << " GMT";
+
+	return ss.str();
+}
+
 /*
  *	Send the reponse with the proper HTTP headers and format
  */
@@ -273,6 +292,7 @@ int        Request::send_reponse(int socket) {
     if (reponse.find("body") == reponse.end())
         reply.append("\n");
     else {
+		reply.append("Date: " + time_to_string() + " \n");
         reply.append("Content-Type: " + reponse["Content-Type"] + " \n");
         reply.append("Content-Length: " + reponse["Content-Length"] + " \n");
         reply.append("\n");
