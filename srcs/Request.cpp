@@ -461,6 +461,14 @@ void        Request::_process_GET()
 		}
 	} else if (ifs.fail()) {
         return http_code("404");
+	}
+
+	else if (path.substr(path.find_last_of(".") + 1) == "php") {
+
+		Cgi	c(path);
+
+		filestr = c.get_data();
+	
 	} else {
 
         std::stringstream buf;

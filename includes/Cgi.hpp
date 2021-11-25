@@ -14,16 +14,18 @@
 #include <sys/wait.h>
 class Cgi
 {
-private:
-	std::string _script;
-	std::string 							_path_script;
-	char									**_args;
-	char									**_env_main;
+//private:
+	public:
+
+	static std::string						_script;
+	static std::string 						_path_script;
+	static char								**_env_main;
+	static char								**_args;
+
 	std::string								_data;
 	std::string								_pwd;
 	bool									_has_error;
 
-	Cgi(/* args */);
 	void		complete_the_name_of_script();
 	void		set_args();
 	void		set_env();
@@ -33,9 +35,11 @@ private:
 	void		exec_Cgi();
 
 public:
-	~Cgi();
-	Cgi(std::string script, std::string  path_script, char **env);
+	Cgi(std::string script);
+//	Cgi(string script, std::string  path_script, char **env);
+	Cgi(std::string  path_script, char **env);
 	std::string			get_data();
+	~Cgi();
 
 };
 
