@@ -12,9 +12,10 @@ _WHITE		=\e[97m
 
 NAME        = server
 
-CC            = clang++
-CFLAGS        = -Werror -Wextra -Wall --std=c++98 -g3 -fstandalone-debug  #-fsanitize=address
-RM            = rm -rf
+CC          = clang++
+CFLAGS      = -Werror -Wextra -Wall --std=c++98 -g3 -fstandalone-debug  #-fsanitize=address
+DEFINE		= -D CGI_PATH=\"$(shell which php-cgi)\"
+RM          = rm -rf
 
 DIR_SRCS    = srcs/
 DIR_OBJS    = objs/
@@ -35,14 +36,11 @@ OBJS        = $(addprefix $(DIR_OBJS), $(F_SRCS:.cpp=.o))
 HEADER        = -I $(DIR_INC)
 
 all:        $(NAME)
-			./install_cgi.sh
-
-
 
 
 $(DIR_OBJS)%.o:		$(DIR_SRCS)%.cpp
 		@echo "$(_CYAN)Compilating..$(_R)"
-		$(CC) $(CFLAGS) $(HEADER) -c $< -o $@
+		$(CC) $(CFLAGS) $(HEADER) $(DEFINE) -c $< -o $@
 
 $(NAME):    $(DIR_OBJS) $(OBJS)
 		${CC} $(CFLAGS) $(OBJS) -o $(NAME)

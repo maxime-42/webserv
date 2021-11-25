@@ -1,36 +1,20 @@
 #include "Cgi.hpp"
 #include <string.h>
 
-std::string Cgi::_script;
-std::string Cgi::_path_script;
-char**		Cgi::_env_main;
-char**		Cgi::_args;
-
-Cgi::Cgi(std::string script) { 
-
-	_script = script;
-
-	try
-	{
-		complete_the_name_of_script();
-		set_args();
-		exec_Cgi();
-	}
-	catch(const char *e)
-	{
-		std::cerr << e << '\n';
-	}
-	(void)_env_main;
-	clear_args();
-}
+Cgi::Cgi() {}
 
 Cgi::~Cgi(){}
 
-/*
-Cgi::Cgi(std::string script, std::string  path_script, char **env_main):_script(script), _path_script(path_script), _args(NULL), _env_main(env_main), _data(std::string()),_has_error(false)
+Cgi::Cgi(std::string script, int port): _script(script), _port(port)
 {
+	_path_script = CGI_PATH;
+	_args = NULL;
+	_data = std::string();
+	_has_error = false;
+
 	try
 	{
+		set_env();
 		complete_the_name_of_script();
 		set_args();
 		exec_Cgi();
@@ -39,23 +23,7 @@ Cgi::Cgi(std::string script, std::string  path_script, char **env_main):_script(
 	{
 		std::cerr << e << '\n';
 	}
-	(void)_env_main;
 	clear_args();
-	
-}
-*/
-
-Cgi::Cgi(std::string  path_script, char **env_main)
-{
-
-	_path_script = path_script;
-	_args = NULL;
-	_env_main = env_main;
-	_data = std::string();
-	_has_error = false;
-
-	/*
-	*/
 }
 
 /*
