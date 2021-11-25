@@ -412,7 +412,7 @@ void        Request::_process_GET()
 	//	path = root + path;
 
     /*
-        Search if there is a /root in the config file to initialise the path and know which page the server have to send to the client.
+        Search if there is a /root in the config file to initialise the path and know which page the server have to send to the clientg.
     */
    	std::map<std::string, std::string> location_rep;
 	bool ret = get_location_url(atoi(header["port"].c_str()), header["url"], &location_rep);
