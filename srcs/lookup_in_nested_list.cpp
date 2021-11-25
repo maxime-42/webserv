@@ -9,7 +9,7 @@
 **  the integer to converting is  given in parameter
 */
 
-static std::string get_value_in_string(int value)
+std::string get_value_in_string(int value)
 {
 	std:: stringstream ss;
 	ss << value;
@@ -69,7 +69,6 @@ bool		find_directive(t_single_list & secondList, std::string &elemToFind, void *
 }
 
 /*
-
 prototype: bool  getInfo(int port, std::string elemToFind, void *reponse, bool(*callback)(t_single_list & secondList, std::string &elemToFind, void *ptrReponse))
 
 parametre un 	: 

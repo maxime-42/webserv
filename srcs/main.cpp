@@ -4,7 +4,7 @@
 #include "header.hpp"
 #include "Cgi.hpp"
 	   
-int	 main(int argc, const char** argv, char **env)
+int	 main(int argc, const char** argv)
 {
 	if (argc > 2)
 		std::cout << "Error: something go wrong about number arguments" << std::endl;
@@ -14,9 +14,11 @@ int	 main(int argc, const char** argv, char **env)
 	}
 	else
 	{
-		Service svc;
+		// Service svc;
+		ParsingFile &parse = ParsingFile::getInstance("./configFile/default.conf");
+		Cgi cgi("myphp.php", 8080);
+		(void)parse;
 	}
-	(void)env;
 	(void)argc;
 	(void)argv;
 	return (0);
