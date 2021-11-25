@@ -12,6 +12,7 @@
 #include <fstream>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <ctime>
 //std::map<int, std::vector<unsigned char> >	g_request;
 
 # define SUCCESS 0

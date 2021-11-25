@@ -8,6 +8,8 @@ _WHITE		=\e[97m
 #           MAKEFILE          #
 ###############################
 
+
+
 NAME        = server
 
 CC            = clang++
@@ -24,7 +26,7 @@ F_SRCS        =		main.cpp 			\
 					ParsingFile.cpp		\
 					lookup_in_nested_list.cpp\
 					Service.cpp			\
-					utile.cpp\
+					Cgi.cpp\
 
 SRCS        = $(addprefix $(DIR_SRCS), $(F_SRCS))
 
@@ -33,6 +35,10 @@ OBJS        = $(addprefix $(DIR_OBJS), $(F_SRCS:.cpp=.o))
 HEADER        = -I $(DIR_INC)
 
 all:        $(NAME)
+			./install_cgi.sh
+
+
+
 
 $(DIR_OBJS)%.o:		$(DIR_SRCS)%.cpp
 		@echo "$(_CYAN)Compilating..$(_R)"

@@ -14,10 +14,11 @@
 */
 void	Service::								displayAvailableServer(/* args */)
 {
-	std::cout << "\nserveur available:" << std::endl;
+	std::cout << "\nServeur available:" << std::endl;
 	for (std::list<Server>::iterator it = _listServer.begin(); it != _listServer.end(); it++)
 	{
-		std::cout << "server [" << it->get_server_fd() << "]" << std::endl;
+		std::cout << "server [" << it->get_server_fd() << "] port [" << it->getPort() << "]"  << std::endl;
+		
 	}
 	std::cout << "\n" << std::endl;
 }
@@ -30,7 +31,6 @@ void	Service::								displayAvailableServer(/* args */)
 */
 Service::Service():_instance(ParsingFile::getInstance("./configFile/default.conf"))
 {
-	std::cout << "instance ParsingFile 3 addr = " << &_instance << std::endl; 
 	if (_instance.getErrorHappened() == true)//glance if the parsing has detected an error
 	{
 		std::cout << "EXIT PROGRAME" << std::endl;
@@ -44,7 +44,6 @@ Service::Service():_instance(ParsingFile::getInstance("./configFile/default.conf
 
 Service:: 										Service(std::string FileName):_instance(ParsingFile::getInstance(FileName))
 {
-	// std::cout << "instance ParsingFile 3 addr = " << &_instance << std::endl;
 	if (_instance.getErrorHappened() == true)//glance if the parsing has detected an error
 	{
 		std::cout << "EXIT PROGRAME" << std::endl;
@@ -105,7 +104,6 @@ void	Service::								setUpService()
 {
 	std::vector<int> &all_ports = ParsingFile::get_ports();
 
-	std::cout << "Port available:" << std::endl;
 	for (_nfds = 0; _nfds < _instance.numberOfServer(); _nfds++)
 	{
 		Server server;
@@ -113,7 +111,6 @@ void	Service::								setUpService()
 		{
 			server.set_port(all_ports[_nfds]);
 		}
-		std::cout << "port = [" << server.getPort()  << "]" << std::endl;
 		server.setup();
 		_pollFds[_nfds].fd = server.get_server_fd();
 		_pollFds[_nfds].events = POLLIN; //Tell me when ready to read
@@ -122,42 +119,52 @@ void	Service::								setUpService()
 }
 
 /*
-** add new file descriptor to poll array, 
+** this function try to add new socket into  poll array if the size had changed
+**	@paramter old_size is the previous size of @paramter vect_socket_client
+**	if  ever "vect_socket_client.size()" ist equal to "old_size"  nothing will happen
 */
-void	Service::								addFdsToPollFds(std::vector<int> &vect_socket_fd, size_t tmpSize)
+void	Service::								addFdsToPollFds(std::vector<int> &vect_socket_client, size_t old_size)
 {
-	for (size_t i = tmpSize; i < vect_socket_fd.size(); i++)
+	for (size_t i = old_size; i < vect_socket_client.size(); i++)
 	{
-		_pollFds[_nfds].fd = vect_socket_fd[i];
+		_pollFds[_nfds].fd = vect_socket_client[i];
 		_pollFds[_nfds].events = POLLIN;//Tell me when ready to read
+		_pollFds[_nfds].revents = NONE_EVENT;//set to none event, like that if value  changed it mean event a happened
 		_nfds++;
 	}
 }
 
 /*
-**	the idea behind this function is to check the file descriptor _pollFds[index].fd is already existing or if it is new connection 
-**	each server have own vector file descriptor which are connected to it
-**	the loop allow to loop through each Server inside list
+
+** this function two thing main:
+** one: if new connection came , add it in the vector "_socket_client" and poll array
+** two: if is existing socket go read request, and send reponse
+** 
+**	it important to know than "_listServer"  this linked list contain a server on each node
+** this function loop through this list to look up the socket client which has triggered even
 **
-** 	variable "tmp_size" let me to update poll array :
-**	if the size of socket array of server change, i can copy the new file descriptor to array poll
-**	if the size of socket array of server grow, variable "tmp_size" contains the old size, 
-**	with the difference between new size and old size let to update poll array with addFdsToPollFds(..))
+**	Each server have own vector of "sokect client" which are connected to it
+**
+**	the loop allow to loop through each Server inside linked list
+**
+** 	variable "old_size" let me to update poll array :
+**	if the size of "_sockect_clients" has grown, variable "old_size" contain the old size of vect_socket_client, 
+**	with the difference between new size of "_sockect_clients"  and old size allow to update poll array with function addFdsToPollFds(..))
 */
 void	Service::								handlerServer(size_t &index)
 {
-	size_t	tmpSize;
+	size_t	old_size;
 	for (std::list<Server>::iterator it  = _listServer.begin(); it != _listServer.end(); it++)
 	{
 		Server	&currentServer = *it;
-		std::vector<int> & vect_socket_fd = currentServer.get_vect_socket_fd();
-		tmpSize = vect_socket_fd.size();
-		if (_pollFds[index].fd == currentServer.get_server_fd())
+		std::vector<int> & vect_socket_client = currentServer.get_sockect_clients();
+		old_size = vect_socket_client.size();
+		if (_pollFds[index].fd == currentServer.get_server_fd())// meaning new caming connection
 		{
-			currentServer.accept_all_incoming_connections();
-			addFdsToPollFds(vect_socket_fd, tmpSize);
+			currentServer.accept_all_incoming_connections();// new socket has been add to "_sockect_clients"
+			addFdsToPollFds(vect_socket_client, old_size);// poll array should update to by adding the new socket on it
 		}
-		else if ((std::find(vect_socket_fd.begin(), vect_socket_fd.end(), _pollFds[index].fd)) != vect_socket_fd.end())
+		else if ((std::find(vect_socket_client.begin(), vect_socket_client.end(), _pollFds[index].fd)) != vect_socket_client.end())
 		{
 			std::cout << "=========connexion existing===============" << std::endl;
 			_close_connexion = currentServer.handle_existing_connections(&_pollFds[index]); // return true if the connection is closed
@@ -168,18 +175,15 @@ void	Service::								handlerServer(size_t &index)
 		}
 	}
 }
-/*
-**g_loopback let the program loop when it assigned to true otherwise program going stop
-*/
-static bool										g_loopback = true;
+
 
 /*
 **when any signal arrived, it  stop loopback by set "_loopback" to false 
 */
 void											handle_signal(int sig)
 {
-	g_loopback = false;
 	std::cout << "Caught signal number = " << sig << std::endl;
+	throw("stoooped by CTRL-C");
 
 }
 
@@ -190,21 +194,21 @@ void	Service::								runService()
 
 	try
 	{
-		while (g_loopback)
+		while (true)
 		{
 			signal(SIGINT, handle_signal);
 			ret = poll(_pollFds, _nfds, TIMEOUT);
-			if (ret == ERROR && errno == EINTR)
+			if (ret == ERROR && errno == EINTR)// check if poll is termined by ctrl-c 
 				return ;
 			checkError(ret, "poll() failed");
 			if (ret == 0)
 				throw("poll() timed out");
-			for (size_t index = 0; index < _nfds; index++) //loop through the array of file descriptor to monitoring an event 
+			for (size_t index = 0; index < _nfds; index++) //loop through the array of sokect to monitoring an event 
 			{
-				if (_pollFds[index].revents == 0)//loop as long the are not event happened
-					continue;
 				std::cout << "==========_pollFds[index].fd = " << _pollFds[index].fd << " index = " << index << "===========" << std::endl;
-				handlerServer(index);
+				if (_pollFds[index].revents == NONE_EVENT)//loop as long the are not event happened
+					continue;
+				handlerServer(index);// like event happened go to handler this
 			}
 		}
 		squeeze_tab_poll();

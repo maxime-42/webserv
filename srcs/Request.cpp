@@ -75,7 +75,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
     std::string key;
     std::string val;
 
-//	std::transform(request_str.begin(), request_str.end(), request_str.begin(), ::toupper);
+	//	std::transform(request_str.begin(), request_str.end(), request_str.begin(), ::toupper);
 
 	std::cout << "RAW REQUEST" << std::endl << std::endl;
 	std::cout << request_str << std::endl << std::endl;
@@ -101,8 +101,33 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
     if (header["method"] == "" || header["url"] == "" || header["http"] == "" || header["url"][0] != '/'
 			|| header["http"].find("\n") != std::string::npos || header["http"].find(" ") != std::string::npos)
         return http_code("400");
-    if (header["http"] != "HTTP/1.1")
+    if (header["http"] != "HTTP/1.1") {
         return http_code("505");
+	}
+
+
+
+	/*
+ 	 * check that path is valid (does not go beyond root)
+ 	 */
+	std::string s = header["url"];
+	int	pathcount = 0;
+
+	s.erase(0, 1);
+
+	size_t pos = 0;
+	std::string token;
+	while ((pos = s.find("/")) != std::string::npos) {
+    	token = s.substr(0, pos);
+
+		pathcount = token == ".." ? --pathcount : ++pathcount;
+
+		if (pathcount < 0)
+			return http_code("400");
+
+    	s.erase(0, pos + 1);
+	}
+
 
     std::stringstream ss;
     ss << port;  
@@ -144,7 +169,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 				while (request_str.size() > 0) {
 
 					/*if (request_str.compare(0, 2, "0x") == 0)
-						request_str.erase(0, 2);*/
+					  request_str.erase(0, 2);*/
 					to_read = request_str.substr(0, request_str.find("\r"));
 					if (to_read == "") {
 						request_str.erase(0, 2);
@@ -213,12 +238,13 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 	std::cout << header["body"] << std::endl << std::endl;
 
 	// --------  affichage  --------------------------------------------------------------------------
-
-
-       for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it) {
-               std::cout << it->first << ":" << it->second << std::endl;
-       }
+	/*	
+       	for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it) {
+       	std::cout << it->first << ":" << it->second << std::endl;
+       	}
+	*/	   
 }
+
 
 /*
  * 	If the requested method is supported, we call the appropiate function
@@ -310,6 +336,25 @@ int		Request::sendall(int s, const char *buf, int len)
     return n==-1?-1:0; // return -1 on failure, 0 on success
 }
 
+std::string		time_to_string() {
+
+	std::string	week[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+	std::string month[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+    std::time_t t = std::time(0);   // get time now
+    std::tm* now = std::gmtime(&t);
+	std::stringstream ss;
+	ss	<< week[now->tm_wday] << ", "
+		<< now->tm_mday << " "
+        << (month[now->tm_mon]) << " "
+		<< (now->tm_year + 1900) << " " 
+		<< now->tm_hour << ":"
+		<< now->tm_min << ":"
+		<< now->tm_sec << " GMT";
+
+	return ss.str();
+}
+
 /*
  *	Send the reponse with the proper HTTP headers and format
  */
@@ -322,8 +367,11 @@ int        Request::send_reponse(int socket) {
     if (reponse.find("body") == reponse.end())
         reply.append("\n");
     else {
+		reply.append("Date: " + time_to_string() + " \n");
+		reply.append("Server: Webserv/1.0 (Unix)\n");
         reply.append("Content-Type: " + reponse["Content-Type"] + " \n");
         reply.append("Content-Length: " + reponse["Content-Length"] + " \n");
+		reply.append("Connection: Closed\n");
         reply.append("\n");
         reply.append(reponse["body"]);
     }
@@ -636,7 +684,7 @@ struct my_equal {
 int ci_find_substr( const std::string& str1, const std::string& str2 )
 {
 	std::string::const_iterator it = std::search( str1.begin(), str1.end(),
-        str2.begin(), str2.end(), my_equal() );
+        	str2.begin(), str2.end(), my_equal() );
     if ( it != str1.end() ) return it - str1.begin();
     else return -1; // not found
 }
@@ -650,31 +698,31 @@ bool	Request::end_reached(struct pollfd *ptr_tab_poll) {
 	std::string request_str(g_request[ptr_tab_poll->fd].begin(), g_request[ptr_tab_poll->fd].end());
 
 	if (ci_find_substr(request_str, "transfer-encoding") != -1 && request_str.find("chunked") != std::string::npos)
-/*	if (request_str.find("TRANSFER-ENCODING") != std::string::npos
+		/*	if (request_str.find("TRANSFER-ENCODING") != std::string::npos
 			&& request_str.find("CHUNKED") != std::string::npos) */{
 
-		for (size_t i = 0; i < len; i++) {
+				for (size_t i = 0; i < len; i++) {
 
-			if (g_request[ptr_tab_poll->fd][i] == '\r'
-					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
-					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '0')
-					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
-					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
-					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
-					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n'))
-				return true;
-		}
-	} else {
+					if (g_request[ptr_tab_poll->fd][i] == '\r'
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '0')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n'))
+						return true;
+				}
+			} else {
 
-		for (size_t i = 0; i < len; i++) {
+				for (size_t i = 0; i < len; i++) {
 
-			if (g_request[ptr_tab_poll->fd][i] == '\r'
-					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
-					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
-					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n'))
-				return true;
-		}
-	}
+					if (g_request[ptr_tab_poll->fd][i] == '\r'
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n'))
+						return true;
+				}
+			}
 	return false;
 
 }
