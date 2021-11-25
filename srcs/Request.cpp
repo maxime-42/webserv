@@ -411,6 +411,30 @@ void        Request::_process_GET()
 	}
 	//	path = root + path;
 
+    /*
+        Search if there is a /root in the config file to initialise the path and know which page the server have to send to the client.
+    */
+   	std::map<std::string, std::string> location_rep;
+	bool ret = get_location_url(atoi(header["port"].c_str()), header["url"], &location_rep);
+	if (ret)
+	{
+		std::cout << "Location successfully find" << std::endl;
+        /*
+            If there is some information at a location from the url, search if there is a /root informations in the config file
+        */
+        std::map<std::string, std::string>::const_iterator it;
+        for (it = location_rep.begin(); it != location_rep.end(); ++it)
+        {
+            //std::cout << "it-first = [" << it->first << "]" << "\n";
+            //std::cout << "it-second = [" << it->second << "]" << "\n";
+            if (it->first.compare("root") == 0)
+            {
+                path = it->second + "/";
+                break ;
+            }
+        }
+	}
+
     std::ifstream	ifs(path.c_str());
 
 	if (is_a_directory(path) && 1 /* autoindex is on  */) {
@@ -546,7 +570,7 @@ std::string Request::find_url_and_name_from_file(std::string const file_type)
         file_name = header["Content-Disposition"].substr(header["Content-Disposition"].find("filename=") + 10, end_name);
     }
 
-    std::cout << "111111 url  file = [" << url_file << "]\n" << "file name = [" << file_name << "]\n";
+    //std::cout << "111111 url  file = [" << url_file << "]\n" << "file name = [" << file_name << "]\n";
     /*
         Search if there is a /root in the config file to initialise the url_file and know where the server have to create the file.
     */
