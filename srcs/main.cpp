@@ -15,7 +15,7 @@ int	 main(int argc, const char** argv, char **env)
 	else
 	{
 		//Cgi	cgi("root/myphp.php", "/usr/bin/php-cgi", env);
-		Cgi	cgi("/usr/local/bin/php-cgi", env);
+		Cgi	cgi("/usr/bin/php-cgi", env);
 		Service svc;
 	}
 	(void)env;
