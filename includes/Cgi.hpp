@@ -1,4 +1,8 @@
 #ifndef CGI
+# ifndef CGI_PATH
+#  define CGI_PATH "/usr/bin/php-cgi"
+# endif
+
 #define CGI // !1
 #define NUMBER_ARGUMENTS 2
 #define	TO_READ 0
