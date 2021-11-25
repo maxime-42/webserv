@@ -2,6 +2,7 @@
 # define REQUEST_HPP
 
 #include "Server.hpp"
+#include "Cgi.hpp"
 #include <vector>
 #include "lookup_in_nested_list.hpp"
 

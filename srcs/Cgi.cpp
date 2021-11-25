@@ -1,11 +1,32 @@
 #include "Cgi.hpp"
 #include <string.h>
 
-Cgi::Cgi(/* args */){}
+std::string Cgi::_script;
+std::string Cgi::_path_script;
+char**		Cgi::_env_main;
+char**		Cgi::_args;
+
+Cgi::Cgi(std::string script) { 
+
+	_script = script;
+
+	try
+	{
+		complete_the_name_of_script();
+		set_args();
+		exec_Cgi();
+	}
+	catch(const char *e)
+	{
+		std::cerr << e << '\n';
+	}
+	(void)_env_main;
+	clear_args();
+}
 
 Cgi::~Cgi(){}
 
-
+/*
 Cgi::Cgi(std::string script, std::string  path_script, char **env_main):_script(script), _path_script(path_script), _args(NULL), _env_main(env_main), _data(std::string()),_has_error(false)
 {
 	try
@@ -21,6 +42,20 @@ Cgi::Cgi(std::string script, std::string  path_script, char **env_main):_script(
 	(void)_env_main;
 	clear_args();
 	
+}
+*/
+
+Cgi::Cgi(std::string  path_script, char **env_main)
+{
+
+	_path_script = path_script;
+	_args = NULL;
+	_env_main = env_main;
+	_data = std::string();
+	_has_error = false;
+
+	/*
+	*/
 }
 
 /*
@@ -113,7 +148,7 @@ void		Cgi::	exec_Cgi()
 	
 	pipe(pipeFd);
 	int			pid = fork();
-	check_error(pid, "error cgi fork faile\n");
+	check_error(pid, "error cgi fork failed\n");
 	if (pid == 0)
 	{
 		close(pipeFd[TO_READ]);/*closing of read side of pipe because it gonna write*/
@@ -134,7 +169,7 @@ void		Cgi::	exec_Cgi()
 			_data += c; 
 		}
 	}
-	std::cout << "data=[" << _data << "]" << std::endl;
+	//std::cout << "data=[" << _data << "]" << std::endl;
 }
 
 std::string		Cgi::	get_data(){return (_data);}
