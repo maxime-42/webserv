@@ -8,6 +8,7 @@
 **	this function converting an integer into a string
 **  the integer to converting is  given in parameter
 */
+
 static std::string get_value_in_string(int value)
 {
 	std:: stringstream ss;
@@ -67,6 +68,28 @@ bool		find_directive(t_single_list & secondList, std::string &elemToFind, void *
 	return (false);
 }
 
+/*
+
+prototype: bool  getInfo(int port, std::string elemToFind, void *reponse, bool(*callback)(t_single_list & secondList, std::string &elemToFind, void *ptrReponse))
+
+parametre un 	: 
+	le port
+parametre deux	: 
+	l'element que vous cherché pour une location exemple si tu as dans le fichier conf "location toto{...}" ici t'aura juste a passé "toto"
+	pour une diirective il faut passé le nom, exemple si tu as dans le fichier conf "server_name tata" dans se cas tu va passé "server_name" 
+	
+parametre trois	:
+là ou la reponse va être stocker, donnée l'adresse de "variable"
+pour une location donneée l'adresse d'une map 
+pour une directive donnée l'adresse d'une string 
+
+parametre quatre:
+il faut passé une fonction en parametre si tu chercher une location tu passe la fonction "find_location"
+sinon si c'est une directive que tu cherche tu passe la fonction "find_directive"
+
+la fonction va retoure vrais ou faux 
+
+*/
 /*
 **To know:
 ** t_nested_list	= firstList = itr_firstList

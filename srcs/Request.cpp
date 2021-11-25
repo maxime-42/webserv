@@ -75,7 +75,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
     std::string key;
     std::string val;
 
-//	std::transform(request_str.begin(), request_str.end(), request_str.begin(), ::toupper);
+	//	std::transform(request_str.begin(), request_str.end(), request_str.begin(), ::toupper);
 
 	std::cout << "RAW REQUEST" << std::endl << std::endl;
 	std::cout << request_str << std::endl << std::endl;
@@ -101,8 +101,33 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
     if (header["method"] == "" || header["url"] == "" || header["http"] == "" || header["url"][0] != '/'
 			|| header["http"].find("\n") != std::string::npos || header["http"].find(" ") != std::string::npos)
         return http_code("400");
-    if (header["http"] != "HTTP/1.1")
+    if (header["http"] != "HTTP/1.1") {
         return http_code("505");
+	}
+
+
+
+	/*
+ 	 * check that path is valid (does not go beyond root)
+ 	 */
+	std::string s = header["url"];
+	int	pathcount = 0;
+
+	s.erase(0, 1);
+
+	size_t pos = 0;
+	std::string token;
+	while ((pos = s.find("/")) != std::string::npos) {
+    	token = s.substr(0, pos);
+
+		pathcount = token == ".." ? --pathcount : ++pathcount;
+
+		if (pathcount < 0)
+			return http_code("400");
+
+    	s.erase(0, pos + 1);
+	}
+
 
     std::stringstream ss;
     ss << port;  
@@ -144,7 +169,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 				while (request_str.size() > 0) {
 
 					/*if (request_str.compare(0, 2, "0x") == 0)
-						request_str.erase(0, 2);*/
+					  request_str.erase(0, 2);*/
 					to_read = request_str.substr(0, request_str.find("\r"));
 					if (to_read == "") {
 						request_str.erase(0, 2);
@@ -213,12 +238,13 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 	std::cout << header["body"] << std::endl << std::endl;
 
 	// --------  affichage  --------------------------------------------------------------------------
-
-
-       for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it) {
-               std::cout << it->first << ":" << it->second << std::endl;
-       }
+	/*	
+       	for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it) {
+       	std::cout << it->first << ":" << it->second << std::endl;
+       	}
+	*/	   
 }
+
 
 /*
  * 	If the requested method is supported, we call the appropiate function
@@ -263,7 +289,6 @@ void        Request::process()
         else
         {
             return http_code("405");
-            ;
         }
     }
     else if (header["method"] == "POST")
@@ -310,6 +335,25 @@ int		Request::sendall(int s, const char *buf, int len)
     return n==-1?-1:0; // return -1 on failure, 0 on success
 }
 
+std::string		time_to_string() {
+
+	std::string	week[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+	std::string month[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+    std::time_t t = std::time(0);   // get time now
+    std::tm* now = std::gmtime(&t);
+	std::stringstream ss;
+	ss	<< week[now->tm_wday] << ", "
+		<< now->tm_mday << " "
+        << (month[now->tm_mon]) << " "
+		<< (now->tm_year + 1900) << " " 
+		<< now->tm_hour << ":"
+		<< now->tm_min << ":"
+		<< now->tm_sec << " GMT";
+
+	return ss.str();
+}
+
 /*
  *	Send the reponse with the proper HTTP headers and format
  */
@@ -322,8 +366,11 @@ int        Request::send_reponse(int socket) {
     if (reponse.find("body") == reponse.end())
         reply.append("\n");
     else {
+		reply.append("Date: " + time_to_string() + " \n");
+		reply.append("Server: Webserv/1.0 (Unix)\n");
         reply.append("Content-Type: " + reponse["Content-Type"] + " \n");
         reply.append("Content-Length: " + reponse["Content-Length"] + " \n");
+		reply.append("Connection: Closed\n");
         reply.append("\n");
         reply.append(reponse["body"]);
     }
@@ -343,7 +390,7 @@ int        Request::send_reponse(int socket) {
 bool is_a_directory(const std::string &s)
 {
   	struct stat buffer;
-  	return (stat (s.c_str(), &buffer) == 0 && buffer.st_mode & S_IFDIR);
+  	return (stat (s.c_str(), &buffer) == 0 && buffer.st_mode & S_IFDIR); // if exist && is a directory return 1
 }
 
 void        Request::_process_GET()
@@ -351,9 +398,53 @@ void        Request::_process_GET()
 	std::string	filestr;
     std::string path;
 	std::string	root;
+    int         auto_index = 0;
 
 	// set root as described in config file
 	root = "root/";
+
+    /*
+        Check if the autoindex is on mode.
+    */
+    std::string dir_rep;
+    bool ret = getInfo(atoi(header["port"].c_str()), "autoindex", &dir_rep, find_directive);
+	if (ret)
+	{
+        /*
+            Check if the autoindex information is on "on" mode.
+        */
+        if (dir_rep.compare("on") == 0)
+        {
+            auto_index = 1;
+        }
+	}
+    /*
+        Search if there is a /root in the config file to initialise the path and know which page the server have to send to the clientg.
+    */
+   	std::map<std::string, std::string> location_rep;
+	ret = getInfo(atoi(header["port"].c_str()), header["url"], &location_rep, find_location);
+	if (ret)
+	{
+		std::cout << "Location successfully find" << std::endl;
+        /*
+            If there is some information at a location from the url, search if there is a /root informations in the config file
+        */
+        std::map<std::string, std::string>::const_iterator it;
+        for (it = location_rep.begin(); it != location_rep.end(); ++it)
+        {
+            //std::cout << "it-first = [" << it->first << "]" << "\n";
+            //std::cout << "it-second = [" << it->second << "]" << "\n";
+            if (it->first.compare("root") == 0)
+            {
+                root = it->second + header["url"] + "/";
+            }
+            if ((it->first.compare("autoindex") == 0) && (it->second.compare("on") == 0))
+            {
+                auto_index = 1;
+            }
+        }
+	}
+
 	chdir(root.c_str());
 
     if (header["url"] == "/") {
@@ -364,6 +455,10 @@ void        Request::_process_GET()
 	//	path = root + path;
 
     std::ifstream	ifs(path.c_str());
+
+/*
+    TODO: Faire une variable pour récupérer l'auto index s il est présent.
+*/
 
 	if (is_a_directory(path) && 1 /* autoindex is on  */) {
 
@@ -389,6 +484,14 @@ void        Request::_process_GET()
 		}
 	} else if (ifs.fail()) {
         return http_code("404");
+	}
+
+	else if (path.substr(path.find_last_of(".") + 1) == "php") {
+
+		Cgi	c(path, atoi(header["port"].c_str()));
+
+		filestr = c.get_data();
+	
 	} else {
 
         std::stringstream buf;
@@ -498,12 +601,12 @@ std::string Request::find_url_and_name_from_file(std::string const file_type)
         file_name = header["Content-Disposition"].substr(header["Content-Disposition"].find("filename=") + 10, end_name);
     }
 
-    std::cout << "111111 url  file = [" << url_file << "]\n" << "file name = [" << file_name << "]\n";
+    //std::cout << "111111 url  file = [" << url_file << "]\n" << "file name = [" << file_name << "]\n";
     /*
         Search if there is a /root in the config file to initialise the url_file and know where the server have to create the file.
     */
    	std::map<std::string, std::string> location_rep;
-	bool ret = get_location_url(atoi(header["port"].c_str()), header["url"], &location_rep);
+	bool ret = getInfo(atoi(header["port"].c_str()), header["url"], &location_rep, find_location);
 	if (ret)
 	{
 		std::cout << "Location successfully find" << std::endl;
@@ -517,7 +620,7 @@ std::string Request::find_url_and_name_from_file(std::string const file_type)
             //std::cout << "it-second = [" << it->second << "]" << "\n";
             if (it->first.compare("root") == 0)
             {
-                url_file = it->second + "/";
+                url_file = it->second + header["url"] + "/";
                 break ;
             }
         }
@@ -636,7 +739,7 @@ struct my_equal {
 int ci_find_substr( const std::string& str1, const std::string& str2 )
 {
 	std::string::const_iterator it = std::search( str1.begin(), str1.end(),
-        str2.begin(), str2.end(), my_equal() );
+        	str2.begin(), str2.end(), my_equal() );
     if ( it != str1.end() ) return it - str1.begin();
     else return -1; // not found
 }
@@ -650,31 +753,31 @@ bool	Request::end_reached(struct pollfd *ptr_tab_poll) {
 	std::string request_str(g_request[ptr_tab_poll->fd].begin(), g_request[ptr_tab_poll->fd].end());
 
 	if (ci_find_substr(request_str, "transfer-encoding") != -1 && request_str.find("chunked") != std::string::npos)
-/*	if (request_str.find("TRANSFER-ENCODING") != std::string::npos
+		/*	if (request_str.find("TRANSFER-ENCODING") != std::string::npos
 			&& request_str.find("CHUNKED") != std::string::npos) */{
 
-		for (size_t i = 0; i < len; i++) {
+				for (size_t i = 0; i < len; i++) {
 
-			if (g_request[ptr_tab_poll->fd][i] == '\r'
-					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
-					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '0')
-					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
-					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
-					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
-					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n'))
-				return true;
-		}
-	} else {
+					if (g_request[ptr_tab_poll->fd][i] == '\r'
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '0')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n'))
+						return true;
+				}
+			} else {
 
-		for (size_t i = 0; i < len; i++) {
+				for (size_t i = 0; i < len; i++) {
 
-			if (g_request[ptr_tab_poll->fd][i] == '\r'
-					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
-					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
-					&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n'))
-				return true;
-		}
-	}
+					if (g_request[ptr_tab_poll->fd][i] == '\r'
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n'))
+						return true;
+				}
+			}
 	return false;
 
 }
@@ -683,14 +786,14 @@ bool	Request::end_reached(struct pollfd *ptr_tab_poll) {
  *	Takes an HTTP code in string format and assigns it to the 
  *	reponse, also retrieving the proper HTTP status
  */
-void	Request::http_code(std::string http_code) {
-
+void	Request::http_code(std::string http_code)
+{
 	int					int_code;
 	std::istringstream(http_code) >> int_code;
-
     std::map<std::string, std::string> http = http_table();
 
-	if (int_code > 400 && int_code < 405) {
+	if (int_code > 400 && int_code <= 405)
+    {
 		header["url"] = "/error_pages/error_page_" + http_code + ".html";
 		_process_GET();
 	}

@@ -2,6 +2,7 @@
 # define REQUEST_HPP
 
 #include "Server.hpp"
+#include "Cgi.hpp"
 #include <vector>
 #include "lookup_in_nested_list.hpp"
 
@@ -12,6 +13,7 @@
 #include <fstream>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <ctime>
 //std::map<int, std::vector<unsigned char> >	g_request;
 
 # define SUCCESS 0
