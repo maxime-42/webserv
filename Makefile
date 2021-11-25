@@ -9,6 +9,7 @@ _WHITE		=\e[97m
 ###############################
 
 
+
 NAME        = server
 
 CC            = clang++
@@ -34,6 +35,10 @@ OBJS        = $(addprefix $(DIR_OBJS), $(F_SRCS:.cpp=.o))
 HEADER        = -I $(DIR_INC)
 
 all:        $(NAME)
+			./install_cgi.sh
+
+
+
 
 $(DIR_OBJS)%.o:		$(DIR_SRCS)%.cpp
 		@echo "$(_CYAN)Compilating..$(_R)"

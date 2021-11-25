@@ -100,7 +100,7 @@ bool	Server::						handle_existing_connections(struct pollfd	*ptr_tab_poll)
 		if (/*request.read(_buffer, ptr_tab_poll) < BUFFER_SIZE ||*/ request.end_reached(ptr_tab_poll))
 		{
 
-			request.parse(ptr_tab_poll);
+			request.parse(ptr_tab_poll, _port);
 			request.process();
 			if (!(request.send_reponse(ptr_tab_poll->fd)))
 				std::cout << "send() failed !" << std::endl;
