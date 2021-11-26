@@ -290,7 +290,6 @@ void        Request::process()
         else
         {
             return http_code("405");
-            ;
         }
     }
     else if (header["method"] == "POST")
@@ -421,7 +420,7 @@ int			Request::send_reponse(struct pollfd *ptr_tab_poll) {
 bool is_a_directory(const std::string &s)
 {
   	struct stat buffer;
-  	return (stat (s.c_str(), &buffer) == 0 && buffer.st_mode & S_IFDIR);
+  	return (stat (s.c_str(), &buffer) == 0 && buffer.st_mode & S_IFDIR); // if exist && is a directory return 1
 }
 
 void        Request::_process_GET()
@@ -429,23 +428,31 @@ void        Request::_process_GET()
 	std::string	filestr;
     std::string path;
 	std::string	root;
+    int         auto_index = 0;
 
 	// set root as described in config file
 	root = "root/";
-	chdir(root.c_str());
 
-    if (header["url"] == "/") {
-        path = "index.html";
-    } else if (header["url"][0] == '/') {
-        path = header["url"].erase(0,1);
+    /*
+        Check if the autoindex is on mode.
+    */
+    std::string dir_rep;
+    bool ret = getInfo(atoi(header["port"].c_str()), "autoindex", &dir_rep, find_directive);
+	if (ret)
+	{
+        /*
+            Check if the autoindex information is on "on" mode.
+        */
+        if (dir_rep.compare("on") == 0)
+        {
+            auto_index = 1;
+        }
 	}
-	//	path = root + path;
-
     /*
         Search if there is a /root in the config file to initialise the path and know which page the server have to send to the clientg.
     */
    	std::map<std::string, std::string> location_rep;
-	bool ret = get_location_url(atoi(header["port"].c_str()), header["url"], &location_rep);
+	ret = getInfo(atoi(header["port"].c_str()), header["url"], &location_rep, find_location);
 	if (ret)
 	{
 		std::cout << "Location successfully find" << std::endl;
@@ -459,13 +466,29 @@ void        Request::_process_GET()
             //std::cout << "it-second = [" << it->second << "]" << "\n";
             if (it->first.compare("root") == 0)
             {
-                path = it->second + "/";
-                break ;
+                root = it->second + header["url"] + "/";
+            }
+            if ((it->first.compare("autoindex") == 0) && (it->second.compare("on") == 0))
+            {
+                auto_index = 1;
             }
         }
 	}
 
+	chdir(root.c_str());
+
+    if (header["url"] == "/") {
+        path = "index.html";
+    } else if (header["url"][0] == '/') {
+        path = header["url"].erase(0,1);
+	}
+	//	path = root + path;
+
     std::ifstream	ifs(path.c_str());
+
+/*
+    TODO: Faire une variable pour récupérer l'auto index s il est présent.
+*/
 
 	if (is_a_directory(path) && 1 /* autoindex is on  */) {
 
@@ -613,7 +636,7 @@ std::string Request::find_url_and_name_from_file(std::string const file_type)
         Search if there is a /root in the config file to initialise the url_file and know where the server have to create the file.
     */
    	std::map<std::string, std::string> location_rep;
-	bool ret = get_location_url(atoi(header["port"].c_str()), header["url"], &location_rep);
+	bool ret = getInfo(atoi(header["port"].c_str()), header["url"], &location_rep, find_location);
 	if (ret)
 	{
 		std::cout << "Location successfully find" << std::endl;
@@ -627,7 +650,7 @@ std::string Request::find_url_and_name_from_file(std::string const file_type)
             //std::cout << "it-second = [" << it->second << "]" << "\n";
             if (it->first.compare("root") == 0)
             {
-                url_file = it->second + "/";
+                url_file = it->second + header["url"] + "/";
                 break ;
             }
         }
@@ -793,14 +816,14 @@ bool	Request::end_reached(struct pollfd *ptr_tab_poll) {
  *	Takes an HTTP code in string format and assigns it to the 
  *	reponse, also retrieving the proper HTTP status
  */
-void	Request::http_code(std::string http_code) {
-
+void	Request::http_code(std::string http_code)
+{
 	int					int_code;
 	std::istringstream(http_code) >> int_code;
-
     std::map<std::string, std::string> http = http_table();
 
-	if (int_code > 400 && int_code < 406 /*|| int_code == 418*/) {
+	if (int_code > 400 && int_code <= 405)
+    {
 		header["url"] = "/error_pages/error_page_" + http_code + ".html";
 		_process_GET();
 	}
