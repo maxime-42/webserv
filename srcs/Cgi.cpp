@@ -109,6 +109,7 @@ void	Cgi::set_env()
 	env_map["SERVER_SOFTWARE"] = "webserv/1.0";
 	env_map["GATEWAY_INTERFACE"] = "CGI/1.1";
 	env_map["REDIRECT_STATUS"] = "200";
+	env_map["STATUS_CODE"] = "200 OK";
 
 	env_map["SCRIPT_NAME"] = _args[1];
 	getInfo(8080, "listen", &env_map["SERVER_PORT"], find_directive);

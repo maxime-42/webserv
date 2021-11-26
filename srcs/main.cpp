@@ -16,7 +16,8 @@ int	 main(int argc, const char** argv)
 	{
 		// Service svc;
 		ParsingFile &parse = ParsingFile::getInstance("./configFile/default.conf");
-		Cgi cgi("myphp.php", 8080);
+		// Cgi cgi("myphp.php", 8080);
+
 		(void)parse;
 	}
 	(void)argc;
