@@ -94,18 +94,22 @@ bool	Server::						handle_existing_connections(struct pollfd	*ptr_tab_poll)
 	int			ret;
 
 	_close_connexion = false;
-	if ((ret = receive_data(ptr_tab_poll)) > 0)
+	if (ptr_tab_poll->revents & POLLOUT) {
+
+		if (!(request.send_reponse(ptr_tab_poll)))
+			std::cout << "send() failed!" << std::endl;
+		close(ptr_tab_poll->fd);
+		_close_connexion = true;
+
+	}
+	else if ((ret = receive_data(ptr_tab_poll)) > 0)
 	{
 		request.store(_buffer, ptr_tab_poll, ret);
-		if (/*request.read(_buffer, ptr_tab_poll) < BUFFER_SIZE ||*/ request.end_reached(ptr_tab_poll))
+		if (request.end_reached(ptr_tab_poll))
 		{
-
 			request.parse(ptr_tab_poll, _port);
 			request.process();
-			if (!(request.send_reponse(ptr_tab_poll->fd)))
-				std::cout << "send() failed !" << std::endl;
-			close(ptr_tab_poll->fd);
-			_close_connexion = true;
+			request.compose_reponse(ptr_tab_poll);
 		}
 	}
 	if (_close_connexion)
