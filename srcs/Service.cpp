@@ -29,30 +29,41 @@ void	Service::								displayAvailableServer(/* args */)
 **	if there had not error setup,  displayAvailableServer, and run service
 **	i display available port during the setup 
 */
-Service::Service():_instance(ParsingFile::getInstance("./configFile/default.conf"))
+Service::Service():_instance(ParsingFile::getInstance("./configFile/default.conf")), _compress_pollFds(false)
 {
 	if (_instance.getErrorHappened() == true)//glance if the parsing has detected an error
 	{
 		std::cout << "EXIT PROGRAME" << std::endl;
 		return ;
 	}
-	_compress_pollFds = false;
-	setUpService();
-	displayAvailableServer();
-	runService();
+	int ret = setUpService();
+	if (ret == SUCCESS)
+	{
+		displayAvailableServer();
+		runService();
+	}
 }
 
-Service:: 										Service(std::string FileName):_instance(ParsingFile::getInstance(FileName))
+/*
+**	first get instance of Parsing class, 
+**	check if any error happened while parsing file 
+**	if there had not error setup,  displayAvailableServer, and run service
+**	i display available port during the setup 
+*/
+Service:: 										Service(std::string FileName):_instance(ParsingFile::getInstance(FileName)), _compress_pollFds(false)
 {
 	if (_instance.getErrorHappened() == true)//glance if the parsing has detected an error
 	{
 		std::cout << "EXIT PROGRAME" << std::endl;
 		return ;
 	}
-	_compress_pollFds = false;
-	setUpService();
-	displayAvailableServer();
-	runService();
+	int ret = setUpService();
+	if (ret == SUCCESS)
+	{
+		displayAvailableServer();
+		runService();
+	}
+
 }
 
 Service::~Service(){}
@@ -95,27 +106,31 @@ void	Service::								squeeze_tab_poll()
 
 
 /*
-** size of _listServer depend size of _parsing.numberOfServer()
-**	first you should understand idea of Parsing class
+** @all_ports : this vector contains all port of config file
+** the goal of this function it is to create a linked list which has an instance of server class in each node
+**	there will been as much node than the number of port
 **	each port is tie in a server object, it mean we create a server object for each port 
 */
 
-void	Service::								setUpService()
+int	Service::								setUpService()
 {
 	std::vector<int> &all_ports = ParsingFile::get_ports();
 
 	for (_nfds = 0; _nfds < _instance.numberOfServer(); _nfds++)
 	{
-		Server server;
+		Server server;/* instance a server over each iteration*/
 		if (all_ports.size() > _nfds)
 		{
 			server.set_port(all_ports[_nfds]);
 		}
 		server.setup();
+		if (server.get_hasError() == true)/*check if a error happened while setup of server it stop the loop*/
+			return (ERROR); /* return this when an error occurred while the setup of server */
 		_pollFds[_nfds].fd = server.get_server_fd();
 		_pollFds[_nfds].events = POLLIN; //Tell me when ready to read
 		_listServer.push_back(server);
 	}
+	return (SUCCESS);
 }
 
 /*

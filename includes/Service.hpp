@@ -27,7 +27,7 @@ private:
 	std::list<Server> 							_listServer;
 	
 private:
-	void										setUpService();
+	int											setUpService();
 	void										handlerServer(size_t &index);
 
 	void										checkError(int error_code,  const char *  msg);
