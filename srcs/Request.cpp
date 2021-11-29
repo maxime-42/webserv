@@ -425,6 +425,10 @@ bool is_a_directory(const std::string &s)
 
 void        Request::_process_GET()
 {
+    std::map<std::string, std::string> mime_types;
+    std::map<std::string, std::string>::const_iterator it;
+    initialize_mime_types(mime_types);
+
 	std::string	filestr;
     std::string path;
 	std::string	root;
@@ -540,6 +544,15 @@ void        Request::_process_GET()
     reponse["Content-Type"] = "text/plain; charset=utf-8";
     if (is_a_directory(path) || path.substr(path.find_last_of(".") + 1) == "html")
         reponse["Content-Type"] = "text/html; charset=utf-8";
+	else {
+	
+	    for (it = mime_types.begin(); it != mime_types.end(); ++it)
+    	{
+        	if (it->first == path.substr(path.find_last_of(".")))
+				reponse["Content-Type"] = it->second;
+    	}
+
+	}
 }
 
 /*
@@ -550,7 +563,7 @@ void        Request::_process_GET()
    Le nom MIME vient des différents Content-type qui existe. La liste est non
    exclusive
    */
-void	initialize_mime_types(std::map<std::string, std::string> &mime_types)
+void		Request::initialize_mime_types(std::map<std::string, std::string> &mime_types)
 {
 	mime_types[".aac"]      = "audio/aac";
 	mime_types[".abw"]      = "application/x-abiword";

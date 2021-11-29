@@ -18,6 +18,7 @@ Cgi::Cgi(std::string script, int port): _script(script), _port(port)
 		complete_the_name_of_script();
 		set_args();
 		exec_Cgi();
+		remove_headers();
 	}
 	catch(const char *e)
 	{
@@ -138,6 +139,36 @@ void		Cgi::	exec_Cgi()
 		}
 	}
 	//std::cout << "data=[" << _data << "]" << std::endl;
+}
+
+void		Cgi::	remove_headers() {
+
+	std::string	header("");
+	std::string key;
+	std::string value;
+
+	size_t pos2;
+	size_t pos = _data.find("\r\n\r\n");
+	if (pos != std::string::npos) {
+
+		header = _data.substr(pos);
+		_data = _data.substr(pos + 4, std::string::npos);
+	
+	}
+	while ((pos = header.find("\r\n")) != std::string::npos
+			&& (pos2 = header.find(":")) != std::string::npos
+ 		 	&& pos2 < pos) {
+
+		key = header.substr(pos2);
+		value = header.substr(pos2, pos);
+		/*
+		 * update &reponse headers;
+		 */
+
+		header.erase(0, pos + 1);
+
+	}
+
 }
 
 std::string		Cgi::	get_data(){return (_data);}

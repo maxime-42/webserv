@@ -36,6 +36,7 @@ private:
 	void		retrieve_data();
 	void		clear_args();
 	void		exec_Cgi();
+	void		remove_headers();
 
 public:
 	Cgi(std::string script, int port);
