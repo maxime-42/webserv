@@ -24,6 +24,8 @@ class Request
 
 	private:
 
+		char								buf[BUFFER_SIZE + 1];
+
         std::map<std::string, std::string>  http_table();
 
         void                                _process_GET();

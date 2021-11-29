@@ -96,10 +96,14 @@ bool	Server::						handle_existing_connections(struct pollfd	*ptr_tab_poll)
 	_close_connexion = false;
 	if (ptr_tab_poll->revents & POLLOUT) {
 
-		if (!(request.send_reponse(ptr_tab_poll)))
+		ret =  request.send_reponse(ptr_tab_poll);
+
+		if (ret < 0)
 			std::cout << "send() failed!" << std::endl;
-		close(ptr_tab_poll->fd);
-		_close_connexion = true;
+		else if (ret == 0) {
+			close(ptr_tab_poll->fd);
+			_close_connexion = true;
+		}
 
 	}
 	else if ((ret = receive_data(ptr_tab_poll)) > 0)

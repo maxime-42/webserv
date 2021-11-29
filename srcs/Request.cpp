@@ -391,23 +391,24 @@ void		Request::compose_reponse(struct pollfd *ptr_tab_poll) {
 
 int			Request::send_reponse(struct pollfd *ptr_tab_poll) {
 
-	char buf[BUFFER_SIZE + 1];
-
 	int ret;
 	int	fd = ptr_tab_poll->fd;
-	size_t	vsize = g_reponse[fd].size();
+	size_t	rsize = g_reponse[fd].size();
 
 	size_t i;
-	for (i = 0; i < vsize && i < BUFFER_SIZE; i++) {
+	for (i = 0; i < rsize && i < BUFFER_SIZE; i++) {
 
 		buf[i] = g_reponse[fd][i];
 
 	}	
 	buf[i] = '\0';
 
-	ret = send(fd, buf, (BUFFER_SIZE < vsize? BUFFER_SIZE : vsize), 0);
+	ret = send(fd, buf, (BUFFER_SIZE < rsize ? BUFFER_SIZE : rsize), 0);
+
 	if (ret < 0)
 		return ret;
+	else
+		std::cout << "send successfully sent " << ret << " bytes, " << rsize - ret << " left" << std::endl;
 
 	g_reponse[fd].erase(g_reponse[fd].begin(), g_reponse[fd].begin() + ret);
 
