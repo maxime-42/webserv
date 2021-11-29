@@ -460,7 +460,7 @@ void        Request::_process_GET()
     TODO: Faire une variable pour récupérer l'auto index s il est présent.
 */
 
-	if (is_a_directory(path) && 1 /* autoindex is on  */) {
+	if (is_a_directory(path) && auto_index == 1) {
 
 		DIR *dir;
 		struct dirent *ent;
