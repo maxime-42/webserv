@@ -6,7 +6,7 @@ Cgi::Cgi() {}
 Cgi::~Cgi(){}
 
 void		displayDirectionary(std::map<std::string, std::string> &map);
-void	print_arg(char **array);
+// void	print_arg(char **array);
 
 Cgi::Cgi(std::string script, int port): _script(script), _port(port), _cgi_path(CGI_PATH), _env(NULL), _args( NULL)
 {
@@ -17,7 +17,7 @@ Cgi::Cgi(std::string script, int port): _script(script), _port(port), _cgi_path(
 		complete_the_name_of_script();
 		set_args();
 		set_env();
-		print_arg(_args);
+		// print_arg(_args);
 		exec_Cgi();
 	}
 	catch(const char *e)

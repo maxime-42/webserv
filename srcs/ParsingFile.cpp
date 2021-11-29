@@ -27,6 +27,7 @@ ParsingFile & ParsingFile::								getInstance(std::string fileName)
 ParsingFile::											ParsingFile(): _fileName("./configFile/default.conf"), _configFile(std::string()), _errorHappened(false)
 {
 	std::cout << "*******************************\tTAKING \tDEFAULT\t FILE\t***********************" << std::endl;
+	set_defaut_config();
 	int result = getStartProcess();
 	if (result == ERROR)
 	{
@@ -42,6 +43,8 @@ ParsingFile::											ParsingFile(std::string fileName): _fileName(fileName), 
 	s_fileName = fileName;
 
 	std::cout << "****************GET FILE\tFROM\tPARAMETER****************" << std::endl;
+	set_defaut_config();
+
 	int result = getStartProcess();
 	if (result == ERROR)
 	{
@@ -114,9 +117,11 @@ void	ParsingFile::									set_defaut_config()
 {
 	_defautConfig["allow"] = "PUT GET DELETE POST";
 	_defautConfig["listen"] = "8080";
-	_defautConfig["cli_max_size"] = "4096";
+	_defautConfig["cli_max_size"] = "5000000";
 	_defautConfig["error page"] = " 404 error.html";
-	
+	_defaultConfig["server_name"] = "tebi2poney";
+	_defaultConfig["cgi_pass"] = CGI_PATH;
+
 }
 
 std::map<std::string, std::string> & ParsingFile::		get_defaut_config(){return(getInstance(s_fileName).interface_get_defaut_config());}
@@ -405,7 +410,7 @@ void													ParsingFile::parsingProcess()
 {
 	std::string 							directiveName;
 	std::string 							directiveValue;
-	std::map<std::string, std::string>		dictionary; 
+	std::map<std::string, std::string>		dictionary = get_defaut_config(); 
 	int										nbParenthese = 0;//it increment when it meet open brack an decrement to bracket closed 
 	std::cout << "******************************* ST A R T I N G	 P A R S I N G ******************************************" << std::endl;
 	for (size_t i = 0; i < _configFile.size(); )
@@ -436,6 +441,7 @@ void													ParsingFile::parsingProcess()
 				hasBracketClose(nbParenthese);
 				if (nbParenthese == 0){
 					addListInNestedList(dictionary);
+					dictionary = get_defaut_config(); 
 				}
 				else
 					addDictionaryInList(dictionary);
