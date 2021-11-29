@@ -54,6 +54,7 @@ class Request
 		bool					end_reached(struct pollfd *ptr_tab_poll);
         int                     create_file(std::string const file_type);
 		std::string				find_url_and_name_from_file(std::string const file_type);
+		std::string				return_config_info(std::string searching_index);
 
 		std::string				get_method();
 		std::string				get_path();

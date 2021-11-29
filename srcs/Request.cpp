@@ -276,14 +276,7 @@ std::string        Request::get_accept_language()
 std::string        Request::get_path_info()
 {
     bool ret;
-    std::string get_info = "/";
-
-    std::string rep;
-    ret = getInfo(atoi(header["port"].c_str()), "cgi_pass", &rep, find_directive);
-	if (ret)
-	{
-        get_info = rep;
-	}
+    std::string get_info = return_config_info("cgi_pass");
 
     std::map<std::string, std::string> location_rep;
 	ret = getInfo(atoi(header["port"].c_str()), "*.php", &location_rep, find_location);
@@ -489,6 +482,39 @@ int			Request::send_reponse(struct pollfd *ptr_tab_poll) {
 	return ret;
 }
 
+std::string     Request::return_config_info(std::string searching_index)
+{
+    std::string search_rep;
+    
+    /*
+        Search_rep will be initialised with the directive value for the searching_inde.
+    */
+    getInfo(atoi(header["port"].c_str()), searching_index, &search_rep, find_directive);
+    /*
+        Search if there is a /root in the config file to initialise the path and know which page the server have to send to the clientg.
+    */
+   	std::map<std::string, std::string> location_rep;
+	bool ret = getInfo(atoi(header["port"].c_str()), header["url"], &location_rep, find_location);
+	if (ret)
+	{
+		std::cout << "Location successfully find" << std::endl;
+        /*
+            If there is some information at a location from the url, search if there is a /root informations in the config file
+        */
+        std::map<std::string, std::string>::const_iterator it;
+        for (it = location_rep.begin(); it != location_rep.end(); ++it)
+        {
+            //std::cout << "it-first = [" << it->first << "]" << "\n";
+            //std::cout << "it-second = [" << it->second << "]" << "\n";
+            if (it->first.compare(search_rep) == 0)
+            {
+                search_rep = it->second;
+            }
+        }
+	}
+    return (search_rep);
+}
+
 bool is_a_directory(const std::string &s)
 {
   	struct stat buffer;
@@ -503,64 +529,20 @@ void        Request::_process_GET()
 
 	std::string	filestr;
     std::string path;
-	std::string	root;
+	std::string	root = return_config_info("root");
     int         auto_index = 0;
-
-	// set root as described in config file
-	root = "root/";
 
     /*
         Check if the autoindex is on mode.
     */
-    std::string dir_rep;
-    bool ret = getInfo(atoi(header["port"].c_str()), "autoindex", &dir_rep, find_directive);
-	if (ret)
-	{
-        /*
-            Check if the autoindex information is on "on" mode.
-        */
-       	std::cout << "We find autoindex" << std::endl;
-
-        if (dir_rep.compare("on") == 0)
-        {
-            auto_index = 1;
-        }
-	}
-    else
-    {
-       	std::cout << "We DONT find autoindex" << std::endl;
-    }
-    /*
-        Search if there is a /root in the config file to initialise the path and know which page the server have to send to the clientg.
-    */
-   	std::map<std::string, std::string> location_rep;
-	ret = getInfo(atoi(header["port"].c_str()), header["url"], &location_rep, find_location);
-	if (ret)
-	{
-		std::cout << "Location successfully find" << std::endl;
-        /*
-            If there is some information at a location from the url, search if there is a /root informations in the config file
-        */
-        std::map<std::string, std::string>::const_iterator it;
-        for (it = location_rep.begin(); it != location_rep.end(); ++it)
-        {
-            //std::cout << "it-first = [" << it->first << "]" << "\n";
-            //std::cout << "it-second = [" << it->second << "]" << "\n";
-            if (it->first.compare("root") == 0)
-            {
-                root = it->second + header["url"] + "/";
-            }
-            if ((it->first.compare("autoindex") == 0) && (it->second.compare("on") == 0))
-            {
-                auto_index = 1;
-            }
-        }
-	}
+    std::string rep = return_config_info("autoindex");
+    if (rep.compare("on") == 0)
+        auto_index = 1;
 
 	chdir(root.c_str());
 
     if (header["url"] == "/") {
-        path = "index.html";
+        path = return_config_info("index");
     } else if (header["url"][0] == '/') {
         path = header["url"].erase(0,1);
 	}
