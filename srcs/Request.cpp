@@ -211,7 +211,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
         /*
             DEBUG: What is that ?
         */
-		//std::transform(key.begin(), key.end(), key.begin(), ::toupper);
+		std::transform(key.begin(), key.end(), key.begin(), ::toupper);
 
         //std::cout << "key = [" << key << "]\nbegin = " << begin_key << "\n";
         /*
@@ -236,13 +236,86 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 	//std::cout << header["body"] << std::endl << std::endl;
 
 	// --------  affichage  --------------------------------------------------------------------------
-	/*	
-       	for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it) {
+       	std::cout << "Display header parsed begin" << std::endl;
+    for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it)
+    {
        	std::cout << it->first << ":" << it->second << std::endl;
-       	}
-	*/	   
+    }
+       	std::cout << "\nDisplay header parsed end" << std::endl;
 }
 
+std::string        Request::get_method()
+{
+    return (header["method"]);
+}
+
+std::string        Request::get_path()
+{
+    return (header["url"]);
+}
+
+std::string        Request::get_host()
+{
+    return (header["HOST"]);
+}
+
+std::string        Request::get_accept()
+{
+    return (header["ACCEPT"]);
+}
+
+std::string        Request::get_accept_encoding()
+{
+    return (header["ACCEPT-ENCODING"]);
+}
+
+std::string        Request::get_accept_language()
+{
+    return (header["ACCEPT-LANGUAGE"]);
+}
+std::string        Request::get_path_info()
+{
+    bool ret;
+    std::string get_info = "/";
+
+    std::string rep;
+    ret = getInfo(atoi(header["port"].c_str()), "cgi_pass", &rep, find_directive);
+	if (ret)
+	{
+        get_info = rep;
+	}
+
+    std::map<std::string, std::string> location_rep;
+	ret = getInfo(atoi(header["port"].c_str()), "*.php", &location_rep, find_location);
+	if (ret)
+	{
+		std::cout << "Location successfully find" << std::endl;
+        /*
+            If there is some information at a location from the url, search if there is a /root informations in the config file
+        */
+        std::map<std::string, std::string>::const_iterator it;
+        for (it = location_rep.begin(); it != location_rep.end(); ++it)
+        {
+            //std::cout << "it-first = [" << it->first << "]" << "\n";
+            //std::cout << "it-second = [" << it->second << "]" << "\n";
+            if (it->first.compare("cgi_pass") == 0)
+            {
+                get_info = it->second;
+            }
+        }
+	}
+    return (get_info);
+}
+
+std::string        Request::get_content_type()
+{
+    return (header["CONTENT-TYPE"]);
+}
+
+std::string        Request::get_content_length()
+{
+    return (header["CONTENT-LENGTH"]);
+}
 
 /*
  * 	If the requested method is supported, we call the appropiate function
@@ -446,11 +519,17 @@ void        Request::_process_GET()
         /*
             Check if the autoindex information is on "on" mode.
         */
+       	std::cout << "We find autoindex" << std::endl;
+
         if (dir_rep.compare("on") == 0)
         {
             auto_index = 1;
         }
 	}
+    else
+    {
+       	std::cout << "We DONT find autoindex" << std::endl;
+    }
     /*
         Search if there is a /root in the config file to initialise the path and know which page the server have to send to the clientg.
     */
