@@ -166,7 +166,7 @@ void	Service::								handlerServer(size_t &index)
 		}
 		else if ((std::find(vect_socket_client.begin(), vect_socket_client.end(), _pollFds[index].fd)) != vect_socket_client.end())
 		{
-			std::cout << "=========connexion existing===============" << std::endl;
+//			std::cout << "=========connexion existing===============" << std::endl;
 			_close_connexion = currentServer.handle_existing_connections(&_pollFds[index]); // return true if the connection is closed
 			if (_close_connexion == true)
 			{
@@ -205,7 +205,7 @@ void	Service::								runService()
 				throw("poll() timed out");
 			for (size_t index = 0; index < _nfds; index++) //loop through the array of sokect to monitoring an event 
 			{
-				std::cout << "==========_pollFds[index].fd = " << _pollFds[index].fd << " index = " << index << "===========" << std::endl;
+				//std::cout << "==========_pollFds[index].fd = " << _pollFds[index].fd << " index = " << index << "===========" << std::endl;
 				if (_pollFds[index].revents == NONE_EVENT)//loop as long the are not event happened
 					continue;
 				handlerServer(index);// like event happened go to handler this

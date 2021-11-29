@@ -235,8 +235,8 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 
 	g_request[ptr_tab_poll->fd].clear(); // empty vector to allow incoming request from the same client
 
-	std::cout << "REQUEST BODY" << std::endl << std::endl;
-	std::cout << header["body"] << std::endl << std::endl;
+	//std::cout << "REQUEST BODY" << std::endl << std::endl;
+	//std::cout << header["body"] << std::endl << std::endl;
 
 	// --------  affichage  --------------------------------------------------------------------------
 	/*	
@@ -263,8 +263,8 @@ void        Request::process()
         /*
             DEBUG: Si on trouve bien allow tout va bien ^^ ceci est du debug !
         */
-		std::cout << ">>>>>Exit<<<<" << std::endl;
-        std::cout << ">>[" << rep << "]<<" << std::endl;
+//		std::cout << ">>>>>Exit<<<<" << std::endl;
+//        std::cout << ">>[" << rep << "]<<" << std::endl;
 	}
 	else
 	{
@@ -408,7 +408,7 @@ int			Request::send_reponse(struct pollfd *ptr_tab_poll) {
 	if (ret < 0)
 		return ret;
 	else
-		std::cout << "send successfully sent " << ret << " bytes, " << rsize - ret << " left" << std::endl;
+		std::cout << "send() successfully sent " << ret << " bytes, " << rsize - ret << " left" << std::endl;
 
 	g_reponse[fd].erase(g_reponse[fd].begin(), g_reponse[fd].begin() + ret);
 
