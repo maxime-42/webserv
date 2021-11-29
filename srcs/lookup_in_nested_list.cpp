@@ -9,7 +9,7 @@
 **  the integer to converting is  given in parameter
 */
 
-static std::string get_value_in_string(int value)
+std::string get_value_in_string(int value)
 {
 	std:: stringstream ss;
 	ss << value;
@@ -26,7 +26,9 @@ static std::string get_value_in_string(int value)
 
 /********************************************************************************ACCESS TO ELEM it _serverList it is a neested list************************************************************************************/
 
-
+/*
+** i will comment to later...
+*/
 bool		find_location(t_single_list & secondList, std::string &elemToFind, void *ptrReponse)
 {
 	t_single_list::iterator itr_secondList;
@@ -46,8 +48,24 @@ bool		find_location(t_single_list & secondList, std::string &elemToFind, void *p
 	}
 	return (false);
 }
+/*
+** this function check if the dictionary contain a location
+** if there are a location it return true else return false
+*/
+static bool	isLocation(std::map < std::string, std::string > &dictionary)
+{
+	std::map < std::string, std::string >::iterator itr_dictionary;
+	itr_dictionary = dictionary.find("location");
+	if (itr_dictionary != dictionary.end())
+	{
+		return (true);
+	}
+	return (false);
+}
 
-
+/*
+** i will comment to later
+*/
 bool		find_directive(t_single_list & secondList, std::string &elemToFind, void *ptrReponse)
 {
 	t_single_list::iterator itr_secondList;
@@ -58,7 +76,8 @@ bool		find_directive(t_single_list & secondList, std::string &elemToFind, void *
 	{
 		dictionary = *itr_secondList; //to get dictionary of each node
 		itr_dictionary = dictionary.find(elemToFind);// identify port
-		if (itr_dictionary != dictionary.end())
+		bool is_location = isLocation(dictionary);
+		if (itr_dictionary != dictionary.end() && is_location == false)
 		{
 			ptrString = (std::string *) ptrReponse;
 			*ptrString = itr_dictionary->second;
@@ -69,7 +88,6 @@ bool		find_directive(t_single_list & secondList, std::string &elemToFind, void *
 }
 
 /*
-
 prototype: bool  getInfo(int port, std::string elemToFind, void *reponse, bool(*callback)(t_single_list & secondList, std::string &elemToFind, void *ptrReponse))
 
 parametre un 	: 

@@ -58,6 +58,7 @@ class Server
 		bool					handle_existing_connections(struct pollfd	*_tab_poll);
 		void					set_port(int port);
 		int						getPort();
+		int	 					get_hasError();
 
 
 	private:
@@ -66,7 +67,6 @@ class Server
 		void					squeeze_tab_poll();
 		int						receive_data(struct pollfd	*_tab_poll);
 		void					setPort(int port);
-		int	 					get_hasError();
 		
 		void					parse_request(std::string r, std::map<std::string, std::string> & request,  std::map<std::string, std::string> & reponse);
 		void					process_request(std::map<std::string, std::string> request, std::map<std::string, std::string> & reponse);

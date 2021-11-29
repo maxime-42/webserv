@@ -77,15 +77,10 @@ int	ParsingFile::										getStartProcess()
 ParsingFile::~ParsingFile(){ }
 
 /***************************************************************alll get function ****************************************/
-
-
-
 size_t	ParsingFile::									numberOfServer()
 {
-
 	return (getInstance(s_fileName).interface_numberOfServer());
 }
-
 
 size_t	ParsingFile::									interface_numberOfServer()
 {
@@ -173,7 +168,6 @@ void	ParsingFile:: getFile()
 /*
 ** Returns true if given string in parameter is a number else false
 */
-
 bool	 		ParsingFile::							isNumber(std::string &str)
 {
 	int result;
