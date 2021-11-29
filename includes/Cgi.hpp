@@ -44,6 +44,7 @@ private:
 	void					exec_Cgi();
 	std::string				get_query_string();
 	void					clear_2D_array(char **array);
+	void					remove_headers();
 
 public:
 	Cgi(std::string script, int port);

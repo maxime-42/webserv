@@ -5,6 +5,7 @@
  *  Map key is the fd of poll_tab for that client 	
  */
 std::map<int, std::vector<unsigned char> >	g_request;
+std::map<int, std::vector<unsigned char> >	g_reponse;
 
 
 
@@ -77,8 +78,8 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 
 	//	std::transform(request_str.begin(), request_str.end(), request_str.begin(), ::toupper);
 
-	std::cout << "RAW REQUEST" << std::endl << std::endl;
-	std::cout << request_str << std::endl << std::endl;
+//	std::cout << "RAW REQUEST" << std::endl << std::endl;
+//	std::cout << request_str << std::endl << std::endl;
 
 
 	header.clear();
@@ -234,8 +235,8 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 
 	g_request[ptr_tab_poll->fd].clear(); // empty vector to allow incoming request from the same client
 
-	std::cout << "REQUEST BODY" << std::endl << std::endl;
-	std::cout << header["body"] << std::endl << std::endl;
+	//std::cout << "REQUEST BODY" << std::endl << std::endl;
+	//std::cout << header["body"] << std::endl << std::endl;
 
 	// --------  affichage  --------------------------------------------------------------------------
 	/*	
@@ -262,8 +263,8 @@ void        Request::process()
         /*
             DEBUG: Si on trouve bien allow tout va bien ^^ ceci est du debug !
         */
-		std::cout << ">>>>>Exit<<<<" << std::endl;
-        std::cout << ">>[" << rep << "]<<" << std::endl;
+//		std::cout << ">>>>>Exit<<<<" << std::endl;
+//        std::cout << ">>[" << rep << "]<<" << std::endl;
 	}
 	else
 	{
@@ -289,7 +290,6 @@ void        Request::process()
         else
         {
             return http_code("405");
-            ;
         }
     }
     else if (header["method"] == "POST")
@@ -317,7 +317,7 @@ void        Request::process()
     else
         http_code("405");
 }
-
+/*
 int		Request::sendall(int s, const char *buf, int len)
 {
     int total = 0;        // how many bytes we've sent
@@ -325,7 +325,7 @@ int		Request::sendall(int s, const char *buf, int len)
     int n;
 
     while(total < len) {
-        n = send(s, buf+total, bytesleft, 0);
+        n = send(s, buf+total, (bytesleft > 1000 ? 1000 : bytesleft), 0);
         if (n == -1) { break; }
         total += n;
         bytesleft -= n;
@@ -334,7 +334,7 @@ int		Request::sendall(int s, const char *buf, int len)
     len = total; // return number actually sent here
 
     return n==-1?-1:0; // return -1 on failure, 0 on success
-}
+}*/
 
 std::string		time_to_string() {
 
@@ -358,7 +358,7 @@ std::string		time_to_string() {
 /*
  *	Send the reponse with the proper HTTP headers and format
  */
-int        Request::send_reponse(int socket) {
+void		Request::compose_reponse(struct pollfd *ptr_tab_poll) {
 
     reponse["http_version"] = "HTTP/1.1";
 
@@ -373,49 +373,91 @@ int        Request::send_reponse(int socket) {
         reply.append("Content-Length: " + reponse["Content-Length"] + " \n");
 		reply.append("Connection: Closed\n");
         reply.append("\n");
+
+    	write(1, "\nREPONSE:\n\n", 12);
+	    write(1, reply.c_str(),reply.length());
+
         reply.append(reponse["body"]);
     }
 
+	g_reponse[ptr_tab_poll->fd];
+	g_reponse[ptr_tab_poll->fd].clear();
 
-	if (sendall(socket, reply.c_str(),reply.length()) < 0)
-		return 0;
+	for (size_t i = 0; i < reply.length(); i++) {
+		g_reponse[ptr_tab_poll->fd].push_back(reply[i]);
+	}
+	ptr_tab_poll->events = POLLOUT;
+}
 
-    write(1, "\nREPONSE:\n\n", 12);
-    write(1, reply.c_str(),reply.length());
-    write(1, "\n\n", 2);
+int			Request::send_reponse(struct pollfd *ptr_tab_poll) {
 
-	return 1;
+	int ret;
+	int	fd = ptr_tab_poll->fd;
+	size_t	rsize = g_reponse[fd].size();
 
+	size_t i;
+	for (i = 0; i < rsize && i < BUFFER_SIZE; i++) {
+
+		buf[i] = g_reponse[fd][i];
+
+	}	
+	buf[i] = '\0';
+
+	ret = send(fd, buf, (BUFFER_SIZE < rsize ? BUFFER_SIZE : rsize), 0);
+
+	if (ret < 0)
+		return ret;
+	else
+		std::cout << "send() successfully sent " << ret << " bytes, " << rsize - ret << " left" << std::endl;
+
+	g_reponse[fd].erase(g_reponse[fd].begin(), g_reponse[fd].begin() + ret);
+
+	if (g_reponse[fd].size() == 0)
+		ptr_tab_poll->events = POLLIN;
+
+	return ret;
 }
 
 bool is_a_directory(const std::string &s)
 {
   	struct stat buffer;
-  	return (stat (s.c_str(), &buffer) == 0 && buffer.st_mode & S_IFDIR);
+  	return (stat (s.c_str(), &buffer) == 0 && buffer.st_mode & S_IFDIR); // if exist && is a directory return 1
 }
 
 void        Request::_process_GET()
 {
+    std::map<std::string, std::string> mime_types;
+    std::map<std::string, std::string>::const_iterator it;
+    initialize_mime_types(mime_types);
+
 	std::string	filestr;
     std::string path;
 	std::string	root;
+    int         auto_index = 0;
 
 	// set root as described in config file
 	root = "root/";
-	chdir(root.c_str());
 
-    if (header["url"] == "/") {
-        path = "index.html";
-    } else if (header["url"][0] == '/') {
-        path = header["url"].erase(0,1);
+    /*
+        Check if the autoindex is on mode.
+    */
+    std::string dir_rep;
+    bool ret = getInfo(atoi(header["port"].c_str()), "autoindex", &dir_rep, find_directive);
+	if (ret)
+	{
+        /*
+            Check if the autoindex information is on "on" mode.
+        */
+        if (dir_rep.compare("on") == 0)
+        {
+            auto_index = 1;
+        }
 	}
-	//	path = root + path;
-
     /*
         Search if there is a /root in the config file to initialise the path and know which page the server have to send to the clientg.
     */
    	std::map<std::string, std::string> location_rep;
-	bool ret = get_location_url(atoi(header["port"].c_str()), header["url"], &location_rep);
+	ret = getInfo(atoi(header["port"].c_str()), header["url"], &location_rep, find_location);
 	if (ret)
 	{
 		std::cout << "Location successfully find" << std::endl;
@@ -429,13 +471,29 @@ void        Request::_process_GET()
             //std::cout << "it-second = [" << it->second << "]" << "\n";
             if (it->first.compare("root") == 0)
             {
-                path = it->second + "/";
-                break ;
+                root = it->second + header["url"] + "/";
+            }
+            if ((it->first.compare("autoindex") == 0) && (it->second.compare("on") == 0))
+            {
+                auto_index = 1;
             }
         }
 	}
 
+	chdir(root.c_str());
+
+    if (header["url"] == "/") {
+        path = "index.html";
+    } else if (header["url"][0] == '/') {
+        path = header["url"].erase(0,1);
+	}
+	//	path = root + path;
+
     std::ifstream	ifs(path.c_str());
+
+/*
+    TODO: Faire une variable pour récupérer l'auto index s il est présent.
+*/
 
 	if (is_a_directory(path) && 1 /* autoindex is on  */) {
 
@@ -487,6 +545,15 @@ void        Request::_process_GET()
     reponse["Content-Type"] = "text/plain; charset=utf-8";
     if (is_a_directory(path) || path.substr(path.find_last_of(".") + 1) == "html")
         reponse["Content-Type"] = "text/html; charset=utf-8";
+	else {
+	
+	    for (it = mime_types.begin(); it != mime_types.end(); ++it)
+    	{
+        	if (it->first == path.substr(path.find_last_of(".")))
+				reponse["Content-Type"] = it->second;
+    	}
+
+	}
 }
 
 /*
@@ -497,7 +564,7 @@ void        Request::_process_GET()
    Le nom MIME vient des différents Content-type qui existe. La liste est non
    exclusive
    */
-void	initialize_mime_types(std::map<std::string, std::string> &mime_types)
+void		Request::initialize_mime_types(std::map<std::string, std::string> &mime_types)
 {
 	mime_types[".aac"]      = "audio/aac";
 	mime_types[".abw"]      = "application/x-abiword";
@@ -583,7 +650,7 @@ std::string Request::find_url_and_name_from_file(std::string const file_type)
         Search if there is a /root in the config file to initialise the url_file and know where the server have to create the file.
     */
    	std::map<std::string, std::string> location_rep;
-	bool ret = get_location_url(atoi(header["port"].c_str()), header["url"], &location_rep);
+	bool ret = getInfo(atoi(header["port"].c_str()), header["url"], &location_rep, find_location);
 	if (ret)
 	{
 		std::cout << "Location successfully find" << std::endl;
@@ -597,7 +664,7 @@ std::string Request::find_url_and_name_from_file(std::string const file_type)
             //std::cout << "it-second = [" << it->second << "]" << "\n";
             if (it->first.compare("root") == 0)
             {
-                url_file = it->second + "/";
+                url_file = it->second + header["url"] + "/";
                 break ;
             }
         }
@@ -763,18 +830,18 @@ bool	Request::end_reached(struct pollfd *ptr_tab_poll) {
  *	Takes an HTTP code in string format and assigns it to the 
  *	reponse, also retrieving the proper HTTP status
  */
-void	Request::http_code(std::string http_code) {
-
+void	Request::http_code(std::string http_code)
+{
 	int					int_code;
 	std::istringstream(http_code) >> int_code;
-
     std::map<std::string, std::string> http = http_table();
 
-	if (int_code > 400 && int_code < 405) {
+	if (int_code > 400 && int_code <= 405)
+    {
 		header["url"] = "/error_pages/error_page_" + http_code + ".html";
 		_process_GET();
 	}
-    reponse["code"] = http_code; 
+    reponse["code"] = http_code;
     reponse["status"] = http[http_code];
 
 }

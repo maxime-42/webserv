@@ -24,6 +24,8 @@ class Request
 
 	private:
 
+		char								buf[BUFFER_SIZE + 1];
+
         std::map<std::string, std::string>  http_table();
 
         void                                _process_GET();
@@ -31,6 +33,7 @@ class Request
         void                                _process_DELETE();
 
         void                                http_code(std::string code);
+		void								initialize_mime_types(std::map<std::string, std::string> &mime_types);
 
 	public:
 
@@ -46,7 +49,8 @@ class Request
 		int						sendall(int s, const char *buf, int len);
         void					parse(struct pollfd *ptr_tab_poll, int port);
         void                    process();
-        int						send_reponse(int socket);
+        void					compose_reponse(struct pollfd *ptr_tab_poll);
+        int						send_reponse(struct pollfd *ptr_tab_poll);
 		bool					end_reached(struct pollfd *ptr_tab_poll);
         int                     create_file(std::string const file_type);
 		std::string				find_url_and_name_from_file(std::string const file_type);
