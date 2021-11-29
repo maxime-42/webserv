@@ -19,7 +19,6 @@
 #include <map>
 #include <sstream>
 #include "lookup_in_nested_list.hpp"
-
 class Cgi
 {
 private:

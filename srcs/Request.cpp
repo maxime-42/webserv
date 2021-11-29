@@ -8,8 +8,6 @@ std::map<int, std::vector<unsigned char> >	g_request;
 std::map<int, std::vector<unsigned char> >	g_reponse;
 
 
-
-
 Request::Request() {}
 
 Request::~Request() {}
@@ -80,7 +78,6 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 
 //	std::cout << "RAW REQUEST" << std::endl << std::endl;
 //	std::cout << request_str << std::endl << std::endl;
-
 
 	header.clear();
     reponse.clear();
@@ -239,13 +236,79 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 	//std::cout << header["body"] << std::endl << std::endl;
 
 	// --------  affichage  --------------------------------------------------------------------------
-	/*	
-       	for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it) {
+       	std::cout << "Display header parsed begin" << std::endl;
+    for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it)
+    {
        	std::cout << it->first << ":" << it->second << std::endl;
-       	}
-	*/	   
+    }
+       	std::cout << "\nDisplay header parsed end" << std::endl;
 }
 
+std::string        Request::get_method()
+{
+    return (header["method"]);
+}
+
+std::string        Request::get_path()
+{
+    return (header["url"]);
+}
+
+std::string        Request::get_host()
+{
+    return (header["HOST"]);
+}
+
+std::string        Request::get_accept()
+{
+    return (header["ACCEPT"]);
+}
+
+std::string        Request::get_accept_encoding()
+{
+    return (header["ACCEPT-ENCODING"]);
+}
+
+std::string        Request::get_accept_language()
+{
+    return (header["ACCEPT-LANGUAGE"]);
+}
+std::string        Request::get_path_info()
+{
+    bool ret;
+    std::string get_info = return_config_info("cgi_pass");
+
+    std::map<std::string, std::string> location_rep;
+	ret = getInfo(atoi(header["port"].c_str()), "*.php", &location_rep, find_location);
+	if (ret)
+	{
+		std::cout << "Location successfully find" << std::endl;
+        /*
+            If there is some information at a location from the url, search if there is a /root informations in the config file
+        */
+        std::map<std::string, std::string>::const_iterator it;
+        for (it = location_rep.begin(); it != location_rep.end(); ++it)
+        {
+            //std::cout << "it-first = [" << it->first << "]" << "\n";
+            //std::cout << "it-second = [" << it->second << "]" << "\n";
+            if (it->first.compare("cgi_pass") == 0)
+            {
+                get_info = it->second;
+            }
+        }
+	}
+    return (get_info);
+}
+
+std::string        Request::get_content_type()
+{
+    return (header["CONTENT-TYPE"]);
+}
+
+std::string        Request::get_content_length()
+{
+    return (header["CONTENT-LENGTH"]);
+}
 
 /*
  * 	If the requested method is supported, we call the appropiate function
@@ -358,7 +421,8 @@ std::string		time_to_string() {
 /*
  *	Send the reponse with the proper HTTP headers and format
  */
-void		Request::compose_reponse(struct pollfd *ptr_tab_poll) {
+void		Request::compose_reponse(struct pollfd *ptr_tab_poll)
+{
 
     reponse["http_version"] = "HTTP/1.1";
 
@@ -432,6 +496,53 @@ int			Request::send_reponse(struct pollfd *ptr_tab_poll) {
 	return ret;
 }
 
+std::string     Request::return_config_info(std::string searching_index)
+{
+    std::map<std::string, std::string> mime_types;
+    std::map<std::string, std::string>::const_iterator it;
+    initialize_mime_types(mime_types);
+
+//	cgi_head = std::map<std::string, std::string>();
+
+	std::string	filestr;
+    std::string path;
+	std::string	root;
+//    int         auto_index = 0;
+
+	// set root as described in config file
+	root = "root/";
+
+    std::string search_rep;
+    
+    /*
+        Search_rep will be initialised with the directive value for the searching_inde.
+    */
+    getInfo(atoi(header["port"].c_str()), searching_index, &search_rep, find_directive);
+    /*
+        Search if there is a /root in the config file to initialise the path and know which page the server have to send to the clientg.
+    */
+   	std::map<std::string, std::string> location_rep;
+	bool ret = getInfo(atoi(header["port"].c_str()), header["url"], &location_rep, find_location);
+	if (ret)
+	{
+		std::cout << "Location successfully find" << std::endl;
+        /*
+            If there is some information at a location from the url, search if there is a /root informations in the config file
+        */
+        std::map<std::string, std::string>::const_iterator it;
+        for (it = location_rep.begin(); it != location_rep.end(); ++it)
+        {
+            //std::cout << "it-first = [" << it->first << "]" << "\n";
+            //std::cout << "it-second = [" << it->second << "]" << "\n";
+            if (it->first.compare(search_rep) == 0)
+            {
+                search_rep = it->second;
+            }
+        }
+	}
+    return (search_rep);
+}
+
 bool is_a_directory(const std::string &s)
 {
   	struct stat buffer;
@@ -444,62 +555,22 @@ void        Request::_process_GET()
     std::map<std::string, std::string>::const_iterator it;
     initialize_mime_types(mime_types);
 
-//	cgi_head = std::map<std::string, std::string>();
-
 	std::string	filestr;
     std::string path;
-	std::string	root;
+	std::string	root = return_config_info("root");
     int         auto_index = 0;
-
-	// set root as described in config file
-	root = "root/";
 
     /*
         Check if the autoindex is on mode.
     */
-    std::string dir_rep;
-    bool ret = getInfo(atoi(header["port"].c_str()), "autoindex", &dir_rep, find_directive);
-	if (ret)
-	{
-        /*
-            Check if the autoindex information is on "on" mode.
-        */
-        if (dir_rep.compare("on") == 0)
-        {
-            auto_index = 1;
-        }
-	}
-    /*
-        Search if there is a /root in the config file to initialise the path and know which page the server have to send to the clientg.
-    */
-   	std::map<std::string, std::string> location_rep;
-	ret = getInfo(atoi(header["port"].c_str()), header["url"], &location_rep, find_location);
-	if (ret)
-	{
-		std::cout << "Location successfully find" << std::endl;
-        /*
-            If there is some information at a location from the url, search if there is a /root informations in the config file
-        */
-        std::map<std::string, std::string>::const_iterator it;
-        for (it = location_rep.begin(); it != location_rep.end(); ++it)
-        {
-            //std::cout << "it-first = [" << it->first << "]" << "\n";
-            //std::cout << "it-second = [" << it->second << "]" << "\n";
-            if (it->first.compare("root") == 0)
-            {
-                root = it->second + header["url"] + "/";
-            }
-            if ((it->first.compare("autoindex") == 0) && (it->second.compare("on") == 0))
-            {
-                auto_index = 1;
-            }
-        }
-	}
+    std::string rep = return_config_info("autoindex");
+    if (rep.compare("on") == 0)
+        auto_index = 1;
 
 	chdir(root.c_str());
 
     if (header["url"] == "/") {
-        path = "index.html";
+        path = return_config_info("index");
     } else if (header["url"][0] == '/') {
         path = header["url"].erase(0,1);
 	}
@@ -511,7 +582,7 @@ void        Request::_process_GET()
     TODO: Faire une variable pour récupérer l'auto index s il est présent.
 */
 
-	if (is_a_directory(path) && 1 /* autoindex is on  */) {
+	if (is_a_directory(path) && auto_index == 1) {
 
 		DIR *dir;
 		struct dirent *ent;

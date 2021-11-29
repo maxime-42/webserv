@@ -26,6 +26,8 @@ enum token_type
 #include <stdlib.h>
 #include <algorithm>
 #include <list>
+#include <unistd.h>
+
 
 /*
 ** THIS IS A SINGLETON CLASS : Singleton design pattern is a software design principle that is used to restrict the instantiation of a class to one object
