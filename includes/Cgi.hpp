@@ -19,7 +19,6 @@
 #include <map>
 #include <sstream>
 #include "lookup_in_nested_list.hpp"
-
 class Cgi
 {
 private:
@@ -44,6 +43,7 @@ private:
 	void					exec_Cgi();
 	std::string				get_query_string();
 	void					clear_2D_array(char **array);
+	void					remove_headers();
 
 public:
 	Cgi(std::string script, int port);

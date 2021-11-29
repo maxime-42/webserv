@@ -148,25 +148,3 @@ bool  getInfo(int port, std::string elemToFind, void *reponse, bool(*callback)(t
 	}
 	return (has_find);	//return false , the element has not be found
 }
-
-/*
-**	split "url" with help to  function "strtok", 
-**	"strtok" function return a token on each backloop
-**	then concaten '/' and token which going to generate new string "elemToFind"
-*/
-bool			get_location_url(int port, std::string url, void *ptrReponse)
-{
-	bool		ret;
-	char		*token = strtok((char *)url.c_str(), "/");
-
-	while (token != NULL)
-	{
-		std::string	elemToFind = "/";
-		elemToFind.append(token);
-		ret = getInfo(port, elemToFind, ptrReponse, find_location);
-		if (ret == true)
-			return (true);
-		token = strtok(NULL, "/");
-	}
-	return (false);
-}
