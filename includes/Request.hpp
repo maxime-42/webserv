@@ -39,6 +39,8 @@ class Request
 
 		std::map<std::string, std::string> header;
 		std::map<std::string, std::string> reponse;
+		std::map<std::string, std::string> cgi_head;
+		
 
 		std::vector<char>			request;
 
