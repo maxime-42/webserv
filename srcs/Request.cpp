@@ -236,12 +236,13 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 	//std::cout << header["body"] << std::endl << std::endl;
 
 	// --------  affichage  --------------------------------------------------------------------------
-       	std::cout << "Display header parsed begin" << std::endl;
+/*       	std::cout << "Display header parsed begin" << std::endl;
     for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it)
     {
        	std::cout << it->first << ":" << it->second << std::endl;
     }
        	std::cout << "\nDisplay header parsed end" << std::endl;
+*/
 }
 
 std::string        Request::get_method()
@@ -558,24 +559,24 @@ void        Request::_process_GET()
 	std::string	filestr;
     std::string path;
 	std::string	root = return_config_info("root");
-    int         auto_index = 0;
+	std::cout << "root is " << root << std::endl;
 
-    /*
-        Check if the autoindex is on mode.
-    */
+	chdir(root.c_str());
+
+    int	auto_index = 0;
     std::string rep = return_config_info("autoindex");
     if (rep.compare("on") == 0)
         auto_index = 1;
 
-	chdir(root.c_str());
-
     if (header["url"] == "/") {
+//	if (is_a_directory(header["url"].erase(0,1))) {
         path = return_config_info("index");
     } else if (header["url"][0] == '/') {
         path = header["url"].erase(0,1);
 	}
-	//	path = root + path;
 
+//	std::cout << "path is " << path << std::endl;
+	
     std::ifstream	ifs(path.c_str());
 
 /*
