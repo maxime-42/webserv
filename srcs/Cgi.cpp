@@ -8,7 +8,7 @@ Cgi::~Cgi(){}
 void		displayDirectionary(std::map<std::string, std::string> &map);
 // void	print_arg(char **array);
 
-Cgi::Cgi(std::string script, int port): _script(script), _port(port), _cgi_path(CGI_PATH), _env(NULL), _args( NULL)
+Cgi::Cgi(std::string script, int port, std::map<std::string, std::string> &cgi_head): _script(script), _port(port), _cgi_path(CGI_PATH), _env(NULL), _args( NULL)
 {
 	_data = std::string();
 	_has_error = false;
@@ -19,13 +19,13 @@ Cgi::Cgi(std::string script, int port): _script(script), _port(port), _cgi_path(
 		set_env();
 	//	print_arg(_args);
 		exec_Cgi();
-		remove_headers();
+		remove_headers(cgi_head);
 	}
 	catch(const char *e)
 	{
 		std::cerr << e << '\n';
 	}
-	std::cout << "data [" << _data << "]" << std::endl;
+//	std::cout << "data [" << _data << "]" << std::endl;
 	clear_2D_array(_env);
 	clear_2D_array(_args);
 }
@@ -115,7 +115,7 @@ void	Cgi::set_env()
 	env_map["SCRIPT_NAME"] = _args[1];
 	getInfo(8080, "listen", &env_map["SERVER_PORT"], find_directive);
 	getInfo(8080, "server_name", &env_map["SERVER_NAME"], find_directive);
-	// std::cout << "_args[1]; == " << _args[1] << std::endl;
+	// std::cout << "_args[0]; == " << _args[1] << std::endl;
 	// env_map["REQUEST_URI"] = ;
 	// env_map["PATH_INFO"] = ;
 	// env["PATH_TRANSLATED"] =;
@@ -167,8 +167,8 @@ void		Cgi::	exec_Cgi()
 	{
 		close(pipeFd[TO_READ]);/*closing of read side of pipe because it gonna write*/
 		dup2(pipeFd[TO_WRITE], 1);  /* connect the write side with stdout */
-		if (execve(_args[0], _args, _env) == ERROR) 
-		// if (execv(_args[0], _args) == ERROR) 
+		//if (execve(_args[0], _args, _env) == ERROR) 
+		 if (execv(_args[0], _args) == ERROR) 
 			exit(ERROR);
 		exit(SUCCESS);
 	}
@@ -186,7 +186,7 @@ void		Cgi::	exec_Cgi()
 	}
 }
 
-void		Cgi::	remove_headers() {
+void		Cgi::	remove_headers(std::map<std::string, std::string> &cgi_head) {
 
 	std::string	header("");
 	std::string key;
@@ -196,7 +196,7 @@ void		Cgi::	remove_headers() {
 	size_t pos = _data.find("\r\n\r\n");
 	if (pos != std::string::npos) {
 
-		header = _data.substr(pos);
+		header = _data.substr(0, pos + 2);
 		_data = _data.substr(pos + 4, std::string::npos);
 	
 	}
@@ -204,14 +204,15 @@ void		Cgi::	remove_headers() {
 			&& (pos2 = header.find(":")) != std::string::npos
  		 	&& pos2 < pos) {
 
-		key = header.substr(pos2);
-		value = header.substr(pos2, pos);
-		/*
-		 * update &reponse headers;
-		 */
+		key = header.substr(0, pos2);
+		value = header.substr(pos2 + 2, pos - pos2 - 2);
 
-		header.erase(0, pos + 1);
+		cgi_head[key] = value;
 
+//		std::cout << "key: " << key << "<-" << std::endl;
+//		std::cout << "value: " << value << "<-" << std::endl;
+
+		header.erase(0, pos + 2);
 	}
 
 }

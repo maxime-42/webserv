@@ -5,7 +5,7 @@
 #define SUCCESS		0
 #define PORT	    8080
 #define SIZE_POLLFD	300
-#define BUFFER_SIZE	300000
+#define BUFFER_SIZE	8192
 #define TIMEOUT		-1
 #define NB_PENDING	SIZE_POLLFD
 

@@ -43,10 +43,10 @@ private:
 	void					exec_Cgi();
 	std::string				get_query_string();
 	void					clear_2D_array(char **array);
-	void					remove_headers();
+	void					remove_headers(std::map<std::string, std::string> &cgi_head);
 
 public:
-	Cgi(std::string script, int port);
+	Cgi(std::string script, int port, std::map<std::string, std::string> &reponse);
 	std::string			get_data();
 	~Cgi();
 

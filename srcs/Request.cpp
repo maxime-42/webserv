@@ -74,7 +74,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
     std::string key;
     std::string val;
 
-	//	std::transform(request_str.begin(), request_str.end(), request_str.begin(), ::toupper);
+	std::transform(request_str.begin(), request_str.end(), request_str.begin(), ::toupper);
 
 //	std::cout << "RAW REQUEST" << std::endl << std::endl;
 //	std::cout << request_str << std::endl << std::endl;
@@ -426,6 +426,8 @@ void		Request::compose_reponse(struct pollfd *ptr_tab_poll)
 
     reponse["http_version"] = "HTTP/1.1";
 
+	bool content_type = false;
+
     std::string reply = reponse["http_version"] + " " + reponse["code"] + " " + reponse["status"] + "\n";
 
     if (reponse.find("body") == reponse.end())
@@ -433,8 +435,20 @@ void		Request::compose_reponse(struct pollfd *ptr_tab_poll)
     else {
 		reply.append("Date: " + time_to_string() + " \n");
 		reply.append("Server: Webserv/1.0 (Unix)\n");
-        reply.append("Content-Type: " + reponse["Content-Type"] + " \n");
+
+		for (std::map<std::string, std::string>::iterator it = cgi_head.begin(); it != cgi_head.end(); it++) {
+
+			reply.append(it->first + ": " + it->second + "\n");
+			std::string str = it->first;
+			std::transform(str.begin(), str.end(), str.begin(), ::toupper);
+			if (str == "CONTENT-TYPE")
+				content_type = true;
+		}
+
+		if (!content_type)
+	        reply.append("Content-Type: " + reponse["Content-type"] + " \n");
         reply.append("Content-Length: " + reponse["Content-Length"] + " \n");
+
 		reply.append("Connection: Closed\n");
         reply.append("\n");
 
@@ -484,6 +498,20 @@ int			Request::send_reponse(struct pollfd *ptr_tab_poll) {
 
 std::string     Request::return_config_info(std::string searching_index)
 {
+    std::map<std::string, std::string> mime_types;
+    std::map<std::string, std::string>::const_iterator it;
+    initialize_mime_types(mime_types);
+
+//	cgi_head = std::map<std::string, std::string>();
+
+	std::string	filestr;
+    std::string path;
+	std::string	root;
+//    int         auto_index = 0;
+
+	// set root as described in config file
+	root = "root/";
+
     std::string search_rep;
     
     /*
@@ -582,7 +610,7 @@ void        Request::_process_GET()
 
 	else if (path.substr(path.find_last_of(".") + 1) == "php") {
 
-		Cgi	c(path, atoi(header["port"].c_str()));
+		Cgi	c(path, atoi(header["port"].c_str()), cgi_head);
 
 		filestr = c.get_data();
 	
@@ -601,15 +629,15 @@ void        Request::_process_GET()
 	content_len	<< filestr.length();
     reponse["Content-Length"] = content_len.str();
 
-    reponse["Content-Type"] = "text/plain; charset=utf-8";
+    reponse["Content-type"] = "text/plain; charset=utf-8";
     if (is_a_directory(path) || path.substr(path.find_last_of(".") + 1) == "html")
-        reponse["Content-Type"] = "text/html; charset=utf-8";
-	else {
-	
-	    for (it = mime_types.begin(); it != mime_types.end(); ++it)
+        reponse["Content-type"] = "text/html; charset=utf-8";
+	else
+	{
+		for (it = mime_types.begin(); it != mime_types.end(); ++it)
     	{
         	if (it->first == path.substr(path.find_last_of(".")))
-				reponse["Content-Type"] = it->second;
+				reponse["Content-type"] = it->second;
     	}
 
 	}
@@ -777,7 +805,7 @@ void    Request::_process_POST()
     for (it = mime_types.begin(); it != mime_types.end(); ++it)
     {
         //std::cout << it->second << "\n";
-        if (it->second == header["Content-Type"])
+        if (it->second == header["Content-type"])
             break ;
     }
     // Si on trouve pas le type en question
@@ -789,7 +817,7 @@ void    Request::_process_POST()
     std::cout << "CONTENT TYPE FROM MIME TYPES = [" << it->first << "]\n";
 
     reponse["Content-Length"]   = header["Content-Length"];
-    reponse["Content-Type"]     = header["Content-Type"];
+    reponse["Content-type"]     = header["Content-type"];
     if (create_file(it->first) != SUCCESS)
     {
         /*
