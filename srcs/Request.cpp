@@ -133,7 +133,9 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 
     size_t begin_key;
     size_t end_key;
-
+    
+    std::string bound = "";
+    
     val.clear();
     request_str.erase(0, request_str.find('\n') + 1);
     /*
@@ -154,9 +156,26 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
             */
             if (strncmp(request_str.c_str(), "-----------------------------", 28) == 0)
             {
-                //std::cout << "char[28] = [" << request_str.at(28) << "] 29 = (" << request_str.at(29) << ")\n";
-                begin_key = request_str.find('\n');
-                request_str.erase(0, begin_key + 1); //+ 1 for the '\n'.
+                if (header["CONTENT-TYPE"].size() > 0)
+                {
+//                    std::cout << "header[CONTENT-TYPE] = [" << header["CONTENT-TYPE"] << "]\n";
+
+                    std::size_t found = header["CONTENT-TYPE"].find("BOUNDARY=");
+                    if (found != std::string::npos)
+                    {
+                        bound = header["CONTENT-TYPE"].substr(header["CONTENT-TYPE"].find("BOUNDARY=") + 9);
+                        /*
+                            DEBUG:
+                        std::cout << "BOUND = [" << bound << "]\n";
+                        std::cout << "body = [" << request_str << "]\n";
+                        */
+                    }
+                }
+                if (request_str.find(bound) < 3)
+                {
+                    begin_key = request_str.find('\n');
+                    request_str.erase(0, begin_key + 1); //+ 1 for the '\n'.
+                }
             }
 			else if (header.find("TRANSFER-ENCODING") != header.end() && header["TRANSFER-ENCODING"] == "chunked")
             {
@@ -194,9 +213,17 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 			}
             else
             {
-            	header["body"] = request_str.substr(0, request_str.size());
-            	//std::cout << "BODY:\n[" << header["body"] << "]\n";
-            	request_str.erase(0, request_str.size()); //+ 1 for the '\n'.
+                if (request_str.find(bound) != std::string::npos)
+                {
+                    begin_key = request_str.find(bound);
+                	header["body"] = request_str.substr(0, begin_key - 3);
+                    request_str.erase(0, request_str.size()); //+ 1 for the '\n'.
+                }
+                else
+                {
+                	header["body"] = request_str.substr(0, request_str.size());
+                	request_str.erase(0, request_str.size()); //+ 1 for the '\n'.
+                }
 			}
         }
         /*
@@ -236,12 +263,13 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 	//std::cout << header["body"] << std::endl << std::endl;
 
 	// --------  affichage  --------------------------------------------------------------------------
-       	std::cout << "Display header parsed begin" << std::endl;
+/*       	std::cout << "Display header parsed begin" << std::endl;
     for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it)
     {
        	std::cout << it->first << ":" << it->second << std::endl;
     }
        	std::cout << "\nDisplay header parsed end" << std::endl;
+*/
 }
 
 std::string        Request::get_method()
@@ -498,20 +526,6 @@ int			Request::send_reponse(struct pollfd *ptr_tab_poll) {
 
 std::string     Request::return_config_info(std::string searching_index)
 {
-    std::map<std::string, std::string> mime_types;
-    std::map<std::string, std::string>::const_iterator it;
-    initialize_mime_types(mime_types);
-
-//	cgi_head = std::map<std::string, std::string>();
-
-	std::string	filestr;
-    std::string path;
-	std::string	root;
-//    int         auto_index = 0;
-
-	// set root as described in config file
-	root = "root/";
-
     std::string search_rep;
     
     /*
@@ -522,7 +536,7 @@ std::string     Request::return_config_info(std::string searching_index)
         Search if there is a /root in the config file to initialise the path and know which page the server have to send to the clientg.
     */
    	std::map<std::string, std::string> location_rep;
-	bool ret = getInfo(atoi(header["port"].c_str()), header["url"], &location_rep, find_location);
+	bool ret = get_location_url(atoi(header["port"].c_str()), header["url"], &location_rep);
 	if (ret)
 	{
 		std::cout << "Location successfully find" << std::endl;
@@ -558,26 +572,26 @@ void        Request::_process_GET()
 	std::string	filestr;
     std::string path;
 	std::string	root = return_config_info("root");
-    int         auto_index = 0;
+	std::cout << "root is " << root << std::endl;
 
-    /*
-        Check if the autoindex is on mode.
-    */
+	chdir(root.c_str());
+
+    int	auto_index = 0;
     std::string rep = return_config_info("autoindex");
     if (rep.compare("on") == 0)
 	{
         auto_index = 1;
 	}
 
-	chdir(root.c_str());
-
     if (header["url"] == "/") {
+//	if (is_a_directory(header["url"].erase(0,1))) {
         path = return_config_info("index");
     } else if (header["url"][0] == '/') {
         path = header["url"].erase(0,1);
 	}
-	//	path = root + path;
 
+//	std::cout << "path is " << path << std::endl;
+	
     std::ifstream	ifs(path.c_str());
 
 /*
