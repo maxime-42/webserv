@@ -565,7 +565,9 @@ void        Request::_process_GET()
     */
     std::string rep = return_config_info("autoindex");
     if (rep.compare("on") == 0)
+	{
         auto_index = 1;
+	}
 
 	chdir(root.c_str());
 

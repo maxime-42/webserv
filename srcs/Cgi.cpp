@@ -6,7 +6,7 @@ Cgi::Cgi() {}
 Cgi::~Cgi(){}
 
 void		displayDirectionary(std::map<std::string, std::string> &map);
-// void	print_arg(char **array);
+void	print_arg(char **array);
 
 Cgi::Cgi(std::string script, int port, std::map<std::string, std::string> &cgi_head): _script(script), _port(port), _cgi_path(CGI_PATH), _env(NULL), _args( NULL)
 {
@@ -16,9 +16,11 @@ Cgi::Cgi(std::string script, int port, std::map<std::string, std::string> &cgi_h
 	{
 		complete_the_name_of_script();
 		set_args();
+		print_arg(_args);
 		set_env();
-	//	print_arg(_args);
 		exec_Cgi();
+		print_arg(_env);
+
 		remove_headers(cgi_head);
 	}
 	catch(const char *e)
@@ -107,21 +109,17 @@ void	Cgi::set_env()
 
 	std::map<std::string, std::string> env_map;
 	env_map["SERVER_PROTOCOL"] = "HTTP/1.1";
-	env_map["SERVER_SOFTWARE"] = "webserv/1.0";
-	env_map["GATEWAY_INTERFACE"] = "CGI/1.1";
 	env_map["REDIRECT_STATUS"] = "200";
-	env_map["STATUS_CODE"] = "200 OK";
-
 	env_map["SCRIPT_NAME"] = _args[1];
-	getInfo(8080, "listen", &env_map["SERVER_PORT"], find_directive);
-	getInfo(8080, "server_name", &env_map["SERVER_NAME"], find_directive);
-	// std::cout << "_args[0]; == " << _args[1] << std::endl;
-	// env_map["REQUEST_URI"] = ;
-	// env_map["PATH_INFO"] = ;
+	env_map["SERVER_PORT"] = "8080";
+	// getInfo(8080, "listen", &env_map["SERVER_PORT"], find_directive);
+	// getInfo(8080, "server_name", &env_map["SERVER_NAME"], find_directive);
+	// // std::cout << "_args[0]; == " << _args[1] << std::endl;
+	// env_map["REQUEST_URI"] = "http://localhost:8080/www/myphp.php" ;
+	env_map["PATH_INFO"] = _pwd + "/usr/bin/php-cgi";
 	// env["PATH_TRANSLATED"] =;
 	// env_map["CONTENT_TYPE"] = ;
 	// env_map["CONTENT_LENGTH"] = ;
-	// env_map["REQUEST_METHOD"] = ";
 	//env['QUERY_STRING'] = get_query_string();
 	// displayDirectionary(env_map);
 	int i = 0;
@@ -167,8 +165,8 @@ void		Cgi::	exec_Cgi()
 	{
 		close(pipeFd[TO_READ]);/*closing of read side of pipe because it gonna write*/
 		dup2(pipeFd[TO_WRITE], 1);  /* connect the write side with stdout */
-		//if (execve(_args[0], _args, _env) == ERROR) 
-		 if (execv(_args[0], _args) == ERROR) 
+		if (execve(_args[0], _args, _env) == ERROR)
+		//  if (execv(_args[0], _args) == ERROR) 
 			exit(ERROR);
 		exit(SUCCESS);
 	}
