@@ -127,7 +127,7 @@ void	ParsingFile::									set_defaut_config()
 	if (pwd)
 	{
 		_defautConfig["root"] = pwd;
-		_defautConfig["root"] += "/root";
+		_defautConfig["root"] += "/www";
 		free(pwd);
 	}
 
@@ -399,6 +399,15 @@ void	ParsingFile::									addDictionaryInList(std::map<std::string, std::string
 	}
 }
 
+void	ParsingFile::									push_front_dictionary_in_singleList(std::map<std::string, std::string>	&dictionary)
+{
+	if (dictionary.size())
+	{
+		_singleList.push_front(dictionary);
+		dictionary.clear();
+	}
+}
+
 /*
 ** this function insert name and value in dictionary
 ** afterward initialize  name and value
@@ -409,19 +418,40 @@ void	ParsingFile::									insertInDictionary(std::map<std::string, std::string>
 	directiveName = std::string();
 	directiveValue = std::string();	
 }
+/*
+**	si (location)
+		cout++
+		tmp = dictionary;
+		dicyionary.clear()
+	....
+	apres ajout du dictionnary dans liste
+	si (tmp.size())
+		dictionary = tmp;
+		tmp.clear()
 
+	si (nb_parenthese == 0)
+		push_front dictionary dans liste
+
+*/
 /*
 **to understand pretty good this function you should glance on the diagram of parsing
 ** this function try to identify token, then act to depending token  
 ** token is pieceOfString
 */
+void	print_string_dictionnary(std::map<std::string, std::string> &first);
+void							displaySingleList(std::list<std::map < std::string, std::string > > &linkedList);
 
 void													ParsingFile::parsingProcess()
 {
 	std::string 							directiveName;
 	std::string 							directiveValue;
-	std::map<std::string, std::string>		dictionary = _defautConfig; 
+	// std::map<std::string, std::string>		dictionary = _defautConfig; 
+	std::map<std::string, std::string>		dictionary; 
 	int										nbParenthese = 0;//it increment when it meet open brack an decrement to bracket closed 
+	/******************test******************/
+	int										count = 0;
+	std::map<std::string, std::string>		tmp; 
+
 	std::cout << "******************************* ST A R T I N G	 P A R S I N G ******************************************" << std::endl;
 	for (size_t i = 0; i < _configFile.size(); )
 	{
@@ -435,6 +465,10 @@ void													ParsingFile::parsingProcess()
 			}
 			else if (pieceOfString.compare("location") == 0)
 			{
+					std::cout << "count == [" << count << "]" << std::endl;
+
+					// if (count > 1)
+					// 	throw("error syntaxe: neested location");
 				hasLocation(directiveName, pieceOfString);
 			}
 			else if (pieceOfString.compare("{") == 0)
@@ -442,8 +476,15 @@ void													ParsingFile::parsingProcess()
 				hasBracketOpen(nbParenthese);
 				if (directiveName.compare("location") == 0)
 				{
-					addDictionaryInList(dictionary);
+					/******test*******/
+					count++;
+
+					tmp = dictionary;
+					dictionary.clear();
+					/****************/
+					// addDictionaryInList(dictionary);
 					insertInDictionary(dictionary, directiveName, directiveValue);
+
 				}
 			}
 			else if (pieceOfString.compare("}") == 0)
@@ -453,11 +494,35 @@ void													ParsingFile::parsingProcess()
 				{
 					if (_singleList.size() == 0)
 						addDictionaryInList(dictionary);
+					if (count)
+					{
+						// addDictionaryInList(dictionary);
+						push_front_dictionary_in_singleList(dictionary);
+						count--;
+					}
 					addListInNestedList(dictionary);
-					dictionary = _defautConfig; 
+					// dictionary = _defautConfig; 
 				}
 				else
+				{
 					addDictionaryInList(dictionary);
+					// if (count == 1)
+					// 	count--;
+					// print_string_dictionnary(dictionary);
+					/*******test********/
+					if (tmp.size())
+					{
+						// count--;
+						// displaySingleList(_singleList);
+						dictionary = tmp;
+						tmp.clear();
+						count--;
+
+						// print_string_dictionnary(dictionary);
+						
+					}
+					/****************/
+				}
 			}
 			else if (checkIfSecretWord(pieceOfString) == true)
 			{
