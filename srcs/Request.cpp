@@ -86,9 +86,11 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
     header["args"] = "";
     getline(iss, header["method"], ' ');
 
+    header["args"] = "";
+
     /*
        Pour header["url"] : Récupérer les arguments (?say=hi&to=mom) et les séparer du fichier
-       */
+    */
     getline(iss, header["url"], ' ');
     if (header["url"].find('?') != std::string::npos)
     {

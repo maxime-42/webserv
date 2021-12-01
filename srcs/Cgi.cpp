@@ -108,12 +108,34 @@ void	Cgi::								set_args()
  */
 void	Cgi::set_env_map(void *ptr_void)
 {
+	/*
+		Set cgi body to empty string to check when we execve to know if there is something to send in STDIN
+	*/
+	_cgi_body = "";
+
 	Request *ptr_request = (Request *)ptr_void;
 	_env_map["SERVER_PROTOCOL"] = "HTTP/1.1";
 	_env_map["REDIRECT_STATUS"] = "200";
 	_env_map["SCRIPT_NAME"] = _args[1];
 	_env_map["HTTP_RAW_POST_DATA"] = ptr_request->header["body"]; 
 	_env_map["PATH_INFO"] = _pwd + "/usr/bin/php-cgi";
+
+/*
+	DEBUG :
+	std::cout << "       methode = " << ptr_request->header["method"] << std::endl;
+	std::cout << "       url = " << ptr_request->header["url"] << std::endl;
+	std::cout << "       arg = " << ptr_request->header["args"] << std::endl;
+*/
+
+	if (ptr_request->header["method"] == "GET" && ptr_request->header["args"] != "")
+	{
+		_env_map["QUERY_STRING"] = ptr_request->header["args"];
+		_cgi_body = ptr_request->header["args"];
+	}
+	if (ptr_request->header["method"] == "POST")
+	{
+		_cgi_body = ptr_request->header["body"];
+	}
 }
 
 /*
@@ -162,26 +184,38 @@ void		Cgi::	exec_Cgi()
 	pipe(pipeFd);
 	int			pid = fork();
 	check_error(pid, "error cgi fork failed\n");
+	/*
+		TODO : Actuellement on remplit bien le cgi dans le cadre d'une requete POST avec des args.
+		Mais on pid != 0 donc on rentre pas dans =====> <======
+	*/
 	if (pid == 0)
 	{
 		close(pipeFd[TO_READ]);/*closing of read side of pipe because it gonna write*/
 		dup2(pipeFd[TO_WRITE], 1);  /* connect the write side with stdout */
-/*
-		int pipe2[2];
-		pipe(pipe2);
 
-		dup2(pipe2[TO_READ], 0);
+//			=========>
+		std::cout << "cgi BODY = [" << _cgi_body << "]\n";
+		if (_cgi_body != "")
+		{
+			std::cout << "cgi BODY = [" << _cgi_body << "]\n";
+			int pipe2[2];
+			pipe(pipe2);
 
-		write(pipe2[TO_WRITE], POST_BODY, POST_BODY_LENGH);
-*/		
-		
+			dup2(pipe2[TO_READ], 0);
+
+			write(pipe2[TO_WRITE], _cgi_body.c_str(), _cgi_body.size());
+			close(pipe2[TO_WRITE]); /*closing of read side of pipe because it gonna write*/
+		}
+//			<=========
+
 		//if (execve(_args[0], _args, _env) == ERROR) 
-		 if (execv(_args[0], _args) == ERROR) 
+		if (execv(_args[0], _args) == ERROR) 
 			exit(ERROR);
 		exit(SUCCESS);
 	}
 	else
 	{
+		std::cout << "cgi PETITIIIs = [" << _cgi_body << "]\n";
 		close(pipeFd[TO_WRITE]);/*closing of write side of pipe because it read*/
 		int ret = wait(&child_status);
 		check_error(ret, "error wait");
@@ -230,6 +264,11 @@ std::string		Cgi::	get_data(){return (_data);}
 /*
 **	this function get all variable in _url
 ** it meant everything after ? 
+*/
+
+/*
+	Debug : THIS FUNCTION IS USELESS FINALLY BECAUSE THE QUERY IS SPLIT FROM URL IN args IN THE REQUEST::PARSE
+	Flemme de ré écrire en miniscule.............;
 */
 std::string		Cgi::	get_query_string()
 {

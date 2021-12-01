@@ -34,6 +34,7 @@ private:
 	std::string							_uri;
 	bool								_has_error;
 	std::map<std::string, std::string> 	_env_map;
+	std::string							_cgi_body;
 
 
 
