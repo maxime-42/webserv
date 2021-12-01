@@ -126,7 +126,7 @@ void	ParsingFile::									set_defaut_config()
 	if (pwd)
 	{
 		_defautConfig["root"] = pwd;
-		_defautConfig["root"] += "/root";
+		_defautConfig["root"] += "/www";
 		free(pwd);
 	}
 
