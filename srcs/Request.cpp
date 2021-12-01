@@ -955,8 +955,8 @@ void	Request::http_code(std::string http_code)
 	else {
 		reponse["body"] = "<h1>" + http[http_code] + "</h1>";
 		s << reponse["body"].length();
-		reponse["Content-Length"] = std::string(s.str());
-        reponse["Content-type"] = "text/html; charset=utf-8";
+		reponse["CONTENT-LENGTH"] = std::string(s.str());
+        reponse["CONTENT-TYPE"] = "text/html; charset=utf-8";
 	}
     reponse["code"] = http_code;
     reponse["status"] = http[http_code];
