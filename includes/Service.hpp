@@ -6,7 +6,7 @@
 #include "header.hpp"
 #include "Server.hpp"
 #include "Request.hpp"
-#include "ParsingFile.hpp"
+#include "Parse_config_file.hpp"
 #include <poll.h>
 #include <list>
 #include <algorithm>    // std::find
@@ -18,7 +18,7 @@ std::string										getElem(std::list < std::list < std::map < std::string, std
 class Service
 {
 private:
-	ParsingFile 								&_instance;
+	Parse_config_file 								&_instance;
 	char										_buffer[BUFFER_SIZE];
 	bool										_close_connexion;
 	bool										_compress_pollFds;

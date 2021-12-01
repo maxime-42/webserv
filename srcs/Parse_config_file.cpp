@@ -1,30 +1,31 @@
-#include "ParsingFile.hpp"
+#include "Parse_config_file.hpp"
 
 /*
 ** THIS IS A SINGLETON CLASS : Singleton design pattern is a software design principle that is used to restrict the instantiation of a class to one object
 */
 
 
- void ParsingFile:: operator=(ParsingFile &other) {(void)other;}// Singletons should prevent copy or assign
+ void Parse_config_file:: operator=(Parse_config_file &other) {(void)other;}// Singletons should prevent copy or assign
 
-ParsingFile ::ParsingFile  (const ParsingFile & other) {(void)other;};// Singletons should not be cloneable, so it private.
+Parse_config_file ::Parse_config_file  (const Parse_config_file & other) {(void)other;};// Singletons should not be cloneable, so it private.
 
 
 static  std::string  s_fileName;
 
-ParsingFile & ParsingFile::								getInstance(std::string fileName)
+Parse_config_file & Parse_config_file::								getInstance(std::string fileName)
 {
 	// s_fileName = fileName;
-	static  ParsingFile  _instance(fileName);
+	static  Parse_config_file  _instance(fileName);
 	return (_instance);
 }
 
+/**
+ * @brief 
+ * this construct it called when there is no one given parameter to the program
+ * @return Parse_config_file:: 
+ */
 
-
-/*
-**	this construct it called when there is no one given parameter to the program
-*/
-ParsingFile::											ParsingFile(): _fileName("./configFile/default.conf"), _configFile(std::string()), _errorHappened(false)
+Parse_config_file::											Parse_config_file(): _fileName("./configFile/default.conf"), _configFile(std::string()), _errorHappened(false)
 {
 	std::cout << "*******************************\tTAKING \tDEFAULT\t FILE\t***********************" << std::endl;
 	set_defaut_config();
@@ -35,10 +36,12 @@ ParsingFile::											ParsingFile(): _fileName("./configFile/default.conf"), _
 	}
 }
 
-/*
-**	this construct it called when given parameter to the program
-*/
-ParsingFile::											ParsingFile(std::string fileName): _fileName(fileName), _configFile(std::string()), _errorHappened(false)
+/**
+ * @brief 
+ *	this construct it called when given parameter to the program
+ * @param fileName the config file
+ */
+Parse_config_file::											Parse_config_file(std::string fileName): _fileName(fileName), _configFile(std::string()), _errorHappened(false)
 {
 	s_fileName = fileName;
 
@@ -52,14 +55,14 @@ ParsingFile::											ParsingFile(std::string fileName): _fileName(fileName), 
 	}
 }
 
-bool	ParsingFile::									getErrorHappened(){return (_errorHappened);}
+bool	Parse_config_file::									getErrorHappened(){return (_errorHappened);}
 
 /*
 **	step one 	:	get file in std::string "configFile"
 **	step two 	:	create table of keyword
 **	step three	:	parsing file, file is located in std::string _configFile;
 */
-int	ParsingFile::										getStartProcess()
+int	Parse_config_file::										getStartProcess()
 {
 	try
 	{
@@ -77,43 +80,43 @@ int	ParsingFile::										getStartProcess()
 	return (SUCCESS);
 }
 
-ParsingFile::~ParsingFile(){ }
+Parse_config_file::~Parse_config_file(){ }
 
 /***************************************************************alll get function ****************************************/
-size_t	ParsingFile::									numberOfServer()
+size_t	Parse_config_file::									numberOfServer()
 {
 	return (getInstance(s_fileName).interface_numberOfServer());
 }
 
-size_t	ParsingFile::									interface_numberOfServer()
+size_t	Parse_config_file::									interface_numberOfServer()
 {
 	return (_serverList.size());
 }
 
 
-t_nested_list	&										ParsingFile:: getList()
+t_nested_list	&										Parse_config_file:: getList()
 {
 	return(getInstance(s_fileName).interface_getList());
 }
 
-t_nested_list	&	ParsingFile::						interface_getList(){	return(_serverList);}
+t_nested_list	&	Parse_config_file::						interface_getList(){	return(_serverList);}
 
-std::map<std::string, std::string> & ParsingFile::		get_globalConfig()
+std::map<std::string, std::string> & Parse_config_file::		get_globalConfig()
 {
 	return (getInstance(s_fileName).interface_get_globalConfig());
 }
 
-std::map<std::string, std::string> & ParsingFile::		interface_get_globalConfig(){	return (_globalConfig);}
+std::map<std::string, std::string> & Parse_config_file::		interface_get_globalConfig(){	return (_globalConfig);}
 
 
-std::vector<int> & ParsingFile:: 						interface_get_ports () {return (_ports);}
+std::vector<int> & Parse_config_file:: 						interface_get_ports () {return (_ports);}
 
-std::vector<int> & ParsingFile:: 						get_ports () 
+std::vector<int> & Parse_config_file:: 						get_ports () 
 {
 	return (getInstance(s_fileName).interface_get_ports());
 }
 
-void	ParsingFile::									set_defaut_config()
+void	Parse_config_file::									set_defaut_config()
 {
 	_defautConfig["allow"] = "PUT GET DELETE POST";
 	_defautConfig["listen"] = "8080";
@@ -133,18 +136,21 @@ void	ParsingFile::									set_defaut_config()
 
 }
 
-std::map<std::string, std::string> & ParsingFile::		get_defaut_config(){return(getInstance(s_fileName).interface_get_defaut_config());}
-// std::map<std::string, std::string> & ParsingFile::		get_defaut_config(){return(_defautConfig);}
+std::map<std::string, std::string> & Parse_config_file::		get_defaut_config(){return(getInstance(s_fileName).interface_get_defaut_config());}
+// std::map<std::string, std::string> & Parse_config_file::		get_defaut_config(){return(_defautConfig);}
 
-std::map<std::string, std::string> & ParsingFile:: 		interface_get_defaut_config () {return (_defautConfig);}
+std::map<std::string, std::string> & Parse_config_file:: 		interface_get_defaut_config () {return (_defautConfig);}
 
 /*********************************************************************************OPEN  FILE* *********************************************************************************/
 
-/*
-**	this function remove comments line
-** comment line start with "#"
-*/
-void	ParsingFile::									handleCommentes(std::string &line)
+
+/**
+ * @brief 
+ * this function remove comments line in give  string 
+ * comment line start with "#"
+ * @param line which has  #
+ */
+void	Parse_config_file::									handleCommentes(std::string &line)
 {
 	size_t  begin = line.find("#");
 	if (begin != std::string::npos)
@@ -152,11 +158,13 @@ void	ParsingFile::									handleCommentes(std::string &line)
 		line.erase(begin);
 	}
 }
-/*
-** get file and store it in std::string _configFile
-** get file line by line and then concated each line got previously
-*/
-void	ParsingFile:: getFile()
+
+/**
+ * @brief Get the File object
+ * get file and store it in std::string _configFile
+ * get file line by line and then concated each line got previously
+ */
+void	Parse_config_file:: getFile()
 {
 	std::string line;
 	std::ifstream MyReadFile(_fileName.c_str());
@@ -180,10 +188,15 @@ void	ParsingFile:: getFile()
 /*********************************************************************************ANALYSE SYNTAXE CONFIG FILE*********************************************************************************/
 
 
-/*
-** Returns true if given string in parameter is a number else false
-*/
-bool	 		ParsingFile::							isNumber(std::string &str)
+
+/**
+ * @brief 
+ * Returns true if given string in parameter is a number else return false
+ * @param str the given string to parse each character if is a digit chacracter
+ * @return true  if given string in parameter is a number
+ * @return false if given string in parameter is not a number
+ */
+bool	 		Parse_config_file::							isNumber(std::string &str)
 {
 	int result;
 	for (size_t i = 0; i < str.size(); i++)
@@ -198,11 +211,14 @@ bool	 		ParsingFile::							isNumber(std::string &str)
 }
 
 
-/*
-** to be sure about unity of port
-** first check if
-*/
-void	ParsingFile:: 									checkPort(std::string &str_port)
+
+/**
+ * @brief 
+ * check if the port is a intger
+ * if str_port is not a integer in string format throw error
+ * @param str_port port in string format
+ */
+void	Parse_config_file:: 									checkPort(std::string &str_port)
 {
 	int int_port ;
 	bool ret = isNumber(str_port);
@@ -214,7 +230,7 @@ void	ParsingFile:: 									checkPort(std::string &str_port)
 
 
 
-void	ParsingFile:: hasSemicolon()
+void	Parse_config_file:: hasSemicolon()
 {
 	if (_previousToken == value)
 	{
@@ -226,7 +242,7 @@ void	ParsingFile:: hasSemicolon()
 	}
 }
 
-void	ParsingFile:: 									hasName(std::string &directiveName, std::string & pieceOfString, size_t i)
+void	Parse_config_file:: 									hasName(std::string &directiveName, std::string & pieceOfString, size_t i)
 {
 	int result = 0;
 	result = !isspace(_configFile[i]);
@@ -245,7 +261,7 @@ void	ParsingFile:: 									hasName(std::string &directiveName, std::string & pi
 
 }
 
-void	ParsingFile:: 									hasValue(std::string &directiveValue, std::string & pieceOfString)
+void	Parse_config_file:: 									hasValue(std::string &directiveValue, std::string & pieceOfString)
 {
 	if (_previousToken == name || _previousToken == location || _previousToken == value)
 	{
@@ -264,7 +280,7 @@ void	ParsingFile:: 									hasValue(std::string &directiveValue, std::string & 
 	}
 }
 
-void	ParsingFile::	createKeyWord()
+void	Parse_config_file::	createKeyWord()
 {
 	_keyWords.push_back("listen");
 	_keyWords.push_back("server_name");
@@ -291,7 +307,7 @@ void	ParsingFile::	createKeyWord()
 ** 		paramter i is index of string _configFile
 ** 		i it is increment depending  numbers characters to copy
 */
-std::string	ParsingFile::								getPieceOfstring(size_t &i)
+std::string	Parse_config_file::								getPieceOfstring(size_t &i)
 {
 	size_t	nbCharacterTocopy = 0;
 	size_t start = i;
@@ -313,7 +329,7 @@ std::string	ParsingFile::								getPieceOfstring(size_t &i)
 	return (pieceOfString);
 }
 
-void	ParsingFile::									hasServer()
+void	Parse_config_file::									hasServer()
 {
 	// if (_previousToken == initialized || _previousToken == brackets_close)
 	if (_previousToken == initialized || _previousToken == brackets_close || _previousToken == semicolon)
@@ -326,7 +342,7 @@ void	ParsingFile::									hasServer()
 	}
 }
 
-void	ParsingFile::									hasLocation(std::string &directiveName, std::string & pieceOfString)
+void	Parse_config_file::									hasLocation(std::string &directiveName, std::string & pieceOfString)
 {
 	if (_previousToken == semicolon || _previousToken == brackets_open || _previousToken == brackets_close)
 	{
@@ -339,7 +355,7 @@ void	ParsingFile::									hasLocation(std::string &directiveName, std::string &
 	}
 }
 
-void	ParsingFile::									hasBracketOpen(int &nbParenthese)
+void	Parse_config_file::									hasBracketOpen(int &nbParenthese)
 {
 	if ( _previousToken == server || _previousToken == location || _previousToken == value)
 	{
@@ -352,7 +368,7 @@ void	ParsingFile::									hasBracketOpen(int &nbParenthese)
 	}
 }
 
-void	ParsingFile::									hasBracketClose(int &nbParenthese)
+void	Parse_config_file::									hasBracketClose(int &nbParenthese)
 {
 	if ( _previousToken == semicolon || _previousToken == brackets_close || _previousToken == brackets_open)
 	{
@@ -369,7 +385,7 @@ void	ParsingFile::									hasBracketClose(int &nbParenthese)
 ** check if given string in paramter of function is secret word
 ** secret word is inside vector _keyWords
 */
-bool	ParsingFile::									checkIfSecretWord(std::string &pieceOfString)
+bool	Parse_config_file::									checkIfSecretWord(std::string &pieceOfString)
 {
 	int resultCompar = -1;
 
@@ -380,7 +396,7 @@ bool	ParsingFile::									checkIfSecretWord(std::string &pieceOfString)
 	return (resultCompar == 0 ? true : false);
 }
 
-void	ParsingFile::									push_singleList_in_neestedList(std::map<std::string, std::string>	&dictionary)
+void	Parse_config_file::									push_singleList_in_neestedList(std::map<std::string, std::string>	&dictionary)
 {
 	if (_previousToken == brackets_close)
 	{
@@ -395,7 +411,7 @@ void	ParsingFile::									push_singleList_in_neestedList(std::map<std::string, 
 	}
 }
 
-void	ParsingFile::									push_back_dictionary_in_singleList(std::map<std::string, std::string>	&dictionary)
+void	Parse_config_file::									push_back_dictionary_in_singleList(std::map<std::string, std::string>	&dictionary)
 {
 	if (dictionary.size())
 	{
@@ -404,7 +420,7 @@ void	ParsingFile::									push_back_dictionary_in_singleList(std::map<std::stri
 	}
 }
 
-void	ParsingFile::									push_front_dictionary_in_singleList(std::map<std::string, std::string>	&dictionary)
+void	Parse_config_file::									push_front_dictionary_in_singleList(std::map<std::string, std::string>	&dictionary)
 {
 	if (dictionary.size())
 	{
@@ -417,14 +433,14 @@ void	ParsingFile::									push_front_dictionary_in_singleList(std::map<std::str
 ** this function insert name and value in dictionary
 ** afterward initialize  name and value
 */
-void	ParsingFile::									insertInDictionary(std::map<std::string, std::string>	&dictionary, std::string &directiveName, std::string &directiveValue)
+void	Parse_config_file::									insertInDictionary(std::map<std::string, std::string>	&dictionary, std::string &directiveName, std::string &directiveValue)
 {
 	dictionary[directiveName] = directiveValue;
 	directiveName = std::string();
 	directiveValue = std::string();	
 }
 
-void		ParsingFile::								block_return(std::map<std::string, std::string>	&dictionary)
+void		Parse_config_file::								block_return(std::map<std::string, std::string>	&dictionary)
 {
 	std::map < std::string, std::string >::iterator itr_dictionary;
 	itr_dictionary = dictionary.find("return");
@@ -453,7 +469,7 @@ void		ParsingFile::								block_return(std::map<std::string, std::string>	&dict
 ** this function try to identify token, then act to depending token  
 ** token is pieceOfString
 */
-void													ParsingFile::parsingProcess()
+void													Parse_config_file::parsingProcess()
 {
 	std::string 							directiveName;
 	std::string 							directiveValue;

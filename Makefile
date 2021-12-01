@@ -24,7 +24,7 @@ DIR_INC     = includes/
 F_SRCS        =		main.cpp 			\
                 	Server.cpp			\
 					Request.cpp			\
-					ParsingFile.cpp		\
+					Parse_config_file.cpp		\
 					utile.cpp			\
 					Service.cpp			\
 					Cgi.cpp\

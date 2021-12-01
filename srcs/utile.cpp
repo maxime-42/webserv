@@ -33,7 +33,7 @@ std::string get_value_in_string(int value)
 /**
  * @brief 
  * skim the linked list at looking a location 
- * @param secondList 
+ * @param secondList linked  list to skim
  * @param elemToFind the location ton find
  * @param ptrReponse will contains the location
  * @return true if the location was  found
@@ -91,7 +91,6 @@ static bool	isLocation(std::map < std::string, std::string > &dictionary)
  * @return true 	if the elemToFind has been found 
  * @return false 	if the elemToFind was not been found 
  */
-
 bool		find_directive(t_single_list & secondList, std::string &elemToFind, void *ptrReponse)
 {
 	t_single_list::iterator itr_secondList;
@@ -146,7 +145,7 @@ bool		find_directive(t_single_list & secondList, std::string &elemToFind, void *
 bool  getInfo(int port, std::string elemToFind, void *reponse, bool(*callback)(t_single_list & secondList, std::string &elemToFind, void *ptrReponse))
 {
 	bool has_find = false;
-	t_nested_list firstList =  ParsingFile::getList();
+	t_nested_list firstList =  Parse_config_file::getList();
 	std::string str_port = get_value_in_string(port);//get value of port under string format
 	std::map < std::string, std::string > dictionary;
 	std::map < std::string, std::string >::iterator itr_dictionary;
@@ -183,7 +182,6 @@ bool  getInfo(int port, std::string elemToFind, void *reponse, bool(*callback)(t
  * @return true 	if the elemToFind has been found 
  * @return false 	if the elemToFind was not been found 
  */
-
 bool			get_location_url(int port, std::string url, void *ptrReponse)
 {
 	bool		ret;
@@ -199,4 +197,30 @@ bool			get_location_url(int port, std::string url, void *ptrReponse)
 		token = strtok(NULL, "/");
 	}
 	return (false);
+}
+
+/**
+ * @brief 
+ * verify if the given string in parameter matches to a directory
+ * @param s name of directory
+ * @return true if is a exiting directory
+ * @return false if it is not a exiting directory
+ */
+bool is_a_directory(const std::string &s)
+{
+  	struct stat buffer;
+  	return (stat (s.c_str(), &buffer) == 0 && buffer.st_mode & S_IFDIR); // if exist && is a directory return 1
+}
+
+/**
+ * @brief 
+ * verify if the given string in parameter matches to a file
+ * @param s name of directory
+ * @return true if is a exiting file
+ * @return false if it is not a exiting file
+ */
+bool exists(const std::string &s)
+{
+	struct stat buffer;
+	return (stat (s.c_str(), &buffer) == 0);
 }

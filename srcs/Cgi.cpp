@@ -34,8 +34,8 @@ Cgi::Cgi(std::string script, void *ptr_void, std::map<std::string, std::string> 
 }
 
 /**
- * @brief free memory what as early alloc to the 2D array
- * 
+ * @brief 
+ * free memory what as early alloc to the 2D array
  * @param array  is a pointer which has the location to free memory
  */
 void	Cgi::clear_2D_array(char **array)
@@ -96,8 +96,8 @@ void	Cgi::								set_args()
 }
 
 /**
- * @brief this function set a set of variable environement in map  
- * 
+ * @brief 
+ * this function set a set of variable environement in map  
  * @param ptr_void it is a pointer of Request which has  some functions to  values of variable environnement
  */
 void	Cgi::set_env_map(void *ptr_void)
@@ -133,9 +133,13 @@ void	Cgi::set_env()
 	_env[i] = NULL;
 }
 
-/*
-**	this function throw error if ever the variable "code" is less than zero
-*/
+/**
+ * @brief 
+ * this function throw error if ever the variable "code" is less than zero
+ * @param code if is less than zero an error will throw
+ * @param error_msg text message to display
+ */
+
 void	Cgi::								check_error(int code, const char *error_msg)
 {
 	if (code < 0)
@@ -143,13 +147,15 @@ void	Cgi::								check_error(int code, const char *error_msg)
 }
 
 
-/*
-** the behind this function is to get the stdout of process child in other file descriptor like pipeFd[TO_READ]
-** it mean there for to write the stdout of process child in  pipeFd[TO_WRITE]
-**	"child_status" gonna have the code of exite child process, if the exit code  is less than zero an error will throw
-** afterward the contain in pipeFd[TO_READ] will be copy in string "_data"
-** afterward 
-*/
+
+/**
+ * @brief 
+ * the behind this function is to get the stdout of process child in other file descriptor like pipeFd[TO_READ]
+ * it mean there for to write the stdout of process child in  pipeFd[TO_WRITE]
+ *	"child_status" gonna have the code of exite child process, if the exit code  is less than zero an error will throw
+ * afterward the contain in pipeFd[TO_READ] will be copy in string "_data"
+ * afterward 
+ */
 void		Cgi::	exec_Cgi()
 {
  	int			pipeFd[2];
@@ -223,10 +229,12 @@ void		Cgi::	remove_headers(std::map<std::string, std::string> &cgi_head) {
 
 std::string		Cgi::	get_data(){return (_data);}
 
-/*
-**	this function recovery all variable in _url
-** it meant everything after ? 
-*/
+/**
+ * @brief Get the query string object
+ * this function recovery all variable in _url it meant everything after ? 
+ * @return std::string contains all data after ?
+ */
+
 std::string		Cgi::	get_query_string()
 {
 	std::string query_string;

@@ -1,6 +1,6 @@
 
-#ifndef PARSINGFILE
-#define PARSINGFILE
+#ifndef PARSE_CONFIG_FILE
+#define PARSE_CONFIG_FILE
 
 enum token_type
 {
@@ -38,7 +38,7 @@ enum token_type
 typedef std::list < std::list < std::map < std::string, std::string > > > t_nested_list;
 typedef std::list<std::map < std::string, std::string > > t_single_list;
 
-class ParsingFile
+class Parse_config_file
 {
 
 private:
@@ -58,10 +58,10 @@ private:
 	std::map<std::string, std::string>									_defautConfig;
 
 
-	ParsingFile();
-	ParsingFile(std::string fileName);
-	void operator=(ParsingFile &other);
-  	ParsingFile (const ParsingFile &other);
+	Parse_config_file();
+	Parse_config_file(std::string fileName);
+	void operator=(Parse_config_file &other);
+  	Parse_config_file (const Parse_config_file &other);
 	size_t																interface_numberOfServer();
 	t_nested_list	&													interface_getList();
 	std::map<std::string, std::string> & 								interface_get_globalConfig();
@@ -71,8 +71,8 @@ private:
 	void 																set_defaut_config();
 
 public:
-	static	ParsingFile													&getInstance();
-	static	ParsingFile 												&getInstance(std::string fileName);
+	static	Parse_config_file													&getInstance();
+	static	Parse_config_file 												&getInstance(std::string fileName);
 	static size_t														numberOfServer();
 	static	t_nested_list	&											getList();
 	static	std::map<std::string, std::string> & 						get_globalConfig();
@@ -82,7 +82,7 @@ public:
 	bool																getErrorHappened();
 
 
-	~ParsingFile();
+	~Parse_config_file();
 
 	/****************this four function it is to debug********************/
 	void						displayServerTable();
