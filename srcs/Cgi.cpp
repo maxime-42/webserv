@@ -101,31 +101,21 @@ void	Cgi::								set_args()
 }
 
 /*
- * recover the HTTP_META_VARIABLES and store them in a malloc'd pointer to
+ * recover the HTTP_META_VARIABLES and store them in a malloc pointer to
  * strings (char **).
  * */
 void	Cgi::set_env()
 {
-
 	std::map<std::string, std::string> env_map;
 	env_map["SERVER_PROTOCOL"] = "HTTP/1.1";
 	env_map["REDIRECT_STATUS"] = "200";
 	env_map["SCRIPT_NAME"] = _args[1];
 	env_map["SERVER_PORT"] = "8080";
-	// getInfo(8080, "listen", &env_map["SERVER_PORT"], find_directive);
-	// getInfo(8080, "server_name", &env_map["SERVER_NAME"], find_directive);
-	// // std::cout << "_args[0]; == " << _args[1] << std::endl;
-	// env_map["REQUEST_URI"] = "http://localhost:8080/www/myphp.php" ;
 	env_map["PATH_INFO"] = _pwd + "/usr/bin/php-cgi";
-	// env["PATH_TRANSLATED"] =;
-	// env_map["CONTENT_TYPE"] = ;
-	// env_map["CONTENT_LENGTH"] = ;
-	//env['QUERY_STRING'] = get_query_string();
-	// displayDirectionary(env_map);
-	int i = 0;
 	_env = (char **)malloc(sizeof(char *) * (env_map.size() + 1));
 	if (_env == NULL)
 		throw("error happened while mallo in set_env() to cgi");
+	int i = 0;
 	for(std::map<std::string, std::string>::iterator it = env_map.begin(); it != env_map.end(); it++)
 	{
 		_env[i] = strdup((it->first + "=" + it->second).c_str());

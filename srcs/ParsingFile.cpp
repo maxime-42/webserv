@@ -120,6 +120,7 @@ void	ParsingFile::									set_defaut_config()
 	_defautConfig["cli_max_size"] = "5000000";
 	_defautConfig["error page"] = " 404 error.html";
 	_defautConfig["server_name"] = "tebi2poney";
+	_defautConfig["index"] = "index.html";
 	// _defautConfig["cgi_pass"] = CGI_PATH;
 	_defautConfig["autoindex"] = "on";
 	char *pwd = pwd = getcwd(NULL, 0);
@@ -448,7 +449,10 @@ void													ParsingFile::parsingProcess()
 			else if (pieceOfString.compare("}") == 0)
 			{
 				hasBracketClose(nbParenthese);
-				if (nbParenthese == 0){
+				if (nbParenthese == 0)
+				{
+					if (_singleList.size() == 0)
+						addDictionaryInList(dictionary);
 					addListInNestedList(dictionary);
 					dictionary = _defautConfig; 
 				}

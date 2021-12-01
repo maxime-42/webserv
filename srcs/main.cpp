@@ -15,12 +15,12 @@ int	 main(int argc, const char** argv)
 	}
 	else
 	{
-		Service svc;
-		// ParsingFile &parse = ParsingFile::getInstance("./configFile/default.conf");
-		// displayServerTable();
+		// Service svc;
+		ParsingFile &parse = ParsingFile::getInstance("./configFile/default.conf");
+		displayServerTable();
 		// Cgi cgi("myphp.php", 8080);
 
-		// (void)parse;
+		(void)parse;
 	}
 	(void)argc;
 	(void)argv;
