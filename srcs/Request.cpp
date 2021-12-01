@@ -620,14 +620,15 @@ void        Request::_process_GET()
 	} else if (ifs.fail()) {
         return http_code("404");
 	}
-
 	else if (path.substr(path.find_last_of(".") + 1) == "php") {
 
 		Cgi	c(path, atoi(header["port"].c_str()), cgi_head);
 
 		filestr = c.get_data();
 	
-	} else {
+	}
+    else
+    {
 
         std::stringstream buf;
         buf << ifs.rdbuf();
@@ -831,7 +832,15 @@ void    Request::_process_POST()
 
     reponse["Content-Length"]   = header["Content-Length"];
     reponse["Content-type"]     = header["Content-type"];
-    if (create_file(it->first) != SUCCESS)
+    if (header["url"].substr(header["url"].find_last_of(".") + 1) == "php")
+    {
+        std::string rep = return_config_info("root");
+/*		Cgi	c(, atoi(header["port"].c_str()), cgi_head);
+
+		filestr = c.get_data();
+*/	
+	}
+    else if (create_file(it->first) != SUCCESS)
     {
         /*
             TODO : Afficher la page error avec le bon numéro
