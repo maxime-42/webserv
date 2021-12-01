@@ -3,7 +3,8 @@
 #include "Service.hpp"
 #include "header.hpp"
 #include "Cgi.hpp"
-	   
+   void							displayServerTable();
+
 int	 main(int argc, const char** argv)
 {
 	if (argc > 2)
@@ -16,8 +17,7 @@ int	 main(int argc, const char** argv)
 	{
 		Service svc;
 		// ParsingFile &parse = ParsingFile::getInstance("./configFile/default.conf");
-		// Cgi cgi("myphp.php", 8080);
-
+		// displayServerTable();
 		// (void)parse;
 	}
 	(void)argc;

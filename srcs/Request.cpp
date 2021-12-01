@@ -432,8 +432,8 @@ void		Request::compose_reponse(struct pollfd *ptr_tab_poll)
 				content_type = true;
 		}
 		if (!content_type)
-	        reply.append("Content-Type: " + reponse["Content-type"] + " \n");
-        reply.append("Content-Length: " + reponse["Content-Length"] + " \n");
+	        reply.append("CONTENT-TYPE: " + reponse["CONTENT-TYPE"] + " \n");
+        reply.append("CONTENT-LENGTH: " + reponse["CONTENT-LENGTH"] + " \n");
 
 		reply.append("Connection: Closed\n");
         reply.append("\n");
@@ -539,14 +539,20 @@ void        Request::_process_GET() {
     int	auto_index = 0;
     std::string rep = return_config_info("autoindex");
     if (rep.compare("on") == 0)
+	{
         auto_index = 1;
-/*
+	}
+
     if (header["url"] == "/") {
 //	if (is_a_directory(header["url"].erase(0,1))) {
         path = return_config_info("index");
-    } else */
-	path = header["url"];
-	if (header["url"][0] == '/') {
+    }
+	else
+	{
+		path = header["url"];
+	}
+	if (header["url"][0] == '/') 
+	{
         path = path.erase(0,1);
 	}
 	if (path == "" || is_a_directory(path)) {
@@ -602,7 +608,7 @@ void        Request::_process_GET() {
 	}
 	else if (path.substr(path.find_last_of(".") + 1) == "php") {
 
-		Cgi	c(path, atoi(header["port"].c_str()), cgi_head);
+		Cgi	c(path, this,  cgi_head);
 
 		filestr = c.get_data();
 	
@@ -621,17 +627,17 @@ void        Request::_process_GET() {
     reponse["body"] = filestr;
 	std::stringstream content_len;
 	content_len	<< filestr.length();
-    reponse["Content-Length"] = content_len.str();
+    reponse["CONTENT-LENGTH"] = content_len.str();
 
-    reponse["Content-type"] = "text/plain; charset=utf-8";
+    reponse["CONTENT-TYPE"] = "text/plain; charset=utf-8";
     if (is_a_directory(path) || path.substr(path.find_last_of(".") + 1) == "html")
-        reponse["Content-type"] = "text/html; charset=utf-8";
+        reponse["CONTENT-TYPE"] = "text/html; charset=utf-8";
 	else
 	{
 		for (it = mime_types.begin(); it != mime_types.end(); ++it)
     	{
         	if (it->first == path.substr(path.find_last_of(".")))
-				reponse["Content-type"] = it->second;
+				reponse["CONTENT-TYPE"] = it->second;
     	}
 
 	}
@@ -640,9 +646,9 @@ void        Request::_process_GET() {
 /*
    Cette fonction va permettre de déterminer quel type de fichier la requete POST
    va nous demander de créer.
-   Elle va initialiser une map et relier chaque valeur de Content-type (valeur à
+   Elle va initialiser une map et relier chaque valeur de CONTENT-TYPE (valeur à
    droite) avec le type de fichier à créer (valeur à gauche).
-   Le nom MIME vient des différents Content-type qui existe. La liste est non
+   Le nom MIME vient des différents CONTENT-TYPE qui existe. La liste est non
    exclusive
    */
 void		Request::initialize_mime_types(std::map<std::string, std::string> &mime_types)
@@ -790,6 +796,24 @@ int    Request::create_file(std::string const file_type)
  */
 void    Request::_process_POST()
 {
+    std::string size_max = return_config_info("cli_max_size");
+    if (size_max.size() < header["CONTENT-LENGTH"].size())
+    {
+        return http_code("411");
+    }
+    else if (size_max.size() == header["CONTENT-LENGTH"].size())
+    {
+        for (int i = 0; i < (int)size_max.size(); i++)
+        {
+            if (size_max.at(i) > header["CONTENT-LENGTH"].at(i))
+                break ;
+            else if (size_max.at(i) < header["CONTENT-LENGTH"].at(i))
+            {
+                return http_code("411");
+            }
+        }
+    }
+
     std::map<std::string, std::string> mime_types;
     std::map<std::string, std::string>::const_iterator it;
 
@@ -797,7 +821,7 @@ void    Request::_process_POST()
     for (it = mime_types.begin(); it != mime_types.end(); ++it)
     {
         //std::cout << it->second << "\n";
-        if (it->second == header["Content-type"])
+        if (it->second == header["CONTENT-TYPE"])
             break ;
     }
     // Si on trouve pas le type en question
@@ -808,13 +832,12 @@ void    Request::_process_POST()
 
     //std::cout << "CONTENT TYPE FROM MIME TYPES = [" << it->first << "]\n";
 
-    reponse["Content-Length"]   = header["Content-Length"];
-    reponse["Content-type"]     = header["Content-type"];
+    reponse["CONTENT-LENGTH"]   = header["CONTENT-LENGTH"];
+    reponse["CONTENT-TYPE"]     = header["CONTENT-TYPE"];
     if (header["url"].substr(header["url"].find_last_of(".") + 1) == "php")
     {
-        std::string rep = return_config_info("root");
-		Cgi	c(rep, atoi(header["port"].c_str()), cgi_head);
-
+        // std::string rep = return_config_info("root");
+		Cgi	c(header["url"], this, cgi_head);
 		std::string filestr = c.get_data();
 	
 	}

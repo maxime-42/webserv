@@ -33,6 +33,9 @@ private:
 	std::string							_pwd;
 	std::string							_uri;
 	bool								_has_error;
+	std::map<std::string, std::string> 	_env_map;
+
+
 
 	void					complete_the_name_of_script();
 	void					set_args();
@@ -44,9 +47,10 @@ private:
 	std::string				get_query_string();
 	void					clear_2D_array(char **array);
 	void					remove_headers(std::map<std::string, std::string> &cgi_head);
+	void					set_env_map(void *ptr_void);
 
 public:
-	Cgi(std::string script, int port, std::map<std::string, std::string> &reponse);
+	Cgi(std::string script, void *ptr_void, std::map<std::string, std::string> &reponse);
 	std::string			get_data();
 	~Cgi();
 
