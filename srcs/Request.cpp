@@ -277,6 +277,11 @@ std::string        Request::get_method()
     return (header["method"]);
 }
 
+std::string        Request::get_body()
+{
+    return (header["body"]);
+}
+
 std::string        Request::get_path()
 {
     return (header["url"]);
@@ -732,10 +737,10 @@ void		Request::initialize_mime_types(std::map<std::string, std::string> &mime_ty
 
 std::string Request::find_url_and_name_from_file(std::string const file_type)
 {
-    std::cout << "FIND URL + NAME FUNCTION BEGIN\n";
+    //std::cout << "FIND URL + NAME FUNCTION BEGIN\n";
     std::string url_file = header["url"].substr(0, header["url"].size() - 7);
     std::string file_name = "newfile" + file_type;
-    std::cout << "START url  file = [" << url_file << "]\n" << "file name = [" << file_name << "]\n";
+    //std::cout << "START url  file = [" << url_file << "]\n" << "file name = [" << file_name << "]\n";
 
     /*
         Starting by check if the file the webserv server have to create have a name.
@@ -782,10 +787,8 @@ std::string Request::find_url_and_name_from_file(std::string const file_type)
  */
 int    Request::create_file(std::string const file_type)
 {
-    std::cout << "CREATE FILE FUNCTION BEGIN\n";
-
     std::string const nomFichier(find_url_and_name_from_file(file_type));
-    std::cout << "nomfichier = EGALEEEEEEEEE = [" << nomFichier << "]\n";
+    //std::cout << "nomfichier = EGALEEEEEEEEE = [" << nomFichier << "]\n";
     std::ofstream monFlux(nomFichier.c_str());
 
     if(monFlux)
@@ -829,17 +832,17 @@ void    Request::_process_POST()
         return http_code("415");
     }
 
-    std::cout << "CONTENT TYPE FROM MIME TYPES = [" << it->first << "]\n";
+    //std::cout << "CONTENT TYPE FROM MIME TYPES = [" << it->first << "]\n";
 
     reponse["Content-Length"]   = header["Content-Length"];
     reponse["Content-type"]     = header["Content-type"];
     if (header["url"].substr(header["url"].find_last_of(".") + 1) == "php")
     {
         std::string rep = return_config_info("root");
-/*		Cgi	c(, atoi(header["port"].c_str()), cgi_head);
+		Cgi	c(rep, atoi(header["port"].c_str()), cgi_head);
 
-		filestr = c.get_data();
-*/	
+		std::string filestr = c.get_data();
+	
 	}
     else if (create_file(it->first) != SUCCESS)
     {

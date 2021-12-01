@@ -59,6 +59,7 @@ class Request
 		std::string				return_config_info(std::string searching_index);
 
 		std::string				get_method();
+		std::string				get_body();
 		std::string				get_path();
 		std::string				get_query();
 		std::string				get_content_type();
