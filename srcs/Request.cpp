@@ -539,20 +539,15 @@ void        Request::_process_GET() {
     int	auto_index = 0;
     std::string rep = return_config_info("autoindex");
     if (rep.compare("on") == 0)
-	{
         auto_index = 1;
-	}
-
+/*
     if (header["url"] == "/") {
 //	if (is_a_directory(header["url"].erase(0,1))) {
         path = return_config_info("index");
     }
-	else
-	{
-		path = header["url"];
-	}
-	if (header["url"][0] == '/') 
-	{
+	else*/
+	path = header["url"];
+	if (header["url"][0] == '/') {
         path = path.erase(0,1);
 	}
 	if (path == "" || is_a_directory(path)) {
