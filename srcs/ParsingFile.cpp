@@ -380,17 +380,22 @@ bool	ParsingFile::									checkIfSecretWord(std::string &pieceOfString)
 	return (resultCompar == 0 ? true : false);
 }
 
-void	ParsingFile::									addListInNestedList(std::map<std::string, std::string>	&dictionary)
+void	ParsingFile::									push_singleList_in_neestedList(std::map<std::string, std::string>	&dictionary)
 {
 	if (_previousToken == brackets_close)
 	{
 		_serverList.push_back(_singleList);
+		t_single_list::iterator itr_secondList = _singleList.begin();
+		std::map < std::string, std::string > dico = *itr_secondList;
+		// std::map < std::string, std::string >::iterator itr_dictionary= dictionary.find("return");
+		block_return(dico);
 		dictionary.clear();
+		dictionary = _defautConfig;
 		_singleList.clear();
 	}
 }
 
-void	ParsingFile::									addDictionaryInList(std::map<std::string, std::string>	&dictionary)
+void	ParsingFile::									push_back_dictionary_in_singleList(std::map<std::string, std::string>	&dictionary)
 {
 	if (dictionary.size())
 	{
@@ -418,6 +423,16 @@ void	ParsingFile::									insertInDictionary(std::map<std::string, std::string>
 	directiveName = std::string();
 	directiveValue = std::string();	
 }
+
+void		ParsingFile::								block_return(std::map<std::string, std::string>	&dictionary)
+{
+	std::map < std::string, std::string >::iterator itr_dictionary;
+	itr_dictionary = dictionary.find("return");
+	if (itr_dictionary != dictionary.end())
+	{
+		throw("error return");
+	}
+}
 /*
 **	si (location)
 		cout++
@@ -438,37 +453,26 @@ void	ParsingFile::									insertInDictionary(std::map<std::string, std::string>
 ** this function try to identify token, then act to depending token  
 ** token is pieceOfString
 */
-void	print_string_dictionnary(std::map<std::string, std::string> &first);
-void							displaySingleList(std::list<std::map < std::string, std::string > > &linkedList);
-
 void													ParsingFile::parsingProcess()
 {
 	std::string 							directiveName;
 	std::string 							directiveValue;
-	// std::map<std::string, std::string>		dictionary = _defautConfig; 
-	std::map<std::string, std::string>		dictionary; 
+	std::map<std::string, std::string>		dictionary = _defautConfig; 
 	int										nbParenthese = 0;//it increment when it meet open brack an decrement to bracket closed 
-	/******************test******************/
 	int										count = 0;
 	std::map<std::string, std::string>		tmp; 
 
-	std::cout << "******************************* ST A R T I N G	 P A R S I N G ******************************************" << std::endl;
 	for (size_t i = 0; i < _configFile.size(); )
 	{
 		if (!isspace(_configFile[i]))
 		{
 			std::string pieceOfString = getPieceOfstring(i);
-			// std::cout << "pieceOfString = [" << pieceOfString << "]" << std::endl;
 			if (pieceOfString.compare("server") == 0)
 			{
 				hasServer();
 			}
 			else if (pieceOfString.compare("location") == 0)
 			{
-					std::cout << "count == [" << count << "]" << std::endl;
-
-					// if (count > 1)
-					// 	throw("error syntaxe: neested location");
 				hasLocation(directiveName, pieceOfString);
 			}
 			else if (pieceOfString.compare("{") == 0)
@@ -476,15 +480,10 @@ void													ParsingFile::parsingProcess()
 				hasBracketOpen(nbParenthese);
 				if (directiveName.compare("location") == 0)
 				{
-					/******test*******/
 					count++;
-
 					tmp = dictionary;
 					dictionary.clear();
-					/****************/
-					// addDictionaryInList(dictionary);
 					insertInDictionary(dictionary, directiveName, directiveValue);
-
 				}
 			}
 			else if (pieceOfString.compare("}") == 0)
@@ -493,35 +492,23 @@ void													ParsingFile::parsingProcess()
 				if (nbParenthese == 0)
 				{
 					if (_singleList.size() == 0)
-						addDictionaryInList(dictionary);
+						push_back_dictionary_in_singleList(dictionary);
 					if (count)
 					{
-						// addDictionaryInList(dictionary);
 						push_front_dictionary_in_singleList(dictionary);
 						count--;
 					}
-					addListInNestedList(dictionary);
-					// dictionary = _defautConfig; 
+					push_singleList_in_neestedList(dictionary);
+					count = 0;
 				}
 				else
 				{
-					addDictionaryInList(dictionary);
-					// if (count == 1)
-					// 	count--;
-					// print_string_dictionnary(dictionary);
-					/*******test********/
+					push_back_dictionary_in_singleList(dictionary);
 					if (tmp.size())
 					{
-						// count--;
-						// displaySingleList(_singleList);
 						dictionary = tmp;
 						tmp.clear();
-						count--;
-
-						// print_string_dictionnary(dictionary);
-						
 					}
-					/****************/
 				}
 			}
 			else if (checkIfSecretWord(pieceOfString) == true)
@@ -533,7 +520,6 @@ void													ParsingFile::parsingProcess()
 				hasSemicolon();
 				if (directiveName.compare("listen") == 0 )
 					checkPort(directiveValue);
-				// 	throw("error syntaxe: listen have to be decimal numer");
 				if (nbParenthese == 0)
 					_globalConfig[directiveName] = directiveValue;
 				else

@@ -1,14 +1,15 @@
 #include "Cgi.hpp"
 #include <string.h>
+#include "Request.hpp"
 
 Cgi::Cgi() {}
 
 Cgi::~Cgi(){}
 
 void		displayDirectionary(std::map<std::string, std::string> &map);
-void	print_arg(char **array);
+void		print_arg(char **array);
 
-Cgi::Cgi(std::string script, int port, std::map<std::string, std::string> &cgi_head): _script(script), _port(port), _cgi_path(CGI_PATH), _env(NULL), _args( NULL)
+Cgi::Cgi(std::string script, void *ptr_void, std::map<std::string, std::string> &cgi_head): _script(script), _cgi_path(CGI_PATH), _env(NULL), _args( NULL)
 {
 	_data = std::string();
 	_has_error = false;
@@ -16,11 +17,11 @@ Cgi::Cgi(std::string script, int port, std::map<std::string, std::string> &cgi_h
 	{
 		complete_the_name_of_script();
 		set_args();
-		print_arg(_args);
+		// print_arg(_args);
+		set_env_map(ptr_void);
 		set_env();
 		exec_Cgi();
-		print_arg(_env);
-
+		// print_arg(_env);
 		remove_headers(cgi_head);
 	}
 	catch(const char *e)
@@ -100,23 +101,33 @@ void	Cgi::								set_args()
 	_args[2] = NULL;
 }
 
+/**
+ * @brief this function set a set of variable environement in map  
+ * 
+ * @param ptr_void it is a pointer of Request which has  some functions to  values of variable environnement
+ */
+void	Cgi::set_env_map(void *ptr_void)
+{
+	Request *ptr_request = (Request *)ptr_void;
+	_env_map["SERVER_PROTOCOL"] = "HTTP/1.1";
+	_env_map["REDIRECT_STATUS"] = "200";
+	_env_map["SCRIPT_NAME"] = _args[1];
+	_env_map["HTTP_RAW_POST_DATA"] = ptr_request->header["body"]; 
+	_env_map["PATH_INFO"] = _pwd + "/usr/bin/php-cgi";
+}
+
 /*
- * recover the HTTP_META_VARIABLES and store them in a malloc pointer to
+ * recover the HTTP_META_VARIABLES and store them in a malloc pointer of ch
  * strings (char **).
- * */
+ *
+*/
 void	Cgi::set_env()
 {
-	std::map<std::string, std::string> env_map;
-	env_map["SERVER_PROTOCOL"] = "HTTP/1.1";
-	env_map["REDIRECT_STATUS"] = "200";
-	env_map["SCRIPT_NAME"] = _args[1];
-	env_map["SERVER_PORT"] = "8080";
-	env_map["PATH_INFO"] = _pwd + "/usr/bin/php-cgi";
-	_env = (char **)malloc(sizeof(char *) * (env_map.size() + 1));
+	_env = (char **)malloc(sizeof(char *) * (_env_map.size() + 1));
 	if (_env == NULL)
 		throw("error happened while mallo in set_env() to cgi");
 	int i = 0;
-	for(std::map<std::string, std::string>::iterator it = env_map.begin(); it != env_map.end(); it++)
+	for(std::map<std::string, std::string>::iterator it = _env_map.begin(); it != _env_map.end(); it++)
 	{
 		_env[i] = strdup((it->first + "=" + it->second).c_str());
 		if (_env[i] == NULL)

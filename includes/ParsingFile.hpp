@@ -88,7 +88,7 @@ public:
 	void						displayServerTable();
 	void						displayToken(std::vector<std::string> &tokenVector);
 	void						displayDirectionary(std::map<std::string, std::string> &map);
-	void						displaySingleList(std::list<std::map < std::string, std::string > > &linkedList);
+	// void						displaySingleList(std::list<std::map < std::string, std::string > > &linkedList);
 
 private:
 	void						getFile();
@@ -111,10 +111,14 @@ private:
 	void						hasSemicolon();
 	void						hasLocation(std::string &directiveName, std::string & pieceOfString);
 
-	void						addListInNestedList(std::map<std::string, std::string>	&dictionary);
-	void						addDictionaryInList(std::map<std::string, std::string>	&dictionary);
+	void						push_singleList_in_neestedList(std::map<std::string, std::string>	&dictionary);
+	// void						addDictionaryInList(std::map<std::string, std::string>	&dictionary);
 	void						insertInDictionary(std::map<std::string, std::string> &dictionary, std::string &directiveName, std::string &directiveValue);
 	int							getStartProcess();
+	void						push_front_dictionary_in_singleList(std::map<std::string, std::string>	&dictionary);
+	void						push_back_dictionary_in_singleList(std::map<std::string, std::string>	&dictionary);
+	void						block_return(std::map<std::string, std::string>	&dictionary);
+
 };
 
 #endif 

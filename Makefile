@@ -10,7 +10,7 @@ _WHITE		=\e[97m
 
 
 
-NAME        = server
+NAME        = webserv
 
 CC          = clang++
 CFLAGS      = -Werror -Wextra -Wall --std=c++98 -g3 -fstandalone-debug  #-fsanitize=address

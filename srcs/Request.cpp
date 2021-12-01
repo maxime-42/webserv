@@ -626,7 +626,7 @@ void        Request::_process_GET()
 
 	else if (path.substr(path.find_last_of(".") + 1) == "php") {
 
-		Cgi	c(path, atoi(header["port"].c_str()), cgi_head);
+		Cgi	c(path, this,  cgi_head);
 
 		filestr = c.get_data();
 	
