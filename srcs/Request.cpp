@@ -546,8 +546,9 @@ void        Request::_process_GET() {
         path = return_config_info("index");
     }
 	else*/
+try {
 	path = header["url"];
-	if (header["url"][0] == '/') {
+	if (path[0] == '/') {
         path = path.erase(0,1);
 	}
 	if (path == "" || is_a_directory(path)) {
@@ -565,6 +566,7 @@ void        Request::_process_GET() {
 		path = index_path;
 	if (path == "")
 		path = ".";
+} catch (std::exception &e) { std::cout << "EXCEPTION CATCHED NIU NIY NIU" << std::endl; };
 
 	std::cout << "path is " << path << std::endl;
 
@@ -625,13 +627,17 @@ void        Request::_process_GET() {
     reponse["CONTENT-LENGTH"] = content_len.str();
 
     reponse["CONTENT-TYPE"] = "text/plain; charset=utf-8";
-    if (is_a_directory(path) || path.substr(path.find_last_of(".") + 1) == "html")
+    if (is_a_directory(path))// || path.substr(path.find_last_of(".") + 1) == "html")
         reponse["CONTENT-TYPE"] = "text/html; charset=utf-8";
 	else
 	{
 		for (it = mime_types.begin(); it != mime_types.end(); ++it)
     	{
-        	if (it->first == path.substr(path.find_last_of(".")))
+			std::string extension("");
+			size_t pos = path.find_last_of(".");
+			if (pos != std::string::npos)
+				extension = path.substr(pos);
+        	if (it->first == extension)
 				reponse["CONTENT-TYPE"] = it->second;
     	}
 
@@ -942,13 +948,13 @@ void	Request::http_code(std::string http_code)
     std::map<std::string, std::string> http = http_table();
 	std::ostringstream	s;
 
-	if (int_code == 403)
+	if (int_code == 404)
     {
-		header["url"] = "/error_pages/error_page_" + http_code + ".html";
+		header["url"] = "/error_page/error_page_" + http_code + ".html";
 		_process_GET();
 	}
 	else {
-		reponse["body"] = "<h1>" + http[http_code] + "</h1>";
+		reponse["body"] = "<h1>" + http_code + " " +  http[http_code] + "</h1>";
 		s << reponse["body"].length();
 		reponse["CONTENT-LENGTH"] = std::string(s.str());
         reponse["CONTENT-TYPE"] = "text/html; charset=utf-8";
