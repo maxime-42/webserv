@@ -167,6 +167,15 @@ void		Cgi::	exec_Cgi()
 	{
 		close(pipeFd[TO_READ]);/*closing of read side of pipe because it gonna write*/
 		dup2(pipeFd[TO_WRITE], 1);  /* connect the write side with stdout */
+/*
+		int pipe2[2];
+		pipe(pipe2);
+
+		dup2(pipe2[TO_READ], 0);
+
+		write(pipe2[TO_WRITE], POST_BODY, POST_BODY_LENGH);
+*/		
+		
 		//if (execve(_args[0], _args, _env) == ERROR) 
 		 if (execv(_args[0], _args) == ERROR) 
 			exit(ERROR);
