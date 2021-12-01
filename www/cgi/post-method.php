@@ -7,6 +7,6 @@ if ( isset( $_POST['submit'] ) ) {
     exit; } 
 else
     {
-        echo coucou;
+        echo "coucou";
     }
 ?>
