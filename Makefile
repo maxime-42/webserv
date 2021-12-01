@@ -10,7 +10,7 @@ _WHITE		=\e[97m
 
 
 
-NAME        = server
+NAME        = webserv
 
 CC          = clang++
 CFLAGS      = -Werror -Wextra -Wall --std=c++98 -g3 -fstandalone-debug  #-fsanitize=address
@@ -28,7 +28,7 @@ F_SRCS        =		main.cpp 			\
 					lookup_in_nested_list.cpp\
 					Service.cpp			\
 					Cgi.cpp\
-#					to_debug.cpp\
+					to_debug.cpp\
 
 SRCS        = $(addprefix $(DIR_SRCS), $(F_SRCS))
 
