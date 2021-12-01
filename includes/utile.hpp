@@ -1,5 +1,5 @@
-#ifndef LOOKUP_IN_NESTED_LIST
-# define LOOKUP_IN_NESTED_LIST
+#ifndef UTILE_HPP
+# define UTILE_HPP
 
 #include <sstream> 
 #include "header.hpp"
@@ -11,7 +11,7 @@ typedef std::list<std::map < std::string, std::string > > t_single_list;
 bool							find_location(t_single_list & secondList, std::string &elemToFind, void *ptrReponse);
 bool							find_directive(t_single_list & secondList, std::string &elemToFind, void *ptrReponse);
 bool							getInfo(int port, std::string elemToFind, void *reponse, bool(*callback)(t_single_list & secondList, std::string &elemToFind, void *ptrReponse));
-bool			                get_location_url(int port, std::string url, void *ptrReponse);
-std::string get_value_in_string(int value);
+bool							get_location_url(int port, std::string url, void *ptrReponse);
+std::string						get_value_in_string(int value);
 
 #endif

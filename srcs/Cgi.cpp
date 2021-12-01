@@ -33,21 +33,11 @@ Cgi::Cgi(std::string script, void *ptr_void, std::map<std::string, std::string> 
 	clear_2D_array(_args);
 }
 
-/*
-** free memory what as early alloc to "_arg"
-** this function free memory which was early alloc to "_arg"
-*/
-void	Cgi::clear_args()
-{
-	for (size_t i = 0; i < NUMBER_ARGUMENTS ; i++)
-	{
-		free(_args[i]);
-		_args[i] = NULL;
-	}
-	free(_args);
-	_args = NULL;
-}
-
+/**
+ * @brief free memory what as early alloc to the 2D array
+ * 
+ * @param array  is a pointer which has the location to free memory
+ */
 void	Cgi::clear_2D_array(char **array)
 {
 	int i = 0;
@@ -59,33 +49,37 @@ void	Cgi::clear_2D_array(char **array)
 	free(array);
 }
 
-/*
-** this function add  slash to the name of script
-** add likewise name of the current working directory to script
-*/
-
+/**
+ * @brief 
+ *	get the current working directory and concatene that to the  _script
+ *	first add back a slash to the name of "_script"
+ *	save the  current working directory given by getcwd
+ *	if neither error   appear then the concatenation going to done between   current working directory and script
+ */
 void	Cgi::								complete_the_name_of_script()
 {
-	char 									*pwd = NULL;
+	char 									*current_working_directory = NULL;
 	_script = "/" + _script;
-	pwd = getcwd(NULL, 0);
-	_pwd = pwd;//stock pwd 
-	if (pwd == NULL)
+	current_working_directory = getcwd(NULL, 0);
+	_pwd = current_working_directory;//stock current_working_directory 
+	if (current_working_directory == NULL)
 	{
 		throw("error while getcwd");
 		_has_error = true;
 	}
 	else
 	{
-		_script = pwd + _script;
-		free(pwd);
+		_script = current_working_directory + _script;
+		free(current_working_directory);
 	}
 }
 
-/*
-** recover the cgi binary file name and script name, store it in array "_args"
-** _args meaning argument
-*/
+/**
+ * @brief 
+ * Set the 2D array it is a char ** _args
+ * recover the cgi binary file name and script name, store it in array "_args"
+ * _args meaning argument
+ */
 
 void	Cgi::								set_args()
 {
@@ -116,10 +110,10 @@ void	Cgi::set_env_map(void *ptr_void)
 	_env_map["PATH_INFO"] = _pwd + "/usr/bin/php-cgi";
 }
 
-/*
- * recover the HTTP_META_VARIABLES and store them in a malloc pointer of ch
- * strings (char **).
- *
+/**
+ * @brief 
+ * recover the variables environment in _env_map then store them in _env
+* skim the _env map to get each variables,  concatenate value and key with "=" then put the string concat in _env 
 */
 void	Cgi::set_env()
 {
@@ -129,7 +123,9 @@ void	Cgi::set_env()
 	int i = 0;
 	for(std::map<std::string, std::string>::iterator it = _env_map.begin(); it != _env_map.end(); it++)
 	{
-		_env[i] = strdup((it->first + "=" + it->second).c_str());
+		std::string var_env = (it->first + "=" + it->second);
+		_env[i] = strdup(var_env.c_str());
+		// _env[i] = strdup((it->first + "=" + it->second).c_str());
 		if (_env[i] == NULL)
 			throw("error happened while mallo in set_env() to cgi");
 		i++;
@@ -189,7 +185,7 @@ void		Cgi::	exec_Cgi()
 		char		c; /* this variable will skim to each character in pipeFd[TO_READ] */
 		while (read(pipeFd[TO_READ], &c, 1) > 0)/*from, here contains in pipeFd[TO_READ] gonna be copy in string "_data"*/
 		{
-			_data += c; 
+			_data += c;
 		}
 	}
 }
@@ -228,7 +224,7 @@ void		Cgi::	remove_headers(std::map<std::string, std::string> &cgi_head) {
 std::string		Cgi::	get_data(){return (_data);}
 
 /*
-**	this function get all variable in _url
+**	this function recovery all variable in _url
 ** it meant everything after ? 
 */
 std::string		Cgi::	get_query_string()
@@ -241,4 +237,3 @@ std::string		Cgi::	get_query_string()
 	}
 	return (query_string);
 }
-

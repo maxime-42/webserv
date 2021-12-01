@@ -3,7 +3,9 @@
 #include "Service.hpp"
 #include "header.hpp"
 #include "Cgi.hpp"
-   void							displayServerTable();
+#include "utile.hpp"
+
+void							displayServerTable();
 
 int	 main(int argc, const char** argv)
 {
@@ -17,7 +19,18 @@ int	 main(int argc, const char** argv)
 	{
 		Service svc;
 		// ParsingFile &parse = ParsingFile::getInstance("./configFile/default.conf");
-		// displayServerTable();
+		// std::string str;
+		// bool ret = getInfo(8080, "index", &str, find_directive);
+		// if (ret == true)
+		// {
+		// 	std::cout << "directive [" << str << "]" << std::endl;
+		// }
+		// else
+		// {
+		// 	std::cout << "ECHEC"  << std::endl;
+		// }
+
+		// // displayServerTable();
 		// (void)parse;
 	}
 	(void)argc;
