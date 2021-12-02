@@ -125,12 +125,19 @@ void	Cgi::set_env_map(void *ptr_void)
 	_cgi_body = "";
 
 	Request *ptr_request = (Request *)ptr_void;
-	_env_map["SERVER_PROTOCOL"] = "HTTP/1.1";
-	_env_map["REDIRECT_STATUS"] = "200";
-	_env_map["SCRIPT_NAME"] = _args[1];
+	_env_map["AUTH_TYPE"] = "";
+	_env_map["CONTENT-LENGTH"] = "0";
+	_env_map["GATEWAY_INTERFACE"] = "CGI/1.1";
 	_env_map["HTTP_RAW_POST_DATA"] = ptr_request->header["body"]; 
 	_env_map["PATH_INFO"] = _pwd + "/usr/bin/php-cgi";
+	_env_map["PATH_TRANSLATED"] = _args[0];
+	_env_map["QUERY_STRING"] = "";
+	_env_map["REDIRECT_STATUS"] = "200";
 	_env_map["REQUEST_METHOD"] = ptr_request->header["method"];
+	_env_map["SCRIPT_FILENAME"] = _args[0];
+	_env_map["SCRIPT_NAME"] = _args[1];
+	_env_map["SCRIPT_PORT"] = ptr_request->header["port"];
+	_env_map["SERVER_PROTOCOL"] = "HTTP/1.1";
 
 /*
 	DEBUG :
@@ -146,6 +153,8 @@ void	Cgi::set_env_map(void *ptr_void)
 	}
 	if (ptr_request->header["method"] == "POST")
 	{
+		_env_map["CONTENT-LENGTH"] = ptr_request->header["CONTENT-LENGTH"];
+		_env_map["CONTENT-TYPE"] = ptr_request->header["CONTENT-TYPE"];
 		_cgi_body = ptr_request->header["body"];
 	}
 }
@@ -227,8 +236,8 @@ void		Cgi::	exec_Cgi()
 			close(pipe2[TO_WRITE]); // send EOF
 		}
 
-		//if (execve(_args[0], _args, _env) == ERROR) 
-		if (execv(_args[0], _args) == ERROR) 
+		if (execve(_args[0], _args, _env) == ERROR) 
+		//if (execv(_args[0], _args) == ERROR) 
 			exit(ERROR);
 		exit(SUCCESS);
 	}
