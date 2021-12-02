@@ -28,7 +28,7 @@ F_SRCS        =		main.cpp 			\
 					utile.cpp			\
 					Service.cpp			\
 					Cgi.cpp\
-					to_debug.cpp\
+					#to_debug.cpp\
 
 SRCS        = $(addprefix $(DIR_SRCS), $(F_SRCS))
 

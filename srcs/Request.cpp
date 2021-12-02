@@ -86,9 +86,11 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
     header["args"] = "";
     getline(iss, header["method"], ' ');
 
+    header["args"] = "";
+
     /*
        Pour header["url"] : Récupérer les arguments (?say=hi&to=mom) et les séparer du fichier
-       */
+    */
     getline(iss, header["url"], ' ');
     if (header["url"].find('?') != std::string::npos)
     {
@@ -349,66 +351,22 @@ std::string        Request::get_content_length()
 void        Request::process()
 {
     std::string rep;
-    int                                 actual_port = atoi(header["port"].c_str());
-
-    std::cout << "actual port = " << actual_port << std::endl; 
-
-	bool ret = getInfo(actual_port, "allow", &rep, find_directive);
-	if (ret)
-	{
-        /*
-            DEBUG: Si on trouve bien allow tout va bien ^^ ceci est du debug !
-        */
-//		std::cout << ">>>>>Exit<<<<" << std::endl;
-//        std::cout << ">>[" << rep << "]<<" << std::endl;
-	}
-	else
-	{
-        /*
-            TODO: Check with team is this is the appropriate message error
-            This error is quite impossible because we used our own config file value.
-        */
-		std::cout << "There is no allow information in the config file. Config file not allowed." << std::endl;
-        return ;
-
-	}
 
 	// Reponse["code"] will only exist if the parsing threw an error. Execution stops then
     if (reponse.find("code") != reponse.end())
+	{
         return ;
+	}
 
-    if (header["method"] == "GET")
-    {
-        if (rep.find("GET") !=std::string::npos)
-        {
+	rep = return_config_info("allow");
+    if (header["method"] == "GET" && rep.find("GET") != std::string::npos) {
             _process_GET();
-        }
-        else
-        {
-            return http_code("405");
-        }
     }
-    else if (header["method"] == "POST")
-    {
-        if (rep.find("POST") !=std::string::npos)
-        {
+    else if (header["method"] == "POST" && rep.find("POST") !=std::string::npos) {
             _process_POST();
-        }
-        else
-        {
-            return http_code("405");
-        }
     }
-    else if (header["method"] =="DELETE")
-    {
-        if (rep.find("DELETE") !=std::string::npos)
-        {
+    else if (header["method"] =="DELETE" && rep.find("DELETE") !=std::string::npos) {
             _process_DELETE();
-        }
-        else
-        {
-            return http_code("405");
-        }
     }
     else
         http_code("405");
@@ -462,13 +420,13 @@ void		Request::compose_reponse(struct pollfd *ptr_tab_poll)
 	bool content_type = false;
 
     std::string reply = reponse["http_version"] + " " + reponse["code"] + " " + reponse["status"] + "\n";
+	
+	reply.append("Date: " + time_to_string() + " \n");
+	reply.append("Server: Webserv/1.0 (Unix)\n");
 
     if (reponse.find("body") == reponse.end())
         reply.append("\n");
     else {
-		reply.append("Date: " + time_to_string() + " \n");
-		reply.append("Server: Webserv/1.0 (Unix)\n");
-
 		for (std::map<std::string, std::string>::iterator it = cgi_head.begin(); it != cgi_head.end(); it++) {
 
 			reply.append(it->first + ": " + it->second + "\n");
@@ -477,10 +435,9 @@ void		Request::compose_reponse(struct pollfd *ptr_tab_poll)
 			if (str == "CONTENT-TYPE")
 				content_type = true;
 		}
-
 		if (!content_type)
-	        reply.append("Content-Type: " + reponse["Content-type"] + " \n");
-        reply.append("Content-Length: " + reponse["Content-Length"] + " \n");
+	        reply.append("CONTENT-TYPE: " + reponse["CONTENT-TYPE"] + " \n");
+        reply.append("CONTENT-LENGTH: " + reponse["CONTENT-LENGTH"] + " \n");
 
 		reply.append("Connection: Closed\n");
         reply.append("\n");
@@ -531,23 +488,18 @@ int			Request::send_reponse(struct pollfd *ptr_tab_poll) {
 
 std::string     Request::return_config_info(std::string searching_index)
 {
-    std::string search_rep;
+   	std::map<std::string, std::string>	location_rep;
+    std::string 						search_rep;
+	std::string 						location;
+	int									port = atoi(header["port"].c_str());
     
-    /*
-        Search_rep will be initialised with the directive value for the searching_inde.
-    */
-    getInfo(atoi(header["port"].c_str()), searching_index, &search_rep, find_directive);
-
-    /*
-        Search if there is a /root in the config file to initialise the path and know which page the server have to send to the clientg.
-    */
-   	std::map<std::string, std::string> location_rep;
-	bool ret = get_location_url(atoi(header["port"].c_str()), header["url"], &location_rep);
-	if (ret)
+    //		Search_rep will be initialised with the directive value for the searching_index
+    bool ret1 = getInfo(port, searching_index, &search_rep, find_directive);
+    //		Search if the searching_index is in the config file
+	bool ret2 = get_location_url(port, header["url"], &location_rep);
+	if (ret2)
 	{
-        /*
-            If there is some information at a location from the url, search if there is a /root informations in the config file
-        */
+        //		Search if the searching_index is inside a location
         std::map<std::string, std::string>::const_iterator it;
         for (it = location_rep.begin(); it != location_rep.end(); ++it)
         {
@@ -559,7 +511,8 @@ std::string     Request::return_config_info(std::string searching_index)
             }
         }
 	}
-    return (search_rep);
+	std::cout << "search idx is " << searching_index << " and search reponse is " << search_rep << std::endl;
+    return ((ret1 | ret2) ? search_rep : "");
 }
 
 // bool is_a_directory(const std::string &s)
@@ -590,20 +543,16 @@ void        Request::_process_GET() {
     int	auto_index = 0;
     std::string rep = return_config_info("autoindex");
     if (rep.compare("on") == 0)
-	{
         auto_index = 1;
-	}
-
+/*
     if (header["url"] == "/") {
 //	if (is_a_directory(header["url"].erase(0,1))) {
         path = return_config_info("index");
     }
-	else
-	{
-		path = header["url"];
-	}
-	if (header["url"][0] == '/') 
-	{
+	else*/
+try {
+	path = header["url"];
+	if (path[0] == '/') {
         path = path.erase(0,1);
 	}
 	if (path == "" || is_a_directory(path)) {
@@ -621,6 +570,7 @@ void        Request::_process_GET() {
 		path = index_path;
 	if (path == "")
 		path = ".";
+} catch (std::exception &e) { std::cout << "EXCEPTION CATCHED NIU NIY NIU" << std::endl; };
 
 	std::cout << "path is " << path << std::endl;
 
@@ -678,17 +628,21 @@ void        Request::_process_GET() {
     reponse["body"] = filestr;
 	std::stringstream content_len;
 	content_len	<< filestr.length();
-    reponse["Content-Length"] = content_len.str();
+    reponse["CONTENT-LENGTH"] = content_len.str();
 
-    reponse["Content-type"] = "text/plain; charset=utf-8";
-    if (is_a_directory(path) || path.substr(path.find_last_of(".") + 1) == "html")
-        reponse["Content-type"] = "text/html; charset=utf-8";
+    reponse["CONTENT-TYPE"] = "text/plain; charset=utf-8";
+    if (is_a_directory(path))// || path.substr(path.find_last_of(".") + 1) == "html")
+        reponse["CONTENT-TYPE"] = "text/html; charset=utf-8";
 	else
 	{
 		for (it = mime_types.begin(); it != mime_types.end(); ++it)
     	{
-        	if (it->first == path.substr(path.find_last_of(".")))
-				reponse["Content-type"] = it->second;
+			std::string extension("");
+			size_t pos = path.find_last_of(".");
+			if (pos != std::string::npos)
+				extension = path.substr(pos);
+        	if (it->first == extension)
+				reponse["CONTENT-TYPE"] = it->second;
     	}
 
 	}
@@ -697,9 +651,9 @@ void        Request::_process_GET() {
 /*
    Cette fonction va permettre de déterminer quel type de fichier la requete POST
    va nous demander de créer.
-   Elle va initialiser une map et relier chaque valeur de Content-type (valeur à
+   Elle va initialiser une map et relier chaque valeur de CONTENT-TYPE (valeur à
    droite) avec le type de fichier à créer (valeur à gauche).
-   Le nom MIME vient des différents Content-type qui existe. La liste est non
+   Le nom MIME vient des différents CONTENT-TYPE qui existe. La liste est non
    exclusive
    */
 void		Request::initialize_mime_types(std::map<std::string, std::string> &mime_types)
@@ -847,6 +801,24 @@ int    Request::create_file(std::string const file_type)
  */
 void    Request::_process_POST()
 {
+    std::string size_max = return_config_info("cli_max_size");
+    if (size_max.size() < header["CONTENT-LENGTH"].size())
+    {
+        return http_code("411");
+    }
+    else if (size_max.size() == header["CONTENT-LENGTH"].size())
+    {
+        for (int i = 0; i < (int)size_max.size(); i++)
+        {
+            if (size_max.at(i) > header["CONTENT-LENGTH"].at(i))
+                break ;
+            else if (size_max.at(i) < header["CONTENT-LENGTH"].at(i))
+            {
+                return http_code("411");
+            }
+        }
+    }
+
     std::map<std::string, std::string> mime_types;
     std::map<std::string, std::string>::const_iterator it;
 
@@ -854,7 +826,7 @@ void    Request::_process_POST()
     for (it = mime_types.begin(); it != mime_types.end(); ++it)
     {
         //std::cout << it->second << "\n";
-        if (it->second == header["Content-type"])
+        if (it->second == header["CONTENT-TYPE"])
             break ;
     }
     // Si on trouve pas le type en question
@@ -865,8 +837,8 @@ void    Request::_process_POST()
 
     //std::cout << "CONTENT TYPE FROM MIME TYPES = [" << it->first << "]\n";
 
-    reponse["Content-Length"]   = header["Content-Length"];
-    reponse["Content-type"]     = header["Content-type"];
+    reponse["CONTENT-LENGTH"]   = header["CONTENT-LENGTH"];
+    reponse["CONTENT-TYPE"]     = header["CONTENT-TYPE"];
     if (header["url"].substr(header["url"].find_last_of(".") + 1) == "php")
     {
         // std::string rep = return_config_info("root");
@@ -978,14 +950,22 @@ void	Request::http_code(std::string http_code)
 	int					int_code;
 	std::istringstream(http_code) >> int_code;
     std::map<std::string, std::string> http = http_table();
+	std::ostringstream	s;
 
-	if (int_code > 400 && int_code <= 405)
+	if (int_code == 404)
     {
-		header["url"] = "/error_pages/error_page_" + http_code + ".html";
+		header["url"] = "/error_page/error_page_" + http_code + ".html";
 		_process_GET();
+	}
+	else {
+		reponse["body"] = "<h1>" + http_code + " " +  http[http_code] + "</h1>";
+		s << reponse["body"].length();
+		reponse["CONTENT-LENGTH"] = std::string(s.str());
+        reponse["CONTENT-TYPE"] = "text/html; charset=utf-8";
 	}
     reponse["code"] = http_code;
     reponse["status"] = http[http_code];
+
 
 }
 
