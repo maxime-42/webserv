@@ -196,20 +196,17 @@ void		Cgi::	exec_Cgi()
 		close(pipeFd[TO_READ]);/*closing read side of pipe because we're only going to write*/
 		dup2(pipeFd[TO_WRITE], 1);  /* connect the write side with stdout */
 
-//			=========>
-//		std::cout << "cgi BODY = [" << _cgi_body << "]\n";
-		if (_cgi_body != "")
+		if (_cgi_body.length() > 0)
 		{
-//			std::cout << "cgi BODY = [" << _cgi_body << "]\n";
 			int pipe2[2];
 			pipe(pipe2);
 
 			dup2(pipe2[TO_READ], 0);
 
 			write(pipe2[TO_WRITE], _cgi_body.c_str(), _cgi_body.length());
+			//write(pipe2[TO_WRITE], "PIPIPIPiPi", 10);
 			close(pipe2[TO_WRITE]); // send EOF
 		}
-//			<=========
 
 		//if (execve(_args[0], _args, _env) == ERROR) 
 		if (execv(_args[0], _args) == ERROR) 
@@ -218,11 +215,12 @@ void		Cgi::	exec_Cgi()
 	}
 	else
 	{
-		std::cout << "cgi PETITIIIs = [" << _cgi_body << "]\n";
+//		std::cout << "cgi PETITIIIs = [" << _cgi_body << "]\n";
 		close(pipeFd[TO_WRITE]);/*closing of write side of pipe because it read*/
 		int ret = wait(&child_status);
 		check_error(ret, "error wait");
 		check_error(child_status, "error execve");
+		std::cout << "execv(" << _args[0] << ", " << _args[1] << ")" << std::endl;
 		char		c; /* this variable will skim to each character in pipeFd[TO_READ] */
 		while (read(pipeFd[TO_READ], &c, 1) > 0)/*from, here contains in pipeFd[TO_READ] gonna be copy in string "_data"*/
 		{
@@ -230,7 +228,7 @@ void		Cgi::	exec_Cgi()
 		}
 		/*
 			DEBUG:
-			std::cout << "data = [" << _data << "]\n";
+			std::cout << "data ->" << _data << "<-" << std::endl;
 		*/
 	}
 }

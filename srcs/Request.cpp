@@ -263,13 +263,13 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 	//std::cout << header["body"] << std::endl << std::endl;
 
 	// --------  affichage  --------------------------------------------------------------------------
-       	std::cout << "Display header parsed begin" << std::endl;
+/*       	std::cout << "Display header parsed begin" << std::endl;
     for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it)
     {
        	std::cout << it->first << ":" << it->second << std::endl;
     }
        	std::cout << "\nDisplay header parsed end" << std::endl;
-
+*/
 }
 
 std::string        Request::get_method()
@@ -402,9 +402,17 @@ void		Request::compose_reponse(struct pollfd *ptr_tab_poll)
 	reply.append("Date: " + time_to_string() + " \n");
 	reply.append("Server: Webserv/1.0 (Unix)\n");
 
-    if (reponse.find("body") == reponse.end())
+    if (reponse.find("body") == reponse.end()) {
+
+		reply.append("Connection: Closed\n");
         reply.append("\n");
-    else {
+        reply.append("\n");
+
+    	write(1, "\nREPONSE:\n\n", 11);
+	    write(1, reply.c_str(),reply.length());
+
+	} else {
+
 		for (std::map<std::string, std::string>::iterator it = cgi_head.begin(); it != cgi_head.end(); it++) {
 
 			reply.append(it->first + ": " + it->second + "\n");
@@ -414,8 +422,8 @@ void		Request::compose_reponse(struct pollfd *ptr_tab_poll)
 				content_type = true;
 		}
 		if (!content_type)
-	        reply.append("CONTENT-TYPE: " + reponse["CONTENT-TYPE"] + " \n");
-        reply.append("CONTENT-LENGTH: " + reponse["CONTENT-LENGTH"] + " \n");
+	        reply.append("Content-Type: " + reponse["CONTENT-TYPE"] + " \n");
+        reply.append("Content-Length: " + reponse["CONTENT-LENGTH"] + " \n");
 
 		reply.append("Connection: Closed\n");
         reply.append("\n");
@@ -799,20 +807,16 @@ void    Request::_process_POST()
     reponse["CONTENT-TYPE"]     = header["CONTENT-TYPE"];
     if (header["url"].substr(header["url"].find_last_of(".") + 1) == "php")
     {
-        // std::string rep = return_config_info("root");
-        std::string path = header["url"];
-        path.erase(0,1);
-        /*
-            DEBUG:
-            std::cout << "path : (" << path << ")\n";
-		*/
-        Cgi	c(path, this, cgi_head);
-		std::string filestr = c.get_data();
+		std::string path(header["url"]);
+		path = path.erase(0, 1);
+		Cgi	c(path, this, cgi_head);
 
-        /*
-            DEBUG:
-            std::cout << "FILE STR = [" << filestr << "]\n";
-		*/
+		http_code("200");
+		reponse["body"] = c.get_data();
+		std::stringstream len;
+		len << reponse["body"].length();
+		reponse["CONTENT-LENGTH"] = len.str();
+    	reponse["CONTENT-TYPE"] = "text/plain; charset=utf-8";
 	
 	}
     else if (create_file(it->first) != SUCCESS)
