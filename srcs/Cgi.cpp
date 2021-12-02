@@ -190,21 +190,21 @@ void		Cgi::	exec_Cgi()
 	*/
 	if (pid == 0)
 	{
-		close(pipeFd[TO_READ]);/*closing of read side of pipe because it gonna write*/
+		close(pipeFd[TO_READ]);/*closing read side of pipe because we're only going to write*/
 		dup2(pipeFd[TO_WRITE], 1);  /* connect the write side with stdout */
 
 //			=========>
-		std::cout << "cgi BODY = [" << _cgi_body << "]\n";
+//		std::cout << "cgi BODY = [" << _cgi_body << "]\n";
 		if (_cgi_body != "")
 		{
-			std::cout << "cgi BODY = [" << _cgi_body << "]\n";
+//			std::cout << "cgi BODY = [" << _cgi_body << "]\n";
 			int pipe2[2];
 			pipe(pipe2);
 
 			dup2(pipe2[TO_READ], 0);
 
-			write(pipe2[TO_WRITE], _cgi_body.c_str(), _cgi_body.size());
-			close(pipe2[TO_WRITE]); /*closing of read side of pipe because it gonna write*/
+			write(pipe2[TO_WRITE], _cgi_body.c_str(), _cgi_body.length());
+			close(pipe2[TO_WRITE]); // send EOF
 		}
 //			<=========
 

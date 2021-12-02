@@ -369,24 +369,6 @@ void        Request::process()
     else
         http_code("405");
 }
-/*
-int		Request::sendall(int s, const char *buf, int len)
-{
-    int total = 0;        // how many bytes we've sent
-    int bytesleft = len; // how many we have left to send
-    int n;
-
-    while(total < len) {
-        n = send(s, buf+total, (bytesleft > 1000 ? 1000 : bytesleft), 0);
-        if (n == -1) { break; }
-        total += n;
-        bytesleft -= n;
-    }
-
-    len = total; // return number actually sent here
-
-    return n==-1?-1:0; // return -1 on failure, 0 on success
-}*/
 
 std::string		time_to_string() {
 
@@ -440,7 +422,7 @@ void		Request::compose_reponse(struct pollfd *ptr_tab_poll)
 		reply.append("Connection: Closed\n");
         reply.append("\n");
 
-    	write(1, "\nREPONSE:\n\n", 12);
+    	write(1, "\nREPONSE:\n\n", 11);
 	    write(1, reply.c_str(),reply.length());
 
         reply.append(reponse["body"]);
@@ -509,7 +491,7 @@ std::string     Request::return_config_info(std::string searching_index)
             }
         }
 	}
-	std::cout << "search idx is " << searching_index << " and search reponse is " << search_rep << std::endl;
+//	std::cout << "search idx is " << searching_index << " and search reponse is " << search_rep << std::endl;
     return ((ret1 | ret2) ? search_rep : "");
 }
 
@@ -534,7 +516,6 @@ void        Request::_process_GET() {
     std::string path;
 	std::string index_path;
 	std::string	root = return_config_info("root");
-	std::cout << "root is " << root << std::endl;
 
 	chdir(root.c_str());
 
@@ -542,13 +523,7 @@ void        Request::_process_GET() {
     std::string rep = return_config_info("autoindex");
     if (rep.compare("on") == 0)
         auto_index = 1;
-/*
-    if (header["url"] == "/") {
-//	if (is_a_directory(header["url"].erase(0,1))) {
-        path = return_config_info("index");
-    }
-	else*/
-try {
+
 	path = header["url"];
 	if (path[0] == '/') {
         path = path.erase(0,1);
@@ -559,18 +534,14 @@ try {
 			index_path += "/";
 		index_path += return_config_info("index");
 
-		std::cout << "return_config_info returns " << return_config_info("index") << std::endl;
 	}
 
-	std::cout << "index_path is " << index_path << std::endl;
+	//std::cout << "index_path is " << index_path << std::endl;
 
 	if (exists(index_path) && !is_a_directory(index_path))
 		path = index_path;
 	if (path == "")
 		path = ".";
-} catch (std::exception &e) { std::cout << "EXCEPTION CATCHED NIU NIY NIU" << std::endl; };
-
-	std::cout << "path is " << path << std::endl;
 
 //	std::cout << "path is " << path << std::endl;
 	
