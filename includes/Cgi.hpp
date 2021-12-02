@@ -19,6 +19,7 @@
 #include <map>
 #include <sstream>
 #include "utile.hpp"
+#define READ_SIZE 2000
 
 class Cgi
 {

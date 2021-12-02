@@ -139,7 +139,6 @@ void	Cgi::set_env()
  * @param code if is less than zero an error will throw
  * @param error_msg text message to display
  */
-
 void	Cgi::								check_error(int code, const char *error_msg)
 {
 	if (code < 0)
@@ -188,10 +187,13 @@ void		Cgi::	exec_Cgi()
 		int ret = wait(&child_status);
 		check_error(ret, "error wait");
 		check_error(child_status, "error execve");
-		char		c; /* this variable will skim to each character in pipeFd[TO_READ] */
-		while (read(pipeFd[TO_READ], &c, 1) > 0)/*from, here contains in pipeFd[TO_READ] gonna be copy in string "_data"*/
+		// char		c; /* this variable will skim to each character in pipeFd[TO_READ] */
+		char			buf[READ_SIZE];
+		int nb_byte = 0;
+		while ((nb_byte = read(pipeFd[TO_READ], buf, READ_SIZE)) > 0)/*from, here contains in pipeFd[TO_READ] gonna be copy in string "_data"*/
 		{
-			_data += c;
+			buf[nb_byte] = '\0';
+			_data += buf;
 		}
 	}
 }

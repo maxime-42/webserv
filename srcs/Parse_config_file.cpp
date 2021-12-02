@@ -429,12 +429,26 @@ void	Parse_config_file::									push_front_dictionary_in_singleList(std::map<st
 	}
 }
 
+void		verify_the_path(std::string path)
+{
+	bool ret = is_a_directory(path);
+	if (ret == false)
+	{
+		std::cout << "paht = [" << path <<"]" << std::endl;
+		throw("error : root have to be a existing directory");
+	}
+}
+
 /*
 ** this function insert name and value in dictionary
 ** afterward initialize  name and value
 */
 void	Parse_config_file::									insertInDictionary(std::map<std::string, std::string>	&dictionary, std::string &directiveName, std::string &directiveValue)
 {
+	if (directiveName.compare("root") == 0)
+	{
+		verify_the_path(directiveValue);
+	}
 	dictionary[directiveName] = directiveValue;
 	directiveName = std::string();
 	directiveValue = std::string();	
