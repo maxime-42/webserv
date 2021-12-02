@@ -1,4 +1,9 @@
 <?php
+
+echo $_POST['submit'];
+echo $_POST['firstname'];
+echo $_POST['lastname'];
+
 if ( isset( $_POST['submit'] ) ) { 
     $firstname = $_POST['firstname'];
     $lastname = $_POST['lastname'];
