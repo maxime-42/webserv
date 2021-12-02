@@ -800,8 +800,19 @@ void    Request::_process_POST()
     if (header["url"].substr(header["url"].find_last_of(".") + 1) == "php")
     {
         // std::string rep = return_config_info("root");
-		Cgi	c(header["url"], this, cgi_head);
+        std::string path = header["url"];
+        path.erase(0,1);
+        /*
+            DEBUG:
+            std::cout << "path : (" << path << ")\n";
+		*/
+        Cgi	c(path, this, cgi_head);
 		std::string filestr = c.get_data();
+
+        /*
+            DEBUG:
+            std::cout << "FILE STR = [" << filestr << "]\n";
+		*/
 	
 	}
     else if (create_file(it->first) != SUCCESS)

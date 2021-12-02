@@ -68,6 +68,7 @@ void	Cgi::								complete_the_name_of_script()
 {
 	char 									*pwd = NULL;
 	_script = "/" + _script;
+	std::string tmp = _script;
 	pwd = getcwd(NULL, 0);
 	_pwd = pwd;//stock pwd 
 	if (pwd == NULL)
@@ -77,9 +78,11 @@ void	Cgi::								complete_the_name_of_script()
 	}
 	else
 	{
-		_script = pwd + _script;
+		_script = pwd;
+		_script += "/www" + tmp;
 		free(pwd);
 	}
+		std::cout << "script = " << _script << std::endl;
 }
 
 /*
@@ -225,6 +228,10 @@ void		Cgi::	exec_Cgi()
 		{
 			_data += c; 
 		}
+		/*
+			DEBUG:
+			std::cout << "data = [" << _data << "]\n";
+		*/
 	}
 }
 
