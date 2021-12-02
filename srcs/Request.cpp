@@ -74,8 +74,6 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
     std::string key;
     std::string val;
 
-	std::transform(request_str.begin(), request_str.end(), request_str.begin(), ::toupper);
-
 //	std::cout << "RAW REQUEST" << std::endl << std::endl;
 //	std::cout << request_str << std::endl << std::endl;
 
@@ -265,13 +263,13 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 	//std::cout << header["body"] << std::endl << std::endl;
 
 	// --------  affichage  --------------------------------------------------------------------------
-/*       	std::cout << "Display header parsed begin" << std::endl;
+       	std::cout << "Display header parsed begin" << std::endl;
     for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it)
     {
        	std::cout << it->first << ":" << it->second << std::endl;
     }
        	std::cout << "\nDisplay header parsed end" << std::endl;
-*/
+
 }
 
 std::string        Request::get_method()
@@ -692,8 +690,22 @@ void		Request::initialize_mime_types(std::map<std::string, std::string> &mime_ty
 std::string Request::find_url_and_name_from_file(std::string const file_type)
 {
     //std::cout << "FIND URL + NAME FUNCTION BEGIN\n";
-    std::string url_file = header["url"].substr(0, header["url"].size() - 7);
-    std::string file_name = "newfile" + file_type;
+    /*
+        Search if there is a /root in the config file to initialise the url_file and know where the server have to create the file.
+    */
+    std::cout << "URL = [" << header["url"] << "]\n";
+    std::string url_file = return_config_info("root");
+    std::string file_name = header["url"];
+/*
+    DEBUG :
+    std::cout << "url file  11 = [" << url_file << "]\n";
+    std::cout << "file_name 11 = [" << file_name << "]\n";
+*/
+    if (header["method"] != "DELETE")
+    {
+        url_file += file_name + "/";
+        file_name = "newfile" + file_type;
+    }
     //std::cout << "START url  file = [" << url_file << "]\n" << "file name = [" << file_name << "]\n";
 
     /*
@@ -706,31 +718,6 @@ std::string Request::find_url_and_name_from_file(std::string const file_type)
         file_name = header["Content-Disposition"].substr(header["Content-Disposition"].find("filename=") + 10, end_name);
     }
 
-    //std::cout << "111111 url  file = [" << url_file << "]\n" << "file name = [" << file_name << "]\n";
-    /*
-        Search if there is a /root in the config file to initialise the url_file and know where the server have to create the file.
-    */
-   	std::map<std::string, std::string> location_rep;
-	bool ret = getInfo(atoi(header["port"].c_str()), header["url"], &location_rep, find_location);
-	if (ret)
-	{
-		std::cout << "Location successfully find" << std::endl;
-        /*
-            If there is some information at a location from the url, search if there is a /root informations in the config file
-        */
-        std::map<std::string, std::string>::const_iterator it;
-        for (it = location_rep.begin(); it != location_rep.end(); ++it)
-        {
-            //std::cout << "it-first = [" << it->first << "]" << "\n";
-            //std::cout << "it-second = [" << it->second << "]" << "\n";
-            if (it->first.compare("root") == 0)
-            {
-                url_file = it->second + header["url"] + "/";
-                break ;
-            }
-        }
-	}
-
     //std::cout << "END url  file = [" << url_file << "]\n" << "file name = [" << file_name << "]\n";
     return (url_file + file_name);
 }
@@ -742,7 +729,7 @@ std::string Request::find_url_and_name_from_file(std::string const file_type)
 int    Request::create_file(std::string const file_type)
 {
     std::string const nomFichier(find_url_and_name_from_file(file_type));
-    //std::cout << "nomfichier = EGALEEEEEEEEE = [" << nomFichier << "]\n";
+    std::cout << "nomfichier = EGALEEEEEEEEE = [" << nomFichier << "]\n";
     std::ofstream monFlux(nomFichier.c_str());
 
     if(monFlux)
@@ -787,6 +774,8 @@ void    Request::_process_POST()
             }
         }
     }
+
+    std::cout << "header[CONTENT-TYPE] = [" << header["CONTENT-TYPE"] << "]\n";
 
     std::map<std::string, std::string> mime_types;
     std::map<std::string, std::string>::const_iterator it;
@@ -842,6 +831,7 @@ void    Request::_process_POST()
 void    Request::_process_DELETE()
 {
     std::string const nomFichier(find_url_and_name_from_file(""));
+    std::cout << "file name : " << nomFichier << std::endl;
     char const *file_to_delete = nomFichier.c_str();
 
     //std::cout << "file to delete = (" << file_to_delete << ")\n";
