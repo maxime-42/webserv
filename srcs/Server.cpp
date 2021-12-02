@@ -55,7 +55,7 @@ void	Server::						Squeze_vect_sockect_fd(int to_find)
 	{
 		if (*it == to_find)
 		{
-			std::cout << ">>>>>>>>>>>>>>>>>> erase file descriptor == " << *it << " from server : " << _server_fd << "<<<<<<<<<<<<<<<<<<" << std::endl;
+//			std::cout << ">>>>>>>>>>>>>>>>>> erase file descriptor == " << *it << " from server : " << _server_fd << "<<<<<<<<<<<<<<<<<<" << std::endl;
 			_sockect_clients.erase(it);
 			return ;
 		}
@@ -80,9 +80,9 @@ int		Server:: 						receive_data(struct pollfd	*ptr_tab_poll)
 		_close_connexion = true;
 		return(ret);
 	}
-	std::cout << ret << " bytes received:\n ===============\n";
+	std::cout << "\n\n" << "===============   "  << ret << " BYTES  RECEIVED   ===============\n";
    	write(1, _buffer, ret);
-	std::cout << "\n===============\n"<< std::endl;
+	std::cout << "\n======================================================" << std::endl;
 	return (ret);	
 }
 

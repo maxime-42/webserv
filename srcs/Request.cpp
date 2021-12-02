@@ -74,8 +74,6 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
     std::string key;
     std::string val;
 
-	std::transform(request_str.begin(), request_str.end(), request_str.begin(), ::toupper);
-
 //	std::cout << "RAW REQUEST" << std::endl << std::endl;
 //	std::cout << request_str << std::endl << std::endl;
 
@@ -371,24 +369,6 @@ void        Request::process()
     else
         http_code("405");
 }
-/*
-int		Request::sendall(int s, const char *buf, int len)
-{
-    int total = 0;        // how many bytes we've sent
-    int bytesleft = len; // how many we have left to send
-    int n;
-
-    while(total < len) {
-        n = send(s, buf+total, (bytesleft > 1000 ? 1000 : bytesleft), 0);
-        if (n == -1) { break; }
-        total += n;
-        bytesleft -= n;
-    }
-
-    len = total; // return number actually sent here
-
-    return n==-1?-1:0; // return -1 on failure, 0 on success
-}*/
 
 std::string		time_to_string() {
 
@@ -424,9 +404,17 @@ void		Request::compose_reponse(struct pollfd *ptr_tab_poll)
 	reply.append("Date: " + time_to_string() + " \n");
 	reply.append("Server: Webserv/1.0 (Unix)\n");
 
-    if (reponse.find("body") == reponse.end())
+    if (reponse.find("body") == reponse.end()) {
+
+		reply.append("Connection: Closed\n");
         reply.append("\n");
-    else {
+        reply.append("\n");
+
+    	write(1, "\nREPONSE:\n\n", 11);
+	    write(1, reply.c_str(),reply.length());
+
+	} else {
+
 		for (std::map<std::string, std::string>::iterator it = cgi_head.begin(); it != cgi_head.end(); it++) {
 
 			reply.append(it->first + ": " + it->second + "\n");
@@ -436,13 +424,13 @@ void		Request::compose_reponse(struct pollfd *ptr_tab_poll)
 				content_type = true;
 		}
 		if (!content_type)
-	        reply.append("CONTENT-TYPE: " + reponse["CONTENT-TYPE"] + " \n");
-        reply.append("CONTENT-LENGTH: " + reponse["CONTENT-LENGTH"] + " \n");
+	        reply.append("Content-Type: " + reponse["CONTENT-TYPE"] + " \n");
+        reply.append("Content-Length: " + reponse["CONTENT-LENGTH"] + " \n");
 
 		reply.append("Connection: Closed\n");
         reply.append("\n");
 
-    	write(1, "\nREPONSE:\n\n", 12);
+    	write(1, "\nREPONSE:\n\n", 11);
 	    write(1, reply.c_str(),reply.length());
 
         reply.append(reponse["body"]);
@@ -511,7 +499,7 @@ std::string     Request::return_config_info(std::string searching_index)
             }
         }
 	}
-	std::cout << "search idx is " << searching_index << " and search reponse is " << search_rep << std::endl;
+//	std::cout << "search idx is " << searching_index << " and search reponse is " << search_rep << std::endl;
     return ((ret1 | ret2) ? search_rep : "");
 }
 
@@ -536,21 +524,15 @@ void        Request::_process_GET() {
     std::string path;
 	std::string index_path;
 	std::string	root = return_config_info("root");
-	std::cout << "root is " << root << std::endl;
 
 	chdir(root.c_str());
 
     int	auto_index = 0;
     std::string rep = return_config_info("autoindex");
     if (rep.compare("on") == 0)
+	{
         auto_index = 1;
-/*
-    if (header["url"] == "/") {
-//	if (is_a_directory(header["url"].erase(0,1))) {
-        path = return_config_info("index");
-    }
-	else*/
-try {
+	}
 	path = header["url"];
 	if (path[0] == '/') {
         path = path.erase(0,1);
@@ -561,18 +543,14 @@ try {
 			index_path += "/";
 		index_path += return_config_info("index");
 
-		std::cout << "return_config_info returns " << return_config_info("index") << std::endl;
 	}
 
-	std::cout << "index_path is " << index_path << std::endl;
+	//std::cout << "index_path is " << index_path << std::endl;
 
 	if (exists(index_path) && !is_a_directory(index_path))
 		path = index_path;
 	if (path == "")
 		path = ".";
-} catch (std::exception &e) { std::cout << "EXCEPTION CATCHED NIU NIY NIU" << std::endl; };
-
-	std::cout << "path is " << path << std::endl;
 
 //	std::cout << "path is " << path << std::endl;
 	
@@ -723,8 +701,22 @@ void		Request::initialize_mime_types(std::map<std::string, std::string> &mime_ty
 std::string Request::find_url_and_name_from_file(std::string const file_type)
 {
     //std::cout << "FIND URL + NAME FUNCTION BEGIN\n";
-    std::string url_file = header["url"].substr(0, header["url"].size() - 7);
-    std::string file_name = "newfile" + file_type;
+    /*
+        Search if there is a /root in the config file to initialise the url_file and know where the server have to create the file.
+    */
+    std::cout << "URL = [" << header["url"] << "]\n";
+    std::string url_file = return_config_info("root");
+    std::string file_name = header["url"];
+/*
+    DEBUG :
+    std::cout << "url file  11 = [" << url_file << "]\n";
+    std::cout << "file_name 11 = [" << file_name << "]\n";
+*/
+    if (header["method"] != "DELETE")
+    {
+        url_file += file_name + "/";
+        file_name = "newfile" + file_type;
+    }
     //std::cout << "START url  file = [" << url_file << "]\n" << "file name = [" << file_name << "]\n";
 
     /*
@@ -737,31 +729,6 @@ std::string Request::find_url_and_name_from_file(std::string const file_type)
         file_name = header["Content-Disposition"].substr(header["Content-Disposition"].find("filename=") + 10, end_name);
     }
 
-    //std::cout << "111111 url  file = [" << url_file << "]\n" << "file name = [" << file_name << "]\n";
-    /*
-        Search if there is a /root in the config file to initialise the url_file and know where the server have to create the file.
-    */
-   	std::map<std::string, std::string> location_rep;
-	bool ret = getInfo(atoi(header["port"].c_str()), header["url"], &location_rep, find_location);
-	if (ret)
-	{
-		std::cout << "Location successfully find" << std::endl;
-        /*
-            If there is some information at a location from the url, search if there is a /root informations in the config file
-        */
-        std::map<std::string, std::string>::const_iterator it;
-        for (it = location_rep.begin(); it != location_rep.end(); ++it)
-        {
-            //std::cout << "it-first = [" << it->first << "]" << "\n";
-            //std::cout << "it-second = [" << it->second << "]" << "\n";
-            if (it->first.compare("root") == 0)
-            {
-                url_file = it->second + header["url"] + "/";
-                break ;
-            }
-        }
-	}
-
     //std::cout << "END url  file = [" << url_file << "]\n" << "file name = [" << file_name << "]\n";
     return (url_file + file_name);
 }
@@ -773,7 +740,7 @@ std::string Request::find_url_and_name_from_file(std::string const file_type)
 int    Request::create_file(std::string const file_type)
 {
     std::string const nomFichier(find_url_and_name_from_file(file_type));
-    //std::cout << "nomfichier = EGALEEEEEEEEE = [" << nomFichier << "]\n";
+    std::cout << "nomfichier = EGALEEEEEEEEE = [" << nomFichier << "]\n";
     std::ofstream monFlux(nomFichier.c_str());
 
     if(monFlux)
@@ -819,6 +786,8 @@ void    Request::_process_POST()
         }
     }
 
+    std::cout << "header[CONTENT-TYPE] = [" << header["CONTENT-TYPE"] << "]\n";
+
     std::map<std::string, std::string> mime_types;
     std::map<std::string, std::string>::const_iterator it;
 
@@ -841,9 +810,16 @@ void    Request::_process_POST()
     reponse["CONTENT-TYPE"]     = header["CONTENT-TYPE"];
     if (header["url"].substr(header["url"].find_last_of(".") + 1) == "php")
     {
-        // std::string rep = return_config_info("root");
-		Cgi	c(header["url"], this, cgi_head);
-		std::string filestr = c.get_data();
+		std::string path(header["url"]);
+		path = path.erase(0, 1);
+		Cgi	c(path, this, cgi_head);
+
+		http_code("200");
+		reponse["body"] = c.get_data();
+		std::stringstream len;
+		len << reponse["body"].length();
+		reponse["CONTENT-LENGTH"] = len.str();
+    	reponse["CONTENT-TYPE"] = "text/plain; charset=utf-8";
 	
 	}
     else if (create_file(it->first) != SUCCESS)
@@ -873,6 +849,7 @@ void    Request::_process_POST()
 void    Request::_process_DELETE()
 {
     std::string const nomFichier(find_url_and_name_from_file(""));
+    std::cout << "file name : " << nomFichier << std::endl;
     char const *file_to_delete = nomFichier.c_str();
 
     //std::cout << "file to delete = (" << file_to_delete << ")\n";

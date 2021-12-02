@@ -72,6 +72,7 @@ void	Cgi::								complete_the_name_of_script()
 		_script = current_working_directory + _script;
 		free(current_working_directory);
 	}
+	std::cout << "script = " << _script << std::endl;
 }
 
 /**
@@ -113,7 +114,7 @@ void	Cgi::set_env_map(void *ptr_void)
 	_env_map["SCRIPT_NAME"] = _args[1];
 	_env_map["HTTP_RAW_POST_DATA"] = ptr_request->header["body"]; 
 	_env_map["PATH_INFO"] = _pwd + "/usr/bin/php-cgi";
-	_env_map["REQUEST_METHOD"] = "GET";
+	// _env_map["CONTENT_TYPE"] = "application/x-www-form-urlencoded";
 
 /*
 	DEBUG :
@@ -192,23 +193,20 @@ void		Cgi::	exec_Cgi()
 	*/
 	if (pid == 0)
 	{
-		close(pipeFd[TO_READ]);/*closing of read side of pipe because it gonna write*/
+		close(pipeFd[TO_READ]);/*closing read side of pipe because we're only going to write*/
 		dup2(pipeFd[TO_WRITE], 1);  /* connect the write side with stdout */
 
-//			=========>
-		std::cout << "cgi BODY = [" << _cgi_body << "]\n";
-		if (_cgi_body != "")
+		if (_cgi_body.length() > 0)
 		{
-			std::cout << "cgi BODY = [" << _cgi_body << "]\n";
 			int pipe2[2];
 			pipe(pipe2);
 
 			dup2(pipe2[TO_READ], 0);
 
-			write(pipe2[TO_WRITE], _cgi_body.c_str(), _cgi_body.size());
-			close(pipe2[TO_WRITE]); /*closing of read side of pipe because it gonna write*/
+			write(pipe2[TO_WRITE], _cgi_body.c_str(), _cgi_body.length());
+			//write(pipe2[TO_WRITE], "PIPIPIPiPi", 10);
+			close(pipe2[TO_WRITE]); // send EOF
 		}
-//			<=========
 
 		//if (execve(_args[0], _args, _env) == ERROR) 
 		if (execv(_args[0], _args) == ERROR) 
@@ -217,19 +215,21 @@ void		Cgi::	exec_Cgi()
 	}
 	else
 	{
-		std::cout << "cgi PETITIIIs = [" << _cgi_body << "]\n";
+//		std::cout << "cgi PETITIIIs = [" << _cgi_body << "]\n";
 		close(pipeFd[TO_WRITE]);/*closing of write side of pipe because it read*/
 		int ret = wait(&child_status);
 		check_error(ret, "error wait");
 		check_error(child_status, "error execve");
-		// char		c; /* this variable will skim to each character in pipeFd[TO_READ] */
-		char			buf[READ_SIZE];
-		int nb_byte = 0;
-		while ((nb_byte = read(pipeFd[TO_READ], buf, READ_SIZE)) > 0)/*from, here contains in pipeFd[TO_READ] gonna be copy in string "_data"*/
+		std::cout << "execv(" << _args[0] << ", " << _args[1] << ")" << std::endl;
+		char		c; /* this variable will skim to each character in pipeFd[TO_READ] */
+		while (read(pipeFd[TO_READ], &c, 1) > 0)/*from, here contains in pipeFd[TO_READ] gonna be copy in string "_data"*/
 		{
-			buf[nb_byte] = '\0';
-			_data += buf;
+			_data += c; 
 		}
+		/*
+			DEBUG:
+			std::cout << "data ->" << _data << "<-" << std::endl;
+		*/
 	}
 }
 
