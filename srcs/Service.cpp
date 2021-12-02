@@ -195,7 +195,7 @@ void	Service::								handlerServer(size_t &index)
 		}
 		else if ((std::find(vect_socket_client.begin(), vect_socket_client.end(), _pollFds[index].fd)) != vect_socket_client.end())
 		{
-//			std::cout << "=========connexion existing===============" << std::endl;
+			//std::cout << "=========connexion existing===============" << std::endl;
 			_close_connexion = currentServer.handle_existing_connections(&_pollFds[index]); // return true if the connection is closed
 			if (_close_connexion == true)
 			{

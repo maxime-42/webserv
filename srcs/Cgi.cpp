@@ -113,6 +113,7 @@ void	Cgi::set_env_map(void *ptr_void)
 	_env_map["SCRIPT_NAME"] = _args[1];
 	_env_map["HTTP_RAW_POST_DATA"] = ptr_request->header["body"]; 
 	_env_map["PATH_INFO"] = _pwd + "/usr/bin/php-cgi";
+	_env_map["REQUEST_METHOD"] = "GET";
 
 /*
 	DEBUG :
