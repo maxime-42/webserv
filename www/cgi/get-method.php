@@ -1,5 +1,6 @@
 <?php
 
+var_dump($_GET);
 echo $_GET['submit'];
 echo $_GET['firstname'];
 echo $_GET['lastname'];
