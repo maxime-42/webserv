@@ -1,5 +1,9 @@
 <?php
 
+echo $_GET['submit'];
+echo $_GET['firstname'];
+echo $_GET['lastname'];
+
  if ( isset( $_GET['submit'] ) ) { 
     $firstname = $_GET['firstname'];
     $lastname = $_GET['lastname'];

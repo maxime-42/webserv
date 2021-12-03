@@ -799,7 +799,7 @@ void    Request::_process_POST()
             break ;
     }
     // Si on trouve pas le type en question
-    if ((it == mime_types.end()))
+    if ((it == mime_types.end()) && (header["CONTENT-TYPE"] != "application/x-www-form-urlencoded"))
     {
         return http_code("415");
     }

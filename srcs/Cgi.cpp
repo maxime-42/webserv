@@ -111,10 +111,13 @@ void	Cgi::set_env_map(void *ptr_void)
 	Request *ptr_request = (Request *)ptr_void;
 	_env_map["SERVER_PROTOCOL"] = "HTTP/1.1";
 	_env_map["REDIRECT_STATUS"] = "200";
-	_env_map["SCRIPT_NAME"] = _args[1];
+	// _env_map["SCRIPT_NAME"] = _args[1];
+	_env_map["SCRIPT_FILENAME"] = _args[1];
+
 	_env_map["HTTP_RAW_POST_DATA"] = ptr_request->header["body"]; 
 	_env_map["PATH_INFO"] = _pwd + "/usr/bin/php-cgi";
-	// _env_map["CONTENT_TYPE"] = "application/x-www-form-urlencoded";
+	_env_map["CONTENT_TYPE"] = "application/x-www-form-urlencoded";
+	// _env_map["REQUEST_METHOD"] = ptr_request->header["method"];
 
 /*
 	DEBUG :
@@ -191,6 +194,16 @@ void		Cgi::	exec_Cgi()
 		TODO : Actuellement on remplit bien le cgi dans le cadre d'une requete POST avec des args.
 		Mais on pid != 0 donc on rentre pas dans =====> <======
 	*/
+
+	std::cout << "cgi body  = [" << _cgi_body << "]\n";
+	std::cout << "cgi args0 = [" << _args[0] << "]\n";
+	std::cout << "cgi args1 = [" << _args[1] << "]\n";
+
+	for (int i = 0; _env[i] != NULL; i++)
+	{
+		std::cout << "env[" << i << "] = (" << _env[i] << ")\n";
+	}
+
 	if (pid == 0)
 	{
 		close(pipeFd[TO_READ]);/*closing read side of pipe because we're only going to write*/
@@ -228,8 +241,8 @@ void		Cgi::	exec_Cgi()
 		}
 		/*
 			DEBUG:
-			std::cout << "data ->" << _data << "<-" << std::endl;
 		*/
+			std::cout << "\n\ndata\n->" << _data << "<-" << std::endl;
 	}
 }
 
