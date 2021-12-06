@@ -17,9 +17,11 @@ Cgi::Cgi(std::string script, void *ptr_void, std::map<std::string, std::string> 
 	{
 		complete_the_name_of_script();
 		set_args();
-		// print_arg(_args);
+		print_arg(_args);
 		set_env_map(ptr_void);
+		displayDirectionary(_env_map);
 		set_env();
+		print_arg(_env);
 		exec_Cgi();
 		// print_arg(_env);
 		remove_headers(cgi_head);
@@ -28,7 +30,6 @@ Cgi::Cgi(std::string script, void *ptr_void, std::map<std::string, std::string> 
 	{
 		std::cerr << e << '\n';
 	}
-//	std::cout << "data [" << _data << "]" << std::endl;
 	clear_2D_array(_env);
 	clear_2D_array(_args);
 }
@@ -41,6 +42,8 @@ Cgi::Cgi(std::string script, void *ptr_void, std::map<std::string, std::string> 
 void	Cgi::clear_2D_array(char **array)
 {
 	int i = 0;
+	if (array == NULL)
+		return ;
 	while (array[i])
 	{
 		free(array[i]);
@@ -51,9 +54,9 @@ void	Cgi::clear_2D_array(char **array)
 
 /**
  * @brief 
- *	get the current working directory and concatene that to the  _script
+ *	get the current working directory and concatenate that to the  script, it let to have absolute path of script
  *	first add back a slash to the name of "_script"
- *	save the  current working directory given by getcwd
+ *	save the  current working directory given by function getcwd
  *	if neither error   appear then the concatenation going to done between   current working directory and script
  */
 void	Cgi::								complete_the_name_of_script()
@@ -72,20 +75,20 @@ void	Cgi::								complete_the_name_of_script()
 		_script = current_working_directory + _script;
 		free(current_working_directory);
 	}
-	std::cout << "script = " << _script << std::endl;
 }
 
 /**
  * @brief 
- * Set the 2D array it is a char ** _args
- * recover the cgi binary file name and script name, store it in array "_args"
+ * Create a 2D array it is a char ** _args
+ * this 2D array will contain the cgi absolute path  and script absolute path
  * _args meaning argument
  */
-
 void	Cgi::								set_args()
 {
+	
 	 _args = (char**)malloc(sizeof(char *) * (NUMBER_ARGUMENTS + 1));
-	char *name = strdup((char*)_script.c_str());
+	// char *name = strdup((char*)_script.c_str());
+	char *name = strdup("/home/lenox/webserv/www/cgi/post-method.php");
 	char *path =  strdup((char*)_cgi_path.c_str());
 	if (name == NULL)
 		throw("error alloc for name");
@@ -98,38 +101,27 @@ void	Cgi::								set_args()
 
 /**
  * @brief 
- * this function set a set of variable environement in map  
- * @param ptr_void it is a pointer of Request which has  some functions to  values of variable environnement
+ * this function set a set of variable environement in map
+ * @param ptr_void it is a pointer of Request object which has  some functions to values of variable environnement
  */
 void	Cgi::set_env_map(void *ptr_void)
 {
 	/*
 		Set cgi body to empty string to check when we execve to know if there is something to send in STDIN
 	*/
-	_cgi_body = "";
-
+	// _cgi_body = "";
 	Request *ptr_request = (Request *)ptr_void;
-	_env_map["AUTH_TYPE"] = "";
-	_env_map["CONTENT-LENGTH"] = "0";
-	_env_map["GATEWAY_INTERFACE"] = "CGI/1.1";
-	_env_map["HTTP_RAW_POST_DATA"] = ptr_request->header["body"]; 
-	_env_map["PATH_INFO"] = _pwd + "/usr/bin/php-cgi";
+	_env_map["SERVER_PROTOCOL"] = "HTTP/1.1";
+
+	// _env_map["AUTH_TYPE"] = "";
+	// _env_map["CONTENT-LENGTH"] = "0";
+	// _env_map["GATEWAY_INTERFACE"] = "CGI/1.1";
+	// _env_map["RAW_POST_DATA"] = ptr_request->header["body"]; 
 	_env_map["PATH_TRANSLATED"] = _args[0];
-	_env_map["QUERY_STRING"] = "";
 	_env_map["REDIRECT_STATUS"] = "200";
-	_env_map["REQUEST_METHOD"] = ptr_request->header["method"];
 	_env_map["SCRIPT_FILENAME"] = _args[0];
 	_env_map["SCRIPT_NAME"] = _args[1];
 	_env_map["SCRIPT_PORT"] = ptr_request->header["port"];
-	_env_map["SERVER_PROTOCOL"] = "HTTP/1.1";
-
-/*
-	DEBUG :
-	std::cout << "       methode = " << ptr_request->header["method"] << std::endl;
-	std::cout << "       url = " << ptr_request->header["url"] << std::endl;
-	std::cout << "       arg = " << ptr_request->header["args"] << std::endl;
-*/
-
 	if (ptr_request->header["method"] == "GET" && ptr_request->header["args"] != "")
 	{
 		_env_map["QUERY_STRING"] = ptr_request->header["args"];
@@ -137,16 +129,31 @@ void	Cgi::set_env_map(void *ptr_void)
 	}
 	if (ptr_request->header["method"] == "POST")
 	{
-		_env_map["CONTENT-LENGTH"] = ptr_request->header["CONTENT-LENGTH"];
-		_env_map["CONTENT-TYPE"] = ptr_request->header["CONTENT-TYPE"];
+		_env_map["CONTENT_LENGTH"] = ptr_request->header["CONTENT-LENGTH"];
+		_env_map["CONTENT_TYPE"] = ptr_request->header["CONTENT-TYPE"];
 		_cgi_body = ptr_request->header["body"];
+		_env_map["ACCEPT_ENCODING"] = "gzip, deflate, br";
+		_env_map["USER_AGENT"] = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36";
+		_env_map["REFERER"] = "http://localhost:8080/cgi/post-method.php";
+		_env_map["ACCEPT_LANGUAGE"] = "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7";
+		_env_map["ACCEPT"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";
+		_env_map["CACHE_CONTROL"] = "max-age=0";
+		_env_map["ORIGIN"] = "http://localhost:8080";
+		// _env_map["SERVER_SOFTWARE"] = "webserv/0.1.0";
+
+		// _env_map["PATH_INFO"] = "http://localhost:8080/cgi/post-method.php";
+		// _env_map["PRAGMA"] = "no-cache";
+		// _env_map["REQUEST_METHOD"] = ptr_request->header["method"];
+
+
+
 	}
 }
 
 /**
- * @brief 
- * recover the variables environment in _env_map then store them in _env
-* skim the _env map to get each variables,  concatenate value and key with "=" then put the string concat in _env 
+ * @brief
+ * recover the variables environment in map "_env_map" then store them in a char ** _env
+ * skim the map "_env" map to get each variables, concatenate value and key with "=" then put the string concat in _env 
 */
 void	Cgi::set_env()
 {
@@ -158,7 +165,6 @@ void	Cgi::set_env()
 	{
 		std::string var_env = (it->first + "=" + it->second);
 		_env[i] = strdup(var_env.c_str());
-		// _env[i] = strdup((it->first + "=" + it->second).c_str());
 		if (_env[i] == NULL)
 			throw("error happened while mallo in set_env() to cgi");
 		i++;
@@ -178,43 +184,25 @@ void	Cgi::								check_error(int code, const char *error_msg)
 		throw(error_msg);
 }
 
-
-
 /**
- * @brief 
+ * @brief
  * the behind this function is to get the stdout of process child in other file descriptor like pipeFd[TO_READ]
  * it mean there for to write the stdout of process child in  pipeFd[TO_WRITE]
- *	"child_status" gonna have the code of exite child process, if the exit code  is less than zero an error will throw
+ * "child_status" gonna have the code of exite child process, if the exit code  is less than zero an error will throw
  * afterward the contain in pipeFd[TO_READ] will be copy in string "_data"
- * afterward 
  */
 void		Cgi::	exec_Cgi()
 {
  	int			pipeFd[2];
 	int			child_status;
-	
+
 	pipe(pipeFd);
+	std::cout << "cgi body  ==" << _cgi_body << "==\n";
 	int			pid = fork();
-	// check_error(pid, "error cgi fork failed\n");
-	/*
-		TODO : Actuellement on remplit bien le cgi dans le cadre d'une requete POST avec des args.
-		Mais on pid != 0 donc on rentre pas dans =====> <======
-	*/
-
-	std::cout << "cgi body  = [" << _cgi_body << "]\n";
-	std::cout << "cgi args0 = [" << _args[0] << "]\n";
-	std::cout << "cgi args1 = [" << _args[1] << "]\n";
-
-	for (int i = 0; _env[i] != NULL; i++)
-	{
-		std::cout << "env[" << i << "] = (" << _env[i] << ")\n";
-	}
-
 	if (pid == 0)
 	{
 		close(pipeFd[TO_READ]);/*closing read side of pipe because we're only going to write*/
 		dup2(pipeFd[TO_WRITE], 1);  /* connect the write side with stdout */
-
 		if (_cgi_body.length() > 0)
 		{
 			int pipe2[2];
@@ -245,10 +233,32 @@ void		Cgi::	exec_Cgi()
 		{
 			_data += c; 
 		}
-		/*
-			DEBUG:
-		*/
-			std::cout << "\n\ndata\n->" << _data << "<-" << std::endl;
+		// set_data(pipeFd[TO_READ]);
+			std::cout << "\ndata==" << _data << "==" << std::endl;
+	}
+}
+
+/**
+ * @brief Get the data object
+ * std::string contains  data  has recovery through a file descriptor
+ * @return std::string 
+ */
+std::string		Cgi::	get_data() {return (_data);}
+
+/**
+ * @brief Set data
+ * data recovery  inside file descriptor to copy that in string "_data"
+ * _data contains data has recovery through file descriptor
+ * @param fd is the file descriptor where to recovery data
+ */
+void	Cgi::	set_data(int fd)
+{
+	char	buf[READ_SIZE + 1];
+	int		nbByte = 0;
+	while ( (nbByte = read(fd, buf, READ_SIZE)) > 0)/*from, here contains in pipeFd[TO_READ] gonna be copy in string "_data"*/
+	{
+		buf[nbByte] = '\0';
+		_data += buf; 
 	}
 }
 
@@ -283,14 +293,13 @@ void		Cgi::	remove_headers(std::map<std::string, std::string> &cgi_head) {
 
 }
 
-std::string		Cgi::	get_data(){return (_data);}
+
 
 /**
  * @brief Get the query string object
  * this function recovery all variable in _url it meant everything after ? 
  * @return std::string contains all data after ?
  */
-
 std::string		Cgi::	get_query_string()
 {
 	std::string query_string;
@@ -301,3 +310,4 @@ std::string		Cgi::	get_query_string()
 	}
 	return (query_string);
 }
+

@@ -19,7 +19,7 @@
 #include <map>
 #include <sstream>
 #include "utile.hpp"
-#define READ_SIZE 2000
+#define READ_SIZE 1000000
 
 class Cgi
 {
@@ -51,6 +51,7 @@ private:
 	void					clear_2D_array(char **array);
 	void					remove_headers(std::map<std::string, std::string> &cgi_head);
 	void					set_env_map(void *ptr_void);
+	void					set_data(int fd);
 
 public:
 	Cgi(std::string script, void *ptr_void, std::map<std::string, std::string> &reponse);
