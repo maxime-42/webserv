@@ -351,8 +351,9 @@ void        Request::process()
     std::string rep;
 
 	// Reponse["code"] will only exist if the parsing threw an error. Execution stops then
-    if (reponse.find("code") != reponse.end())
+    if (reponse.find("code") != reponse.end()) {
         return ;
+	}
 
 	rep = return_config_info("allow");
     if (header["method"] == "GET" && rep.find("GET") != std::string::npos) {
@@ -527,8 +528,9 @@ void        Request::_process_GET() {
 
     int	auto_index = 0;
     std::string rep = return_config_info("autoindex");
-    if (rep.compare("on") == 0)
+    if (rep.compare("on") == 0) {
         auto_index = 1;
+	}
 
 	path = header["url"];
 	if (path[0] == '/') {
