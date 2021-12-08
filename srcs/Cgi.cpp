@@ -108,7 +108,7 @@ void	Cgi::								set_args()
 	if (path == NULL)
 		throw("error mal for path");
 	_args[0] = path;
-	_args[1] = strdup("./www/cgi/post-method.php");
+	_args[1] = name;
 	_args[2] = NULL;
 }
 
@@ -131,7 +131,6 @@ void	Cgi::set_env_map(void *ptr_void)
 	//_env_map["HTTP_RAW_POST_DATA"] = ptr_request->header["body"];
 	//_env_map["PATH_INFO"] = _pwd + "/usr/bin/php-cgi";
 	_env_map["PATH_TRANSLATED"] = "";//_args[0];
-	_env_map["QUERY_STRING"] = "";
 	_env_map["REDIRECT_STATUS"] = "200";
 	_env_map["REQUEST_METHOD"] = ptr_request->header["method"];
 	_env_map["SCRIPT_FILENAME"] = _args[1];
@@ -204,17 +203,8 @@ void		Cgi::	exec_Cgi()
 {
  	int			pipeFd[2];
 	int			child_status;
-	
-	pipe(pipeFd);
-	int			pid = fork();
-	check_error(pid, "error cgi fork failed\n");
-	/*
-		TODO : Actuellement on remplit bien le cgi dans le cadre d'une requete POST avec des args.
-		Mais on pid != 0 donc on rentre pas dans =====> <======
-	*/
 
-/*
-	DEBUG :
+	///DEBUG :
 	std::cout << "cgi body  = [" << _cgi_body << "]\n";
 
 
@@ -227,35 +217,34 @@ void		Cgi::	exec_Cgi()
 	{
 		std::cout << "env[" << i << "] = (" << _env[i] << ")\n";
 	}
-*/
+
+	
+	pipe(pipeFd);
+	int			pid = fork();
+	check_error(pid, "error cgi fork failed\n");
 
 	if (pid == 0)
 	{
 		close(pipeFd[TO_READ]);/*closing read side of pipe because we're only going to write*/
 		dup2(pipeFd[TO_WRITE], 1);  /* connect the write side with stdout */
 
-		if (_cgi_body.length() > 0)
-		{
+		if (_cgi_body.length() > 0) {
 			int pipe2[2];
 			pipe(pipe2);
 
 			dup2(pipe2[TO_READ], 0);
 
 			write(pipe2[TO_WRITE], _cgi_body.c_str(), 41);
-			//write(pipe2[TO_WRITE], "PIPIPIPiPi", 10);
 			close(pipe2[TO_WRITE]); // send EOF
 		}
 
-		//if (execv(_args[0], _args) == ERROR) 
-		if (execve(_args[0], _args, _env) == ERROR)
-		{
+		if (execve(_args[0], _args, _env) == ERROR) {
 			exit(ERROR);
 		}
 		exit(SUCCESS);
 	}
 	else
 	{
-//		std::cout << "cgi PETITIIIs = [" << _cgi_body << "]\n";
 		close(pipeFd[TO_WRITE]);/*closing of write side of pipe because it read*/
 		int ret = wait(&child_status);
 		check_error(ret, "error wait");
