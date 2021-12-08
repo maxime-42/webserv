@@ -108,7 +108,7 @@ void	Cgi::								set_args()
 	if (path == NULL)
 		throw("error mal for path");
 	_args[0] = path;
-	_args[1] = name;
+	_args[1] = strdup("./www/cgi/post-method.php");
 	_args[2] = NULL;
 }
 
@@ -126,18 +126,21 @@ void	Cgi::set_env_map(void *ptr_void)
 
 	Request *ptr_request = (Request *)ptr_void;
 	_env_map["AUTH_TYPE"] = "";
-	_env_map["CONTENT-LENGTH"] = "0";
+	_env_map["CONTENT_LENGTH"] = "0";
 	_env_map["GATEWAY_INTERFACE"] = "CGI/1.1";
-	_env_map["HTTP_RAW_POST_DATA"] = ptr_request->header["body"]; 
-	_env_map["PATH_INFO"] = _pwd + "/usr/bin/php-cgi";
-	_env_map["PATH_TRANSLATED"] = _args[0];
+	//_env_map["HTTP_RAW_POST_DATA"] = ptr_request->header["body"];
+	//_env_map["PATH_INFO"] = _pwd + "/usr/bin/php-cgi";
+	_env_map["PATH_TRANSLATED"] = "";//_args[0];
 	_env_map["QUERY_STRING"] = "";
 	_env_map["REDIRECT_STATUS"] = "200";
 	_env_map["REQUEST_METHOD"] = ptr_request->header["method"];
-	_env_map["SCRIPT_FILENAME"] = _args[0];
-	_env_map["SCRIPT_NAME"] = _args[1];
+	_env_map["SCRIPT_FILENAME"] = _args[1];
+	//_env_map["SCRIPT_NAME"] = "/cgi/post-method.php";
 	_env_map["SCRIPT_PORT"] = ptr_request->header["port"];
+	_env_map["SERVER_NAME"] = "webserv";
 	_env_map["SERVER_PROTOCOL"] = "HTTP/1.1";
+	//_env_map["SERVER_SOFTWARE"] = "webserv";
+
 
 /*
 	DEBUG :
@@ -153,8 +156,8 @@ void	Cgi::set_env_map(void *ptr_void)
 	}
 	if (ptr_request->header["method"] == "POST")
 	{
-		_env_map["CONTENT-LENGTH"] = ptr_request->header["CONTENT-LENGTH"];
-		_env_map["CONTENT-TYPE"] = ptr_request->header["CONTENT-TYPE"];
+		_env_map["CONTENT_LENGTH"] = ptr_request->header["CONTENT-LENGTH"];
+		_env_map["CONTENT_TYPE"] = ptr_request->header["CONTENT-TYPE"];
 		_cgi_body = ptr_request->header["body"];
 	}
 }
@@ -210,14 +213,21 @@ void		Cgi::	exec_Cgi()
 		Mais on pid != 0 donc on rentre pas dans =====> <======
 	*/
 
+/*
+	DEBUG :
 	std::cout << "cgi body  = [" << _cgi_body << "]\n";
-	std::cout << "cgi args0 = [" << _args[0] << "]\n";
-	std::cout << "cgi args1 = [" << _args[1] << "]\n";
+
+
+	for (int i = 0; _args[i] != NULL; i++)
+	{
+		std::cout << "args[" << i << "] = (" << _args[i] << ")\n";
+	}
 
 	for (int i = 0; _env[i] != NULL; i++)
 	{
 		std::cout << "env[" << i << "] = (" << _env[i] << ")\n";
 	}
+*/
 
 	if (pid == 0)
 	{
@@ -231,14 +241,16 @@ void		Cgi::	exec_Cgi()
 
 			dup2(pipe2[TO_READ], 0);
 
-			write(pipe2[TO_WRITE], _cgi_body.c_str(), _cgi_body.length());
+			write(pipe2[TO_WRITE], _cgi_body.c_str(), 41);
 			//write(pipe2[TO_WRITE], "PIPIPIPiPi", 10);
 			close(pipe2[TO_WRITE]); // send EOF
 		}
 
-		if (execve(_args[0], _args, _env) == ERROR) 
 		//if (execv(_args[0], _args) == ERROR) 
+		if (execve(_args[0], _args, _env) == ERROR)
+		{
 			exit(ERROR);
+		}
 		exit(SUCCESS);
 	}
 	else
