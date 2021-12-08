@@ -64,6 +64,7 @@ private:
 	std::string															_directive_value;
 	std::string															_current_word;
 	bool																_hisLocation;
+	std::string															_pwd;
 
 
 	Parse_config_file();
@@ -82,37 +83,40 @@ public:
 	static	Parse_config_file											&getInstance();
 	static	Parse_config_file 											&getInstance(std::string fileName);
 	static size_t														numberOfServer();
-	static	t_nested_list	&											getList();
-	static	std::map<std::string, std::string> & 						get_globalConfig();
-	static std::vector<int> &											get_ports();
+
 	static std::map<std::string, std::string> & 						get_defaut_config();
 	void																push_front_in_singleList(std::map<std::string, std::string>	&dictionary);
 
 	bool																getErrorHappened();
 	bool																checkIfSecretWord(std::string &pieceOfString);
 
-	std::string															_wsh;
-	size_t																	get_indexConfigFile();
 	~Parse_config_file();
 	void																push_back_dictionary_in_singleList(std::map<std::string, std::string>	&dictionary);
 	void																push_back_in_singleList(std::map<std::string, std::string>	&dictionary);
+	void																checkPort(std::string &str_port);
 
 //////////getter///////
+	static	t_nested_list	&											getList();
+	static	std::map<std::string, std::string> & 						get_globalConfig();
+	static std::vector<int> &											get_ports();
+	size_t																get_indexConfigFile();
+
 	token_type					get_previousToken();
 	std::string					get_directive_name();
 	std::string 				get_directive_value();
-	std::map<std::string, std::string>	get_block_server();
 
-	std::map<std::string, std::string>get_block_location();	
 	int							get_bracket_counter();
 	std::string					get_current_word();
 	std::string					get_configFile();
 	t_single_list				get_singleList();
-	void						handler_location();
-	bool						get_hisLocation();
+	void																handler_location();
+	bool																get_hisLocation();
+	std::map<std::string, std::string>									get_defaut_block_serve();
+	std::map<std::string, std::string>									get_block_server();
+	std::map<std::string, std::string>									get_block_location();	
+	std::string															get_current_directory();
 
 //////////setter///////
-
 	void						set_previousToken(token_type newToken);
 	void						set_directive_name(std::string name);
 	void						set_directive_value(std::string value);
@@ -139,7 +143,6 @@ private:
 
 	std::string					getPieceOfstring(size_t &i);
 	void						hasServer(void);
-	void						checkPort(std::string &str_port);
 
 	/****************those function operare to a specific token********************/
 	void						hasBracketOpen(int &nbParenthese);

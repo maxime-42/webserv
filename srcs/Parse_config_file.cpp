@@ -66,13 +66,13 @@ int	Parse_config_file::										getStartProcess()
 	try
 	{
 		getFile();
-		createKeyWord();
 		_previousToken = initialized;
-		// parsingProcess();
 		_bracket_counter = 0;
 		_previousToken = initialized;
 		_indexConfigFile = 0;
 		_hisLocation = false;
+		set_defaut_config();
+		_block_server = _defautConfig;
 		parse();
 		std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SUCCESSFULLY PARSING<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n" << std::endl;
 	}
@@ -133,6 +133,7 @@ void	Parse_config_file::									set_defaut_config()
 	char *pwd = pwd = getcwd(NULL, 0);
 	if (pwd)
 	{
+		_pwd = pwd;
 		_defautConfig["root"] = pwd;
 		_defautConfig["root"] += "/www";
 		free(pwd);
@@ -284,24 +285,6 @@ void	Parse_config_file:: 									hasValue(std::string &directiveValue, std::str
 	}
 }
 
-void	Parse_config_file::	createKeyWord()
-{
-	_keyWords.push_back("listen");
-	_keyWords.push_back("server_name");
-	_keyWords.push_back("root");
-	_keyWords.push_back("error_page");
-	_keyWords.push_back("autoindex");
-	_keyWords.push_back("client_max_body_size");
-	_keyWords.push_back("index");
-	_keyWords.push_back("allow_methods");
-	_keyWords.push_back("allow");
-	_keyWords.push_back("cgi");
-	_keyWords.push_back("fastcgi_pass");
-	_keyWords.push_back("fastcgi_param");
-	_keyWords.push_back("return");
-	_keyWords.push_back("cgi_pass");
-	_keyWords.push_back("cli_max_size");
-}
 
 bool	is_secret_word(std::string &word)
 {
@@ -473,7 +456,6 @@ void		Parse_config_file::								block_return(std::map<std::string, std::string>
 }
 void	Parse_config_file::									hasServer()
 {
-	// if (_previousToken == initialized || _previousToken == brackets_close)
 	if (_previousToken == initialized || _previousToken == brackets_close || _previousToken == semicolon)
 	{
 		_previousToken = server;
@@ -484,26 +466,6 @@ void	Parse_config_file::									hasServer()
 	}
 }
 
-/*
-**	si (location)
-		cout++
-		tmp = dictionary;
-		dicyionary.clear()
-	....
-	apres ajout du dictionnary dans liste
-	si (tmp.size())
-		dictionary = tmp;
-		tmp.clear()
-
-	si (nb_parenthese == 0)
-		push_front dictionary dans liste
-
-*/
-/*
-**to understand pretty good this function you should glance on the diagram of parsing
-** this function try to identify token, then act to depending token  
-** token is pieceOfString
-*/
 
 /////////////getter////////////////
 token_type	Parse_config_file::	get_previousToken(){return (_previousToken);}
@@ -517,7 +479,8 @@ std::string	Parse_config_file::	get_configFile(){return (_configFile);}
 size_t		Parse_config_file::	get_indexConfigFile(){return (_indexConfigFile);}
 t_single_list	Parse_config_file::get_singleList(){return (_singleList);}
 bool		Parse_config_file:: get_hisLocation(){ return(_hisLocation);}
-
+std::map<std::string, std::string> Parse_config_file::get_defaut_block_serve(){return (_defautConfig);}
+std::string	Parse_config_file::	get_current_directory(){return (_pwd);}
 
 ///////////setter//////////////////////
 void		Parse_config_file::	set_previousToken(token_type newToken){_previousToken = newToken;}
@@ -541,7 +504,30 @@ void				Parse_config_file::	set_globalConfig(std::string directive_name, std::st
 	}
 }
 
-bool				 has_Semicolon(Parse_config_file *ptr)
+static void				not_allow(Parse_config_file *ptr)
+{
+	std::string directive_name = ptr->get_directive_name();
+	std::string directive_value = ptr->get_directive_value();
+	if (directive_name.compare("return") == 0 && ptr->get_hisLocation() == false)
+		throw("error : 'return' outside of block location ");
+	if (directive_name.compare("root") == 0)
+	{
+		std::string current_directory = ptr->get_current_directory();
+		bool ret = is_a_directory(current_directory + directive_value);
+		if (ret == false)
+		{
+			std::cout << "pwd == [" << current_directory << "]" << std::endl;
+			std::cout << "value [" << directive_value << "]" << std::endl;
+			throw("error : 'root' the path should be a existing repository");
+		}
+	}
+	if (directive_name.compare("listen") == 0 )
+		ptr->checkPort(directive_value);
+	if (directive_name.compare("listen") == 0 && ptr->get_hisLocation() == true)
+		throw("error : 'listen' have not be in block laction");
+}
+
+static bool				 has_Semicolon(Parse_config_file *ptr)
 {
 	std::string current_word = ptr->get_current_word();
 	if (current_word.compare(";") == 0)
@@ -549,6 +535,7 @@ bool				 has_Semicolon(Parse_config_file *ptr)
 		token_type previousToken = ptr->get_previousToken();
 		if (previousToken == value)
 		{
+			not_allow(ptr);
 			ptr->set_previousToken(semicolon);
 			if (ptr->get_bracket_counter() == 0)
 				ptr->set_globalConfig(ptr->get_directive_name(), ptr->get_directive_value());
@@ -576,17 +563,11 @@ bool	 									has_Value(Parse_config_file *ptr)
 		std::string current_word = ptr->get_current_word();
 		std::string directiveValue = ptr->get_directive_value();
 		if (previousToken == value)
-		{
-			// directiveValue.append(" ");
 			directiveValue += " " + current_word;
-			// ptr->set_directive_value(directiveValue);
-		}
 		else
 			directiveValue = current_word;
 		ptr->set_directive_value(directiveValue);
 		ptr->set_previousToken(value);
-		// std::cout << "has_Value:\nName == " << ptr->get_directive_name() << "\tdirectiveValue = " << directiveValue << std::endl;
-
 		return (true);
 	}
 	else
@@ -604,7 +585,7 @@ bool 									has_DirectName(Parse_config_file *ptr)
 	{
 		std::string configFile = ptr->get_configFile();
 		int result = !isspace(configFile[ptr->get_indexConfigFile()]);/**/
-		if (result != 0)
+		if (result != 0)/*after a name i should have a space*/
 		{
 			throw("error syntaxe: hasName");
 		}
@@ -621,7 +602,7 @@ bool 									has_DirectName(Parse_config_file *ptr)
 	return (false);
 }
 
-bool										curlOpen(Parse_config_file *ptr)
+bool										curl_bracket_open(Parse_config_file *ptr)
 {
 	std::string word = ptr->get_current_word();
 	if (word.compare("{") == 0)
@@ -651,7 +632,33 @@ void	Parse_config_file::									push_in_neestedList(t_single_list singleList)
 		_serverList.push_back(singleList);
 }
 
-bool										curlClose(Parse_config_file *ptr)
+/**
+ * @brief 
+ * the purpose it is to push server_block or push block_location or liste in neestedlist in linked list
+ * @param ptr 
+ */
+static	void									push_someWhere(Parse_config_file *ptr)
+{
+	std::map <std::string, std::string> block_server = ptr->get_block_server();
+	if (ptr->get_bracket_counter() == 0)
+	{
+		ptr->push_front_in_singleList(block_server);
+		t_single_list singList = ptr->get_singleList();
+		ptr->push_in_neestedList(singList);
+		ptr->set_singleList(t_single_list());
+		std::map <std::string, std::string> defaut_config = ptr->get_defaut_block_serve();
+		ptr->set_block_server(defaut_config);
+	}
+	else if (ptr->get_hisLocation() == true)
+	{
+		std::map <std::string, std::string> block_location = ptr->get_block_location();
+		ptr->push_back_in_singleList(block_location);
+		ptr->set_block_location(std::map <std::string, std::string>());
+		ptr->set_hisLocation(false);
+	}
+}
+
+static bool										curl_bracket_close(Parse_config_file *ptr)
 {
 	std::string word = ptr->get_current_word();
 	if (word.compare("}") == 0)
@@ -661,23 +668,7 @@ bool										curlClose(Parse_config_file *ptr)
 		{
 			int n = ptr->get_bracket_counter();
 			ptr->set_bracket_counter(--n);
-			std::map <std::string, std::string> block_server = ptr->get_block_server();
-			if (ptr->get_bracket_counter() == 0)
-			{
-				ptr->push_front_in_singleList(block_server);
-				t_single_list singList = ptr->get_singleList();
-				ptr->push_in_neestedList(singList);
-				ptr->set_singleList(t_single_list());
-				ptr->set_block_server(std::map <std::string, std::string>());
-			}
-			else if (ptr->get_hisLocation() == true)
-			{
-				std::map <std::string, std::string> block_location = ptr->get_block_location();
-				ptr->push_back_in_singleList(block_location);
-				ptr->set_block_location(std::map <std::string, std::string>());
-				ptr->set_hisLocation(false);
-
-			}
+			push_someWhere(ptr);
 			previousToken = brackets_close;
 			return (true);
 		}
@@ -709,17 +700,16 @@ bool										block_Server(Parse_config_file *ptr)
 	}
 	return (false);
 }
-void		displayDirectionary(std::map<std::string, std::string> &map);
-void							displaySingleList(std::list<std::map < std::string, std::string > > &linkedList);
+void											displaySingleList(std::list<std::map < std::string, std::string > > &linkedList);
 
 
-bool									has_location_block(Parse_config_file *ptr)
+bool											has_location_block(Parse_config_file *ptr)
 {
 	std::string current_word = ptr->get_current_word();
 	if (current_word.compare("location") == 0)
 	{
 		token_type	previousToken = ptr->get_previousToken();
-		if (previousToken == semicolon || previousToken == brackets_open || previousToken == brackets_close)
+		if ((previousToken == semicolon || previousToken == brackets_open || previousToken == brackets_close) && ptr->get_hisLocation() == false)
 		{
 			ptr->set_directive_name(current_word);
 			ptr->set_previousToken(location);
@@ -732,7 +722,6 @@ bool									has_location_block(Parse_config_file *ptr)
 		}
 	}
 	return (false);
-
 }
 
 void	display_neestedList(t_nested_list firstList);
@@ -740,7 +729,7 @@ void	display_neestedList(t_nested_list firstList);
 void													Parse_config_file::parse()
 {
 	bool ret;
-	bool (*ptr_func[SIZE_ARRAY_FUNC])(Parse_config_file *) = {&block_Server, &curlOpen, &curlClose, &has_DirectName, &has_Semicolon, &has_location_block};
+	bool (*ptr_func[SIZE_ARRAY_FUNC])(Parse_config_file *) = {&block_Server, &curl_bracket_open, &curl_bracket_close, &has_DirectName, &has_Semicolon, &has_location_block};
 	for (; _indexConfigFile < _configFile.size();)
 	{
 		if (!isspace(_configFile[_indexConfigFile]))
