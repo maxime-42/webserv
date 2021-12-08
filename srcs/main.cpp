@@ -17,8 +17,8 @@ int	 main(int argc, const char** argv)
 	}
 	else
 	{
-		Service svc;
-		// Parse_config_file &parse = Parse_config_file::getInstance("./configFile/default.conf");
+		// Service svc;
+		Parse_config_file &parse = Parse_config_file::getInstance("./configFile/default.conf");
 		// std::string str;
 		// bool ret = getInfo(8080, "index", &str, find_directive);
 		// if (ret == true)
@@ -29,9 +29,9 @@ int	 main(int argc, const char** argv)
 		// {
 		// 	std::cout << "ECHEC"  << std::endl;
 		// }
-		// 
-		// displayServerTable();
-		// (void)parse;
+		
+		displayServerTable();
+		(void)parse;
 	}
 	(void)argc;
 	(void)argv;
