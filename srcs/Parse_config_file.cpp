@@ -242,7 +242,7 @@ void	Parse_config_file:: hasSemicolon()
 	}
 	else
 	{
-		throw("error syntaxe: insertMap");
+		throw("error syntaxe: hasSemicolon");
 	}
 }
 
@@ -585,6 +585,8 @@ bool	 									has_Value(Parse_config_file *ptr)
 			directiveValue = current_word;
 		ptr->set_directive_value(directiveValue);
 		ptr->set_previousToken(value);
+		// std::cout << "has_Value:\nName == " << ptr->get_directive_name() << "\tdirectiveValue = " << directiveValue << std::endl;
+
 		return (true);
 	}
 	else
@@ -631,6 +633,8 @@ bool										curlOpen(Parse_config_file *ptr)
 			n++;
 			ptr->set_bracket_counter(n);
 			previousToken = brackets_open;
+			if (ptr->get_hisLocation() == true)
+				ptr->set_block_location(ptr->get_directive_name(), ptr->get_directive_value());
 			ptr->set_previousToken(previousToken);
 			return (true);
 		}
@@ -666,12 +670,13 @@ bool										curlClose(Parse_config_file *ptr)
 				ptr->set_singleList(t_single_list());
 				ptr->set_block_server(std::map <std::string, std::string>());
 			}
-			else if (ptr->get_bracket_counter() == 1 && ptr->get_hisLocation() == true)
+			else if (ptr->get_hisLocation() == true)
 			{
 				std::map <std::string, std::string> block_location = ptr->get_block_location();
-				ptr->set_hisLocation(false);
 				ptr->push_back_in_singleList(block_location);
-				std::cout << "keeeeeeeeeeLLLLLLLLL BYYYYYYYYYYYY" << std::endl;
+				ptr->set_block_location(std::map <std::string, std::string>());
+				ptr->set_hisLocation(false);
+
 			}
 			previousToken = brackets_close;
 			return (true);
@@ -707,17 +712,6 @@ bool										block_Server(Parse_config_file *ptr)
 void		displayDirectionary(std::map<std::string, std::string> &map);
 void							displaySingleList(std::list<std::map < std::string, std::string > > &linkedList);
 
-// void						Parse_config_file::handler_location()
-// {
-// 	bool (*ptr_func[SIZE_ARRAY_FUNC])(Parse_config_file *) = {&block_Server, &curlOpen, &curlClose, &has_DirectName, &has_Semicolon};
-// 	while ( _configFile[_indexConfigFile] != '}')
-// 	{
-// 		if (!isspace(_configFile[_indexConfigFile]))
-// 		{
-
-// 		}
-// 	}
-// }
 
 bool									has_location_block(Parse_config_file *ptr)
 {
@@ -727,6 +721,7 @@ bool									has_location_block(Parse_config_file *ptr)
 		token_type	previousToken = ptr->get_previousToken();
 		if (previousToken == semicolon || previousToken == brackets_open || previousToken == brackets_close)
 		{
+			ptr->set_directive_name(current_word);
 			ptr->set_previousToken(location);
 			ptr->set_hisLocation(true);
 			return (true);
@@ -739,6 +734,8 @@ bool									has_location_block(Parse_config_file *ptr)
 	return (false);
 
 }
+
+void	display_neestedList(t_nested_list firstList);
 
 void													Parse_config_file::parse()
 {
@@ -767,8 +764,9 @@ void													Parse_config_file::parse()
 		throw("error syntaxe: missing parenthe");
 	// std::map <std::string, std::string> test = get_block_server();
 	// displayDirectionary(test);
-	std::cout << "======Location===" << std::endl;
-	displayDirectionary(_block_location);
+	// std::cout << "======Location===" << std::endl;
+	// displayDirectionary(_block_location);
 	// displaySingleList(_singleList);
+	display_neestedList(_serverList);
 	
 }

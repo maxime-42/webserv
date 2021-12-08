@@ -30,7 +30,7 @@ int	 main(int argc, const char** argv)
 		// 	std::cout << "ECHEC"  << std::endl;
 		// }
 		
-		displayServerTable();
+		// displayServerTable();
 		(void)parse;
 	}
 	(void)argc;

@@ -60,7 +60,6 @@ private:
 	std::map<std::string, std::string>									_block_location;
 	size_t																_indexConfigFile;
 	int																	_bracket_counter;
-	// int																	_index_file;
 	std::string															_directive_name;
 	std::string															_directive_value;
 	std::string															_current_word;
@@ -80,14 +79,14 @@ private:
 	void 																set_defaut_config();
 
 public:
-	static	Parse_config_file													&getInstance();
-	static	Parse_config_file 												&getInstance(std::string fileName);
+	static	Parse_config_file											&getInstance();
+	static	Parse_config_file 											&getInstance(std::string fileName);
 	static size_t														numberOfServer();
 	static	t_nested_list	&											getList();
 	static	std::map<std::string, std::string> & 						get_globalConfig();
 	static std::vector<int> &											get_ports();
 	static std::map<std::string, std::string> & 						get_defaut_config();
-	void										push_front_in_singleList(std::map<std::string, std::string>	&dictionary);
+	void																push_front_in_singleList(std::map<std::string, std::string>	&dictionary);
 
 	bool																getErrorHappened();
 	bool																checkIfSecretWord(std::string &pieceOfString);
@@ -96,7 +95,7 @@ public:
 	size_t																	get_indexConfigFile();
 	~Parse_config_file();
 	void																push_back_dictionary_in_singleList(std::map<std::string, std::string>	&dictionary);
-	void										push_back_in_singleList(std::map<std::string, std::string>	&dictionary);
+	void																push_back_in_singleList(std::map<std::string, std::string>	&dictionary);
 
 //////////getter///////
 	token_type					get_previousToken();
