@@ -205,7 +205,7 @@ void		Cgi::	exec_Cgi()
 	int			child_status;
 
 	///DEBUG :
-	std::cout << "cgi body  = [" << _cgi_body << "]\n";
+/*	std::cout << "cgi body  = [" << _cgi_body << "]\n";
 
 
 	for (int i = 0; _args[i] != NULL; i++)
@@ -217,7 +217,7 @@ void		Cgi::	exec_Cgi()
 	{
 		std::cout << "env[" << i << "] = (" << _env[i] << ")\n";
 	}
-
+*/
 	
 	pipe(pipeFd);
 	int			pid = fork();
