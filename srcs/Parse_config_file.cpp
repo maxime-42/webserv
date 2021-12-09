@@ -1,8 +1,11 @@
 #include "Parse_config_file.hpp"
 
 /*
-** THIS IS A SINGLETON CLASS : Singleton design pattern is a software design principle that is used to restrict the instantiation of a class to one object
+*THIS IS A SINGLETON CLASS : Singleton design pattern is a software design principle that is used to restrict the instantiation of a class to one object
+* this class  get config file and parse them and store it
 */
+
+
 
  void Parse_config_file:: operator=(Parse_config_file &other) {(void)other;}// Singletons should prevent copy or assign
 
@@ -11,7 +14,7 @@ Parse_config_file ::Parse_config_file  (const Parse_config_file & other) {(void)
 
 static  std::string  s_fileName;
 
-Parse_config_file & Parse_config_file::								getInstance(std::string fileName)
+Parse_config_file & Parse_config_file::							getInstance(std::string fileName)
 {
 	// s_fileName = fileName;
 	static  Parse_config_file  _instance(fileName);
@@ -24,7 +27,7 @@ Parse_config_file & Parse_config_file::								getInstance(std::string fileName)
  * @return Parse_config_file:: 
  */
 
-Parse_config_file::											Parse_config_file(): _fileName("./configFile/default.conf"), _configFile(std::string()), _errorHappened(false)
+Parse_config_file::												Parse_config_file(): _fileName("./configFile/default.conf"), _configFile(std::string()), _errorHappened(false)
 {
 	std::cout << "*******************************\tTAKING \tDEFAULT\t FILE\t***********************" << std::endl;
 
@@ -41,7 +44,7 @@ Parse_config_file::											Parse_config_file(): _fileName("./configFile/defau
  *	this construct it called when given parameter to the program
  * @param fileName the config file
  */
-Parse_config_file::											Parse_config_file(std::string fileName): _fileName(fileName), _configFile(std::string()), _errorHappened(false)
+Parse_config_file::												Parse_config_file(std::string fileName): _fileName(fileName), _configFile(std::string()), _errorHappened(false)
 {
 	s_fileName = fileName;
 	std::cout << "****************GET FILE\tFROM\tPARAMETER****************" << std::endl;
@@ -54,14 +57,13 @@ Parse_config_file::											Parse_config_file(std::string fileName): _fileName
 	}
 }
 
-bool	Parse_config_file::									getErrorHappened(){return (_errorHappened);}
+bool	Parse_config_file::										getErrorHappened(){return (_errorHappened);}
 
 /*
 **	step one 	:	get file in std::string "configFile"
-**	step two 	:	create table of keyword
 **	step three	:	parsing file, file is located in std::string _configFile;
 */
-int	Parse_config_file::										getStartProcess()
+int	Parse_config_file::											getStartProcess()
 {
 	try
 	{
@@ -87,23 +89,23 @@ int	Parse_config_file::										getStartProcess()
 Parse_config_file::~Parse_config_file(){ }
 
 /***************************************************************alll get function ****************************************/
-size_t	Parse_config_file::									numberOfServer()
+size_t	Parse_config_file::										numberOfServer()
 {
 	return (getInstance(s_fileName).interface_numberOfServer());
 }
 
-size_t	Parse_config_file::									interface_numberOfServer()
+size_t	Parse_config_file::										interface_numberOfServer()
 {
 	return (_serverList.size());
 }
 
 
-t_nested_list	&										Parse_config_file:: getList()
+t_nested_list	&												Parse_config_file:: getList()
 {
 	return(getInstance(s_fileName).interface_getList());
 }
 
-t_nested_list	&	Parse_config_file::						interface_getList(){	return(_serverList);}
+t_nested_list	&	Parse_config_file::							interface_getList(){	return(_serverList);}
 
 std::map<std::string, std::string> & Parse_config_file::		get_globalConfig()
 {
@@ -113,14 +115,14 @@ std::map<std::string, std::string> & Parse_config_file::		get_globalConfig()
 std::map<std::string, std::string> & Parse_config_file::		interface_get_globalConfig(){	return (_globalConfig);}
 
 
-std::vector<int> & Parse_config_file:: 						interface_get_ports () {return (_ports);}
+std::vector<int> & Parse_config_file:: 							interface_get_ports () {return (_ports);}
 
-std::vector<int> & Parse_config_file:: 						get_ports () 
+std::vector<int> & Parse_config_file:: 							get_ports () 
 {
 	return (getInstance(s_fileName).interface_get_ports());
 }
 
-void	Parse_config_file::									set_defaut_config()
+void	Parse_config_file::										set_defaut_config()
 {
 	_defautConfig["allow"] = "PUT GET DELETE POST";
 	_defautConfig["listen"] = "8080";
@@ -128,7 +130,7 @@ void	Parse_config_file::									set_defaut_config()
 	_defautConfig["error page"] = " 404 error.html";
 	_defautConfig["server_name"] = "tebi2poney";
 	_defautConfig["index"] = "index.html";
-	// _defautConfig["cgi_pass"] = CGI_PATH;
+	_defautConfig["cgi_pass"] = "/usr/bin/php-cgi";
 	_defautConfig["autoindex"] = "on";
 	char *pwd = pwd = getcwd(NULL, 0);
 	if (pwd)
@@ -142,8 +144,6 @@ void	Parse_config_file::									set_defaut_config()
 }
 
 std::map<std::string, std::string> & Parse_config_file::		get_defaut_config(){return(getInstance(s_fileName).interface_get_defaut_config());}
-// std::map<std::string, std::string> & Parse_config_file::		get_defaut_config(){return(_defautConfig);}
-
 std::map<std::string, std::string> & Parse_config_file:: 		interface_get_defaut_config () {return (_defautConfig);}
 
 /*********************************************************************************OPEN  FILE* *********************************************************************************/
@@ -155,7 +155,7 @@ std::map<std::string, std::string> & Parse_config_file:: 		interface_get_defaut_
  * comment line start with "#"
  * @param line which has  #
  */
-void	Parse_config_file::									handleCommentes(std::string &line)
+void	Parse_config_file::										handleCommentes(std::string &line)
 {
 	size_t  begin = line.find("#");
 	if (begin != std::string::npos)
@@ -166,7 +166,7 @@ void	Parse_config_file::									handleCommentes(std::string &line)
 
 /**
  * @brief Get the File object
- * get file and store it in std::string _configFile
+ * get file and store it in std::string @_configFile
  * get file line by line and then concated each line got previously
  */
 void	Parse_config_file:: getFile()
@@ -191,9 +191,6 @@ void	Parse_config_file:: getFile()
 
 
 /*********************************************************************************ANALYSE SYNTAXE CONFIG FILE*********************************************************************************/
-
-
-
 /**
  * @brief 
  * Returns true if given string in parameter is a number else return false
@@ -215,12 +212,10 @@ bool	 		Parse_config_file::							isNumber(std::string &str)
 	return (true);
 }
 
-
-
 /**
  * @brief 
- * check if the port is a intger
- * if str_port is not a integer in string format throw error
+ * check if the port is a integer
+ * if @str_port is not a integer in string format a error will be  throw  
  * @param str_port port in string format
  */
 void	Parse_config_file:: 									checkPort(std::string &str_port)
@@ -234,7 +229,7 @@ void	Parse_config_file:: 									checkPort(std::string &str_port)
 }
 
 
-static bool	is_secret_word(std::string &word)
+static bool	is_key_word(std::string &word)
 {
 	if (word.compare("listen") == 0)
 		return (true);
@@ -268,19 +263,23 @@ static bool	is_secret_word(std::string &word)
 		return (true);
 	return (false);
 }
-/*
-**	the goal is to get a piece of word inside a string
-**		get a piece of a string, between start and nbCharacterTocopy
-**		this piece came from configFile
-** 		paramter i is index of string _configFile
-** 		i it is increment depending  numbers characters to copy
-*/
+
+/**
+ * @brief Get the Piece Of string object
+ * the goal is to get a word from string this word will be stored in @pieceOfString
+ * this word came from '_configFile'
+ * @_configFile is the config file
+ * @start is the begin of word 
+ * @nbCharacterTocopy number of character to copy from @start
+ * @param i is index of string _configFile 
+ * @return std::string 
+ */
 std::string	Parse_config_file::								getPieceOfstring(size_t &i)
 {
 	size_t	nbCharacterTocopy = 0;
 	size_t start = i;
 
-	if (_configFile[i] == '{' || _configFile[i] == '}' || _configFile[i] == ';')//if { or { or ; is the first character i going to catch that piece Of String
+	if (_configFile[i] == '{' || _configFile[i] == '}' || _configFile[i] == ';')//if { or } or ; is the first character i going to catch that piece Of String
 	{
 		i++;
 		nbCharacterTocopy++;
@@ -298,20 +297,6 @@ std::string	Parse_config_file::								getPieceOfstring(size_t &i)
 }
 
 
-/*
-** check if given string in paramter of function is secret word
-** secret word is inside vector _keyWords
-*/
-bool	Parse_config_file::									checkIfSecretWord(std::string &pieceOfString)
-{
-	int resultCompar = -1;
-
-	for (size_t j = 0; j < _keyWords.size()&& resultCompar != 0 ; j++)
-	{
-		resultCompar = _keyWords[j].compare(pieceOfString);
-	}
-	return (resultCompar == 0 ? true : false);
-}
 
 void	Parse_config_file::									push_front_in_singleList(std::map<std::string, std::string>	&dictionary)
 {
@@ -406,7 +391,7 @@ static void				not_allow(Parse_config_file *ptr)
 	if (directive_name.compare("root") == 0)
 	{
 		std::string current_directory = ptr->get_current_directory();
-		std::cout << "current_directory == [" << current_directory << "]" << std::endl;
+		std::cout << "current_directory == [" << current_directory << "]\received == [" << directive_value << "]" << std::endl;
 		bool ret = is_a_directory(directive_value);
 		if (ret == false)
 		{
@@ -490,7 +475,7 @@ static bool	 									has_Value(Parse_config_file *ptr)
 static bool 									has_DirectName(Parse_config_file *ptr)
 {
 	std::string current_word = ptr->get_current_word();
-	if (is_secret_word(current_word) == true)
+	if (is_key_word(current_word) == true)
 	{
 		std::string configFile = ptr->get_configFile();
 		int result = !isspace(configFile[ptr->get_indexConfigFile()]);/**/
@@ -651,7 +636,7 @@ static bool										block_Server(Parse_config_file *ptr)
  * @return true if the function match with the current_word
  * @return false if the function does not match with the current_word
  */
-static bool											has_location_block(Parse_config_file *ptr)
+static bool													has_location_block(Parse_config_file *ptr)
 {
 	std::string current_word = ptr->get_current_word();
 	if (current_word.compare("location") == 0)
@@ -672,7 +657,7 @@ static bool											has_location_block(Parse_config_file *ptr)
 	return (false);
 }
 
-void	display_neestedList(t_nested_list firstList);
+void											display_neestedList(t_nested_list firstList);
 void											displaySingleList(std::list<std::map < std::string, std::string > > &linkedList);
 
 /**
@@ -705,12 +690,7 @@ void													Parse_config_file::parse()
  			_indexConfigFile++;
 	}
 	if (get_bracket_counter() != 0 )
-		throw("error syntaxe: missing parenthe");
-	// std::map <std::string, std::string> test = get_block_server();
-	// displayDirectionary(test);
-	// std::cout << "======Location===" << std::endl;
-	// displayDirectionary(_block_location);
-	// displaySingleList(_singleList);
+		throw("error syntaxe: missing parenthese");
 	display_neestedList(_serverList);
 	
 }
