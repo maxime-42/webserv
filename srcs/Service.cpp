@@ -228,16 +228,14 @@ void	Service::								handlerServer(size_t &index)
 void											handle_signal(int sig)
 {
 	std::cout << "Caught signal number = " << sig << std::endl;
-	throw("stoooped by CTRL-C");
-
 }
 
 /**
  * @brief 
  * this is the loop of program
- * signale let to catch when a signal and stopping the prograù
+ * function "signal" let to catch when a signal and stopping the program
  * function poll expect a event occurs
- * the loop for skim the array of poll to check if there a file descriptore has event
+ * the loop "for" skim the array of poll to check if there a file descriptore has event
  * "handlerServer" it called only if an event happened to one of file descriptor of array poll 
  * _pollFds[index].revents == 0 if  there are none event
  */
@@ -261,7 +259,7 @@ void	Service::								runService()
 				//std::cout << "==========_pollFds[index].fd = " << _pollFds[index].fd << " index = " << index << "===========" << std::endl;
 				if (_pollFds[index].revents == NONE_EVENT)//loop as long the are not event happened
 					continue;
-				handlerServer(index);// like event happened go to handler this
+				handlerServer(index);// like event happened go to handler the file descriptor of this
 			}
 		}
 		squeeze_tab_poll();

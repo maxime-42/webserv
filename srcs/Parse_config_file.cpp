@@ -234,59 +234,7 @@ void	Parse_config_file:: 									checkPort(std::string &str_port)
 }
 
 
-
-void	Parse_config_file:: hasSemicolon()
-{
-	if (_previousToken == value)
-	{
-		_previousToken = semicolon;
-	}
-	else
-	{
-		throw("error syntaxe: hasSemicolon");
-	}
-}
-
-void	Parse_config_file:: 									hasName(std::string &directiveName, std::string & pieceOfString, size_t i)
-{
-	int result = 0;
-	result = !isspace(_configFile[i]);
-	if (result != 0)
-	{
-		throw("error syntaxe: hasName");
-	}
-	// if (_previousToken == semicolon || _previousToken == brackets_open || _previousToken == brackets_close)
-	if (_previousToken == semicolon || _previousToken == brackets_open || _previousToken == brackets_close || _previousToken == initialized)
-	{
-		directiveName = pieceOfString;
-		_previousToken = name;
-	}
-	else
-		throw("error syntaxe: hasName");
-
-}
-
-void	Parse_config_file:: 									hasValue(std::string &directiveValue, std::string & pieceOfString)
-{
-	if (_previousToken == name || _previousToken == location || _previousToken == value)
-	{
-		if (_previousToken == value)
-		{
-			directiveValue.append(" ");
-			directiveValue += pieceOfString;
-		}
-		else
-				directiveValue = pieceOfString;
-		_previousToken = value;
-	}
-	else
-	{
-		throw("error syntaxe: hasValue");
-	}
-}
-
-
-bool	is_secret_word(std::string &word)
+static bool	is_secret_word(std::string &word)
 {
 	if (word.compare("listen") == 0)
 		return (true);
@@ -350,45 +298,6 @@ std::string	Parse_config_file::								getPieceOfstring(size_t &i)
 }
 
 
-void	Parse_config_file::									hasLocation(std::string &directiveName, std::string & pieceOfString)
-{
-	if (_previousToken == semicolon || _previousToken == brackets_open || _previousToken == brackets_close)
-	{
-		_previousToken = location;
-		directiveName = pieceOfString;
-	}
-	else
-	{
-		throw("Syntaxe error : hasLocation");
-	}
-}
-
-void	Parse_config_file::									hasBracketOpen(int &nbParenthese)
-{
-	if ( _previousToken == server || _previousToken == location || _previousToken == value)
-	{
-		nbParenthese++;
-		_previousToken = brackets_open;
-	}
-	else
-	{
-		throw("Syntaxe error : Server expected open bracket");
-	}
-}
-
-void	Parse_config_file::									hasBracketClose(int &nbParenthese)
-{
-	if ( _previousToken == semicolon || _previousToken == brackets_close || _previousToken == brackets_open)
-	{
-		nbParenthese--;
-		_previousToken = brackets_close;
-	}
-	else
-	{
-		throw("Syntaxe error :  HasBracketClose");
-	}
-}
-
 /*
 ** check if given string in paramter of function is secret word
 ** secret word is inside vector _keyWords
@@ -420,40 +329,6 @@ void	Parse_config_file::									push_back_in_singleList(std::map<std::string, s
 	}
 }
 
-void		verify_the_path(std::string path)
-{
-	bool ret = is_a_directory(path);
-	if (ret == false)
-	{
-		std::cout << "paht = [" << path <<"]" << std::endl;
-		throw("error : root have to be a existing directory");
-	}
-}
-
-/*
-** this function insert name and value in dictionary
-** afterward initialize  name and value
-*/
-void	Parse_config_file::									insertInDictionary(std::map<std::string, std::string>	&dictionary, std::string &directiveName, std::string &directiveValue)
-{
-	if (directiveName.compare("root") == 0)
-	{
-		verify_the_path(directiveValue);
-	}
-	dictionary[directiveName] = directiveValue;
-	directiveName = std::string();
-	directiveValue = std::string();	
-}
-
-void		Parse_config_file::								block_return(std::map<std::string, std::string>	&dictionary)
-{
-	std::map < std::string, std::string >::iterator itr_dictionary;
-	itr_dictionary = dictionary.find("return");
-	if (itr_dictionary != dictionary.end())
-	{
-		throw("error return");
-	}
-}
 void	Parse_config_file::									hasServer()
 {
 	if (_previousToken == initialized || _previousToken == brackets_close || _previousToken == semicolon)
@@ -495,6 +370,14 @@ void		Parse_config_file::	set_current_word(std::string word){_current_word = wor
 void		Parse_config_file::	set_singleList(t_single_list singleList){_singleList = singleList;}
 void		Parse_config_file:: set_hisLocation(bool state){_hisLocation = state;}
 
+/**
+ * @brief Set the globalConfig object
+ * this function it called when a directive is found out of a block
+ * this directive will be stored in special map called "_globalConfig" 
+ * _globalConfig[directive_name] = directive_value
+ * @param directive_name is the name value of map "_globalConfig" 
+ * @param directive_value is the value of map "_globalConfig" 
+ */
 void				Parse_config_file::	set_globalConfig(std::string directive_name, std::string directive_value)
 {
 	int bracket_counter = get_bracket_counter();
@@ -504,6 +387,16 @@ void				Parse_config_file::	set_globalConfig(std::string directive_name, std::st
 	}
 }
 
+/**
+ * @brief 
+ * this function insure some condition are respect:
+ * conditions at respect:
+ * 		1 "return" have to be in block location
+ *		1 "root" is an absolute path which is existing
+ *		2 the port have to be a  number and have not there in block location
+ * if one of them is not respect, a error throw  will happen
+ * @param ptr pointer to the class object let to access to some function
+ */
 static void				not_allow(Parse_config_file *ptr)
 {
 	std::string directive_name = ptr->get_directive_name();
@@ -513,20 +406,31 @@ static void				not_allow(Parse_config_file *ptr)
 	if (directive_name.compare("root") == 0)
 	{
 		std::string current_directory = ptr->get_current_directory();
-		bool ret = is_a_directory(current_directory + directive_value);
+		std::cout << "current_directory == [" << current_directory << "]" << std::endl;
+		bool ret = is_a_directory(directive_value);
 		if (ret == false)
 		{
-			std::cout << "pwd == [" << current_directory << "]" << std::endl;
-			std::cout << "value [" << directive_value << "]" << std::endl;
-			throw("error : 'root' the path should be a existing repository");
+			throw("error : 'root' the path have to be a existing repository");
 		}
 	}
 	if (directive_name.compare("listen") == 0 )
 		ptr->checkPort(directive_value);
 	if (directive_name.compare("listen") == 0 && ptr->get_hisLocation() == true)
 		throw("error : 'listen' have not be in block laction");
+	if (directive_name.compare("autoindex") == 0 && directive_value.compare("off") != 0 && directive_value.compare("on") != 0)
+		throw("error : 'autoindex' have not be 'off' or 'on' ");
 }
 
+/**
+ * @brief 
+ * semicolon mean it the endline, 
+ * at this step it necessary to insert directive_name and directive_value inside a map (block server or bock location or global config)
+ * the stake is to know in which map the data will be store
+ * through some condition let to know what map to select to store data (directive_name and directive_value)
+ * @param ptr pointer to the class object let to access to some function
+ * @return true if the function match with the current_word
+ * @return false if the function does not match with the current_word
+ */
 static bool				 has_Semicolon(Parse_config_file *ptr)
 {
 	std::string current_word = ptr->get_current_word();
@@ -535,27 +439,23 @@ static bool				 has_Semicolon(Parse_config_file *ptr)
 		token_type previousToken = ptr->get_previousToken();
 		if (previousToken == value)
 		{
-			not_allow(ptr);
+			not_allow(ptr);/*check authorization on some directive name or directive value*/
 			ptr->set_previousToken(semicolon);
-			if (ptr->get_bracket_counter() == 0)
-				ptr->set_globalConfig(ptr->get_directive_name(), ptr->get_directive_value());
-			else if (ptr->get_bracket_counter() == 2 && ptr->get_hisLocation() == true)
-			{
-				ptr->set_block_location(ptr->get_directive_name(), ptr->get_directive_value());//test
-			}
+			if (ptr->get_bracket_counter() == 0)/*were outside block server the data will be store in global config*/
+				ptr->set_globalConfig(ptr->get_directive_name(), ptr->get_directive_value());/*go head to store data in global config*/
+			else if (ptr->get_hisLocation() == true)/* if where are in block location*/
+				ptr->set_block_location(ptr->get_directive_name(), ptr->get_directive_value());/*go head to store data block location*/
 			else
-				ptr->set_block_server(ptr->get_directive_name(), ptr->get_directive_value());
+				ptr->set_block_server(ptr->get_directive_name(), ptr->get_directive_value());/*we are in server block   the data will store there*/
 			return (true);
 		}
 		else
-		{
 			throw("error syntaxe: insertMap");
-		}
 	}
 	return (false);
 }
 
-bool	 									has_Value(Parse_config_file *ptr)
+static bool	 									has_Value(Parse_config_file *ptr)
 {
 	token_type previousToken = ptr->get_previousToken();
 	if (previousToken == name || previousToken == location || previousToken == value)
@@ -578,7 +478,16 @@ bool	 									has_Value(Parse_config_file *ptr)
 	return (false);
 }
 
-bool 									has_DirectName(Parse_config_file *ptr)
+/**
+ * @brief 
+ *this function try to identify if the 'current_word' it is a keyword then it check the rule of layout
+ *the rule  layout of configle  is explain in pdf schema go to take a look
+ * the 'current_word' is a key word it will be copy at directive_name
+ * @param ptr pointer to the class object let to access to some function
+ * @return true if the function match with the current_word
+ * @return false if the function does not match with the current_word
+ */
+static bool 									has_DirectName(Parse_config_file *ptr)
 {
 	std::string current_word = ptr->get_current_word();
 	if (is_secret_word(current_word) == true)
@@ -587,25 +496,34 @@ bool 									has_DirectName(Parse_config_file *ptr)
 		int result = !isspace(configFile[ptr->get_indexConfigFile()]);/**/
 		if (result != 0)/*after a name i should have a space*/
 		{
-			throw("error syntaxe: hasName");
+			throw("error syntaxe: a directive name have to seperate with a space");
 		}
 		token_type previousToken = ptr->get_previousToken();
-		if (previousToken == semicolon || previousToken == brackets_open || previousToken == brackets_close || previousToken == initialized)
+		if (previousToken == semicolon || previousToken == brackets_open || previousToken == brackets_close || previousToken == initialized)//the rule of layout of config file
 		{
 			ptr->set_directive_name(current_word);
 			ptr->set_previousToken(name);
 			return (true);
 		}
 		else
-			throw("error syntaxe: hasName");
+			throw("error syntaxe: something go wrong with directive name");
 	}
 	return (false);
 }
 
-bool										curl_bracket_open(Parse_config_file *ptr)
+/**
+ * @brief 
+ * if the current word is '{' the the rule  layout of config file will be apply.
+ * if we are are at 'block location' it be necessary to add directive name and directive value in map 'block location'  
+ * the rule  layout of configle  is explain in pdf schema go to take a look
+ * @param ptr pointer to the class object let to access to some function
+ * @return true if the function match with the current_word
+ * @return false if the function does not match with the current_word
+ */
+static bool										curl_bracket_open(Parse_config_file *ptr)
 {
-	std::string word = ptr->get_current_word();
-	if (word.compare("{") == 0)
+	std::string current_word = ptr->get_current_word();
+	if (current_word.compare("{") == 0)
 	{
 		token_type previousToken = ptr->get_previousToken();
 		if (previousToken == server || previousToken == location || previousToken == value)
@@ -633,14 +551,22 @@ void	Parse_config_file::									push_in_neestedList(t_single_list singleList)
 }
 
 /**
- * @brief 
- * the purpose it is to push server_block or push block_location or liste in neestedlist in linked list
- * @param ptr 
+ * @brief
+ * the stake it is to push server_block or push block_location or linked list
+ * if we are out side of any block :
+ * 		->push front 'block server' in linked list then push this linked list in other linked list (neestedList)
+ * 		->then initialize 'block server' and single linked list  with default value
+ * 
+ * else if we coming out location block
+ * 		->push back 'block_location' in linked list
+ * 		->then initialize 'block server' with default value 
+ * 
+ * @param ptr pointer to the class object let to access to some function
  */
 static	void									push_someWhere(Parse_config_file *ptr)
 {
 	std::map <std::string, std::string> block_server = ptr->get_block_server();
-	if (ptr->get_bracket_counter() == 0)
+	if (ptr->get_bracket_counter() == 0)/*out side of any block */
 	{
 		ptr->push_front_in_singleList(block_server);
 		t_single_list singList = ptr->get_singleList();
@@ -658,6 +584,14 @@ static	void									push_someWhere(Parse_config_file *ptr)
 	}
 }
 
+/**
+ * @brief 
+ *	if the current word is '}' the the rule  layout of config file will be apply.
+ * when the curl bracket closed it is necessary to push somthing 
+ * @param ptr pointer to the class object let to access to some function
+ * @return true if the function match with the current_word
+ * @return false if the function does not match with the current_word
+ */
 static bool										curl_bracket_close(Parse_config_file *ptr)
 {
 	std::string word = ptr->get_current_word();
@@ -680,8 +614,15 @@ static bool										curl_bracket_close(Parse_config_file *ptr)
 	return (false);
 }
 
-
-bool										block_Server(Parse_config_file *ptr)
+/**
+ * @brief 
+ *  *	if the current word is 'server' the the rule  layout of config file will be apply.
+ * the server block in config file have own map called 'block_server' it going to store all directives of a server
+ * @param ptr pointer to the class object let to access to some function
+ * @return true if the function match with the current_word
+ * @return false if the function does not match with the current_word
+ */
+static bool										block_Server(Parse_config_file *ptr)
 {
 	std::string word = ptr->get_current_word();
 	if (word.compare("server") == 0)
@@ -700,10 +641,17 @@ bool										block_Server(Parse_config_file *ptr)
 	}
 	return (false);
 }
-void											displaySingleList(std::list<std::map < std::string, std::string > > &linkedList);
 
 
-bool											has_location_block(Parse_config_file *ptr)
+/**
+ * @brief 
+ *  if the current word is 'location' the the rule  layout of config file will be apply.
+ * the location block in config file have own map called 'block_location' it going to store all directives of a location
+ * @param ptr pointer to the class object let to access to some function
+ * @return true if the function match with the current_word
+ * @return false if the function does not match with the current_word
+ */
+static bool											has_location_block(Parse_config_file *ptr)
 {
 	std::string current_word = ptr->get_current_word();
 	if (current_word.compare("location") == 0)
@@ -725,7 +673,14 @@ bool											has_location_block(Parse_config_file *ptr)
 }
 
 void	display_neestedList(t_nested_list firstList);
+void											displaySingleList(std::list<std::map < std::string, std::string > > &linkedList);
 
+/**
+ * @brief 
+ * skim the config file by getting word by word (_current_word)
+ * the each function of array 'ptr_func' going try to identify the _current_word
+ * if the function identify  '_current_word' 'ret' will be equal to true otherwise false
+ */
 void													Parse_config_file::parse()
 {
 	bool ret;
