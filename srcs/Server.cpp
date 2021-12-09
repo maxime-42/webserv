@@ -80,9 +80,11 @@ int		Server:: 						receive_data(struct pollfd	*ptr_tab_poll)
 		_close_connexion = true;
 		return(ret);
 	}
+/*
 	std::cout << "\n\n" << "===============   "  << ret << " BYTES  RECEIVED   ===============\n";
    	write(1, _buffer, ret);
 	std::cout << "\n======================================================" << std::endl;
+*/
 	return (ret);	
 }
 
@@ -144,7 +146,7 @@ void	Server::						accept_all_incoming_connections()
 		else
 		{
 			_sockect_clients.push_back(new_sockect);//add new socket in vector socket, it has all  client of own port
-			std::cout << "new incoming connection new_sockect = " << new_sockect << std::endl;
+			//std::cout << "new incoming connection new_sockect = " << new_sockect << std::endl;
 		}
 	}
 }

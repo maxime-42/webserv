@@ -111,17 +111,22 @@ void	Cgi::set_env_map(void *ptr_void)
 	*/
 	// _cgi_body = "";
 	Request *ptr_request = (Request *)ptr_void;
-	_env_map["SERVER_PROTOCOL"] = "HTTP/1.1";
-
-	// _env_map["AUTH_TYPE"] = "";
-	// _env_map["CONTENT-LENGTH"] = "0";
-	// _env_map["GATEWAY_INTERFACE"] = "CGI/1.1";
-	// _env_map["RAW_POST_DATA"] = ptr_request->header["body"]; 
-	_env_map["PATH_TRANSLATED"] = _args[0];
+	_env_map["AUTH_TYPE"] = "";
+	_env_map["CONTENT_LENGTH"] = "0";
+	_env_map["GATEWAY_INTERFACE"] = "CGI/1.1";
+	//_env_map["HTTP_RAW_POST_DATA"] = ptr_request->header["body"];
+	//_env_map["PATH_INFO"] = _pwd + "/usr/bin/php-cgi";
+	_env_map["PATH_TRANSLATED"] = "";//_args[0];
 	_env_map["REDIRECT_STATUS"] = "200";
-	_env_map["SCRIPT_FILENAME"] = _args[0];
-	_env_map["SCRIPT_NAME"] = _args[1];
+	_env_map["REQUEST_METHOD"] = ptr_request->header["method"];
+	_env_map["SCRIPT_FILENAME"] = _args[1];
+	//_env_map["SCRIPT_NAME"] = "/cgi/post-method.php";
 	_env_map["SCRIPT_PORT"] = ptr_request->header["port"];
+	_env_map["SERVER_NAME"] = "webserv";
+	_env_map["SERVER_PROTOCOL"] = "HTTP/1.1";
+	//_env_map["SERVER_SOFTWARE"] = "webserv";
+
+
 	if (ptr_request->header["method"] == "GET" && ptr_request->header["args"] != "")
 	{
 		_env_map["QUERY_STRING"] = ptr_request->header["args"];
@@ -199,35 +204,34 @@ void		Cgi::	exec_Cgi()
 	pipe(pipeFd);
 	std::cout << "cgi body  ==" << _cgi_body << "==\n";
 	int			pid = fork();
+	check_error(pid, "error cgi fork failed\n");
+
 	if (pid == 0)
 	{
 		close(pipeFd[TO_READ]);/*closing read side of pipe because we're only going to write*/
 		dup2(pipeFd[TO_WRITE], 1);  /* connect the write side with stdout */
-		if (_cgi_body.length() > 0)
-		{
+
+		if (_cgi_body.length() > 0) {
 			int pipe2[2];
 			pipe(pipe2);
 
 			dup2(pipe2[TO_READ], 0);
 
-			write(pipe2[TO_WRITE], _cgi_body.c_str(), _cgi_body.length());
-			//write(pipe2[TO_WRITE], "PIPIPIPiPi", 10);
+			write(pipe2[TO_WRITE], _cgi_body.c_str(), 41);
 			close(pipe2[TO_WRITE]); // send EOF
 		}
 
-		if (execve(_args[0], _args, _env) == ERROR) 
-		//if (execv(_args[0], _args) == ERROR) 
+		if (execve(_args[0], _args, _env) == ERROR) {
 			exit(ERROR);
+		}
 		exit(SUCCESS);
 	}
 	else
 	{
-//		std::cout << "cgi PETITIIIs = [" << _cgi_body << "]\n";
 		close(pipeFd[TO_WRITE]);/*closing of write side of pipe because it read*/
 		int ret = wait(&child_status);
 		check_error(ret, "error wait");
 		check_error(child_status, "error execve");
-		std::cout << "execv(" << _args[0] << ", " << _args[1] << ")" << std::endl;
 		char		c; /* this variable will skim to each character in pipeFd[TO_READ] */
 		while (read(pipeFd[TO_READ], &c, 1) > 0)/*from, here contains in pipeFd[TO_READ] gonna be copy in string "_data"*/
 		{
@@ -284,9 +288,6 @@ void		Cgi::	remove_headers(std::map<std::string, std::string> &cgi_head) {
 		value = header.substr(pos2 + 2, pos - pos2 - 2);
 
 		cgi_head[key] = value;
-
-//		std::cout << "key: " << key << "<-" << std::endl;
-//		std::cout << "value: " << value << "<-" << std::endl;
 
 		header.erase(0, pos + 2);
 	}
