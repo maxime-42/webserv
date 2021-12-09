@@ -400,6 +400,9 @@ void		Request::compose_reponse(struct pollfd *ptr_tab_poll)
 
     std::string reply = reponse["http_version"] + " " + reponse["code"] + " " + reponse["status"] + "\n";
 	
+	if (reponse.find("LOCATION") != reponse.end())
+		reply.append("Location: " + reponse["LOCATION"] + "\n");
+
 	reply.append("Date: " + time_to_string() + " \n");
 	reply.append("Server: Webserv/1.0 (Unix)\n");
 
@@ -423,8 +426,8 @@ void		Request::compose_reponse(struct pollfd *ptr_tab_poll)
 				content_type = true;
 		}
 		if (!content_type)
-	        reply.append("Content-Type: " + reponse["CONTENT-TYPE"] + " \n");
-        reply.append("Content-Length: " + reponse["CONTENT-LENGTH"] + " \n");
+	        reply.append("Content-Type: " + reponse["CONTENT-TYPE"] + "\n");
+        reply.append("Content-Length: " + reponse["CONTENT-LENGTH"] + "\n");
 
 		reply.append("Connection: Closed\n");
         reply.append("\n");
@@ -523,6 +526,21 @@ void        Request::_process_GET() {
     std::string path;
 	std::string index_path;
 	std::string	root = return_config_info("root");
+	std::string redir = return_config_info("return");
+
+	if (redir != "") {
+
+		size_t pos = redir.find(" ");
+		std::string code = redir.substr(0, pos);
+		std::string url = redir.substr(pos + 1, std::string::npos);
+
+    	reponse["LOCATION"] = url;
+		std::stringstream content_len;
+		content_len	<< url.length();
+    	reponse["CONTENT-LENGTH"] = content_len.str();
+	    reponse["CONTENT-TYPE"] = "text/html; charset=utf-8";
+    	return http_code(code);
+	}
 
 	chdir(root.c_str());
 
@@ -933,7 +951,7 @@ void	Request::http_code(std::string http_code)
 		header["url"] = "/error_page/error_page_" + http_code + ".html";
 		_process_GET();
 	}
-	else {
+	else if (int_code >= 400) {
 		reponse["body"] = "<h1>" + http_code + " " +  http[http_code] + "</h1>";
 		s << reponse["body"].length();
 		reponse["CONTENT-LENGTH"] = std::string(s.str());
