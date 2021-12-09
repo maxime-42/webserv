@@ -67,7 +67,6 @@ int	ParsingFile::										getStartProcess()
 		createKeyWord();
 		_previousToken = initialized;
 		parsingProcess();
-		std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SUCCESSFULLY PARSING<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n" << std::endl;
 	}
 	catch(char const *  msg_error)
 	{

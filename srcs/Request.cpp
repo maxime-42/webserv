@@ -74,9 +74,6 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
     std::string key;
     std::string val;
 
-//	std::cout << "RAW REQUEST" << std::endl << std::endl;
-//	std::cout << request_str << std::endl << std::endl;
-
 	header.clear();
     reponse.clear();
 	g_request[ptr_tab_poll->fd].clear();
@@ -143,11 +140,9 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
        */
     while (request_str.size() > 0)
     {
-        //std::cout << "str = [" << request_str << "]\n";
-
         /*
            When we have a body in the request, the body is separate from the informations thanks to 13 then 10 ascii char.
-           */
+        */
         if ((request_str.size() > 2) && (request_str.at(0) == 13) && (request_str.at(1) == '\n')) //at(0) == 13; at(1) == '\n' because a new line split the header from the body
         {
 			request_str.erase(0, 2); // erase the 13 char ascii then the '\n'.
@@ -158,17 +153,10 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
             {
                 if (header["CONTENT-TYPE"].size() > 0)
                 {
-//                    std::cout << "header[CONTENT-TYPE] = [" << header["CONTENT-TYPE"] << "]\n";
-
-                    std::size_t found = header["CONTENT-TYPE"].find("BOUNDARY=");
+                    std::size_t found = header["CONTENT-TYPE"].find("boundary=");
                     if (found != std::string::npos)
                     {
-                        bound = header["CONTENT-TYPE"].substr(header["CONTENT-TYPE"].find("BOUNDARY=") + 9);
-                        /*
-                            DEBUG:
-                        std::cout << "BOUND = [" << bound << "]\n";
-                        std::cout << "body = [" << request_str << "]\n";
-                        */
+                        bound = header["CONTENT-TYPE"].substr(header["CONTENT-TYPE"].find("boundary=") + 9);
                     }
                 }
                 if (request_str.find(bound) < 3)
@@ -215,8 +203,8 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
             {
                 if (request_str.find(bound) != std::string::npos)
                 {
-                    begin_key = request_str.find(bound);
-                	header["body"] = request_str.substr(0, begin_key - 3);
+                    begin_key = (int)request_str.find(bound);
+                	header["body"] = request_str.erase(begin_key - 5); // -5 because there is those 5 char "'\13''\n''-''-''\n'"
                     request_str.erase(0, request_str.size()); //+ 1 for the '\n'.
                 }
                 else
@@ -228,7 +216,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
         }
         /*
            The key and the value are separate by ':'. The function is going to find the separator then fill header with the key and value
-           */
+        */
         begin_key = request_str.find(':');
         if (begin_key == std::string::npos)
         {
@@ -240,36 +228,31 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
         */
 		std::transform(key.begin(), key.end(), key.begin(), ::toupper);
 
-        //std::cout << "key = [" << key << "]\nbegin = " << begin_key << "\n";
         /*
            The request_str is the full informations the request receive. So the function erase the traited informations when header is filled.
-           */
+        */
         request_str.erase(0, ft_skip_space(request_str, begin_key + 1, 0)); //+ 1 for the ':'. ft_skip_space will skip OWS space.
         end_key = request_str.find('\n');
-        //std::cout << "str[" << end_key << "] = [" << request_str.at(end_key) << "]\n";
         if (end_key == std::string::npos)
         {
             break ;
         }
         val = request_str.substr(0, ft_skip_space(request_str, end_key - 1, 1)); // -1 for '\n'. ft_skip_space will skip OWS space
-        //std::cout << "val = [" << val << "]\n";
         header[key] = val;
         request_str.erase(0, end_key + 1); //+ 1 for the '\n'.
     }
 
 	g_request[ptr_tab_poll->fd].clear(); // empty vector to allow incoming request from the same client
 
-	//std::cout << "REQUEST BODY" << std::endl << std::endl;
-	//std::cout << header["body"] << std::endl << std::endl;
-
 	// --------  affichage  --------------------------------------------------------------------------
-/*       	std::cout << "Display header parsed begin" << std::endl;
+    /*
+   	std::cout << "Display header parsed begin" << std::endl;
     for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it)
     {
        	std::cout << it->first << ":" << it->second << std::endl;
     }
        	std::cout << "\nDisplay header parsed end" << std::endl;
-*/
+    */
 }
 
 std::string        Request::get_method()
@@ -315,15 +298,12 @@ std::string        Request::get_path_info()
 	ret = getInfo(atoi(header["port"].c_str()), "*.php", &location_rep, find_location);
 	if (ret)
 	{
-		std::cout << "Location successfully find" << std::endl;
         /*
             If there is some information at a location from the url, search if there is a /root informations in the config file
         */
         std::map<std::string, std::string>::const_iterator it;
         for (it = location_rep.begin(); it != location_rep.end(); ++it)
         {
-            //std::cout << "it-first = [" << it->first << "]" << "\n";
-            //std::cout << "it-second = [" << it->second << "]" << "\n";
             if (it->first.compare("cgi_pass") == 0)
             {
                 get_info = it->second;
@@ -493,15 +473,12 @@ std::string     Request::return_config_info(std::string searching_index)
         std::map<std::string, std::string>::const_iterator it;
         for (it = location_rep.begin(); it != location_rep.end(); ++it)
         {
-            //std::cout << "it-first = [" << it->first << "]" << "\n";
-            //std::cout << "it-second = [" << it->second << "]" << "\n";
             if (it->first == searching_index)
             {
                 search_rep = it->second;
             }
         }
 	}
-//	std::cout << "search idx is " << searching_index << " and search reponse is " << search_rep << std::endl;
     return ((ret1 | ret2) ? search_rep : "");
 }
 
@@ -562,15 +539,11 @@ void        Request::_process_GET() {
 
 	}
 
-	//std::cout << "index_path is " << index_path << std::endl;
-
 	if (exists(index_path) && !is_a_directory(index_path))
 		path = index_path;
 	if (path == "")
 		path = ".";
 
-//	std::cout << "path is " << path << std::endl;
-	
     std::ifstream	ifs(path.c_str());
 
 /*
@@ -717,36 +690,27 @@ void		Request::initialize_mime_types(std::map<std::string, std::string> &mime_ty
 
 std::string Request::find_url_and_name_from_file(std::string const file_type)
 {
-    //std::cout << "FIND URL + NAME FUNCTION BEGIN\n";
     /*
         Search if there is a /root in the config file to initialise the url_file and know where the server have to create the file.
     */
-    std::cout << "URL = [" << header["url"] << "]\n";
     std::string url_file = return_config_info("root");
     std::string file_name = header["url"];
-/*
-    DEBUG :
-    std::cout << "url file  11 = [" << url_file << "]\n";
-    std::cout << "file_name 11 = [" << file_name << "]\n";
-*/
+
     if (header["method"] != "DELETE")
     {
         url_file += file_name + "/";
         file_name = "newfile" + file_type;
     }
-    //std::cout << "START url  file = [" << url_file << "]\n" << "file name = [" << file_name << "]\n";
 
     /*
         Starting by check if the file the webserv server have to create have a name.
     */
-    if (header["Content-Disposition"].size() > 0)
+    if (header["CONTENT-DISPOSITION"].size() > 0)
     {
-        std::cout << "Content-Disposition finded" << std::endl;
-        int end_name = header["Content-Disposition"].find("\"") + 1;
-        file_name = header["Content-Disposition"].substr(header["Content-Disposition"].find("filename=") + 10, end_name);
+        file_name = header["CONTENT-DISPOSITION"].substr(header["CONTENT-DISPOSITION"].find("filename=") + 10);
+        file_name.erase(file_name.size() - 1, file_name.size());
     }
 
-    //std::cout << "END url  file = [" << url_file << "]\n" << "file name = [" << file_name << "]\n";
     return (url_file + file_name);
 }
 
@@ -757,7 +721,6 @@ std::string Request::find_url_and_name_from_file(std::string const file_type)
 int    Request::create_file(std::string const file_type)
 {
     std::string const nomFichier(find_url_and_name_from_file(file_type));
-    std::cout << "nomfichier = EGALEEEEEEEEE = [" << nomFichier << "]\n";
     std::ofstream monFlux(nomFichier.c_str());
 
     if(monFlux)
@@ -769,7 +732,6 @@ int    Request::create_file(std::string const file_type)
         /*
             DEBUG : (TODO: delete the ERREUR msg)
         */
-        std::cout << "ERREUR: Impossible d'ouvrir le fichier." << std::endl;
         return (FAILURE);
     }
     return (SUCCESS);
@@ -803,15 +765,12 @@ void    Request::_process_POST()
         }
     }
 
-    std::cout << "header[CONTENT-TYPE] = [" << header["CONTENT-TYPE"] << "]\n";
-
     std::map<std::string, std::string> mime_types;
     std::map<std::string, std::string>::const_iterator it;
 
     initialize_mime_types(mime_types);
     for (it = mime_types.begin(); it != mime_types.end(); ++it)
     {
-        //std::cout << it->second << "\n";
         if (it->second == header["CONTENT-TYPE"])
             break ;
     }
@@ -820,8 +779,6 @@ void    Request::_process_POST()
     {
         return http_code("415");
     }
-
-    //std::cout << "CONTENT TYPE FROM MIME TYPES = [" << it->first << "]\n";
 
     reponse["CONTENT-LENGTH"]   = header["CONTENT-LENGTH"];
     reponse["CONTENT-TYPE"]     = header["CONTENT-TYPE"];
@@ -850,14 +807,6 @@ void    Request::_process_POST()
     {
         return http_code("200");
     }
-    /*
-       Il faut voir les valeurs qu'on a envie de renvoyer. En voici certaines d'entre elle qui
-       vont surtout nous servir pour intégrer les CGI.
-       reponse["arg"] = "";
-       reponse["data"] = "";
-       reponse["files"] = "";
-       reponse["form"] = "";
-     */
 }
 
 /*
@@ -866,10 +815,8 @@ void    Request::_process_POST()
 void    Request::_process_DELETE()
 {
     std::string const nomFichier(find_url_and_name_from_file(""));
-    std::cout << "file name : " << nomFichier << std::endl;
     char const *file_to_delete = nomFichier.c_str();
 
-    //std::cout << "file to delete = (" << file_to_delete << ")\n";
     if (header["url"].compare("/") == 0)
     {
         return http_code("204");

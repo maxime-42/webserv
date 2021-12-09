@@ -28,7 +28,6 @@ Cgi::Cgi(std::string script, void *ptr_void, std::map<std::string, std::string> 
 	{
 		std::cerr << e << '\n';
 	}
-//	std::cout << "data [" << _data << "]" << std::endl;
 	clear_2D_array(_env);
 	clear_2D_array(_args);
 }
@@ -90,7 +89,6 @@ void	Cgi::								complete_the_name_of_script()
 		}
 		free(pwd);
 	}
-		std::cout << "script = " << _script << std::endl;
 }
 
 /*
@@ -140,13 +138,6 @@ void	Cgi::set_env_map(void *ptr_void)
 	_env_map["SERVER_PROTOCOL"] = "HTTP/1.1";
 	//_env_map["SERVER_SOFTWARE"] = "webserv";
 
-
-/*
-	DEBUG :
-	std::cout << "       methode = " << ptr_request->header["method"] << std::endl;
-	std::cout << "       url = " << ptr_request->header["url"] << std::endl;
-	std::cout << "       arg = " << ptr_request->header["args"] << std::endl;
-*/
 
 	if (ptr_request->header["method"] == "GET" && ptr_request->header["args"] != "")
 	{
@@ -204,21 +195,6 @@ void		Cgi::	exec_Cgi()
  	int			pipeFd[2];
 	int			child_status;
 
-	///DEBUG :
-/*	std::cout << "cgi body  = [" << _cgi_body << "]\n";
-
-
-	for (int i = 0; _args[i] != NULL; i++)
-	{
-		std::cout << "args[" << i << "] = (" << _args[i] << ")\n";
-	}
-
-	for (int i = 0; _env[i] != NULL; i++)
-	{
-		std::cout << "env[" << i << "] = (" << _env[i] << ")\n";
-	}
-*/
-	
 	pipe(pipeFd);
 	int			pid = fork();
 	check_error(pid, "error cgi fork failed\n");
@@ -249,16 +225,11 @@ void		Cgi::	exec_Cgi()
 		int ret = wait(&child_status);
 		check_error(ret, "error wait");
 		check_error(child_status, "error execve");
-		std::cout << "execv(" << _args[0] << ", " << _args[1] << ")" << std::endl;
 		char		c; /* this variable will skim to each character in pipeFd[TO_READ] */
 		while (read(pipeFd[TO_READ], &c, 1) > 0)/*from, here contains in pipeFd[TO_READ] gonna be copy in string "_data"*/
 		{
 			_data += c; 
 		}
-		/*
-			DEBUG:
-		*/
-			std::cout << "\n\ndata\n->" << _data << "<-" << std::endl;
 	}
 }
 
@@ -284,9 +255,6 @@ void		Cgi::	remove_headers(std::map<std::string, std::string> &cgi_head) {
 		value = header.substr(pos2 + 2, pos - pos2 - 2);
 
 		cgi_head[key] = value;
-
-//		std::cout << "key: " << key << "<-" << std::endl;
-//		std::cout << "value: " << value << "<-" << std::endl;
 
 		header.erase(0, pos + 2);
 	}
