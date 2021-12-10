@@ -244,7 +244,6 @@ void											handle_signal(int sig)
 void	Service::								runService()
 {
 	int											ret;
-
 	try
 	{
 		while (true)
@@ -252,7 +251,7 @@ void	Service::								runService()
 			signal(SIGINT, handle_signal);
 			ret = poll(_pollFds, _nfds, TIMEOUT);
 			if (ret == ERROR && errno == EINTR)// check if poll is termined by ctrl-c 
-				return ;
+				return ;//ici met throw("exit program");
 			checkError(ret, "poll() failed");
 			if (ret == 0)
 				throw("poll() timed out");
