@@ -1,5 +1,6 @@
-#include "Parse_config_file.hpp"
 
+
+#include "Parse_config_file.hpp"
 /*
 *THIS IS A SINGLETON CLASS : Singleton design pattern is a software design principle that is used to restrict the instantiation of a class to one object
 * this class  get config file and parse them and store it
@@ -63,6 +64,8 @@ bool	Parse_config_file::										getErrorHappened(){return (_errorHappened);}
 **	step one 	:	get file in std::string "configFile"
 **	step three	:	parsing file, file is located in std::string _configFile;
 */
+void  verrify_error_page(t_single_list &secondList);
+
 int	Parse_config_file::											getStartProcess()
 {
 	try
@@ -76,7 +79,8 @@ int	Parse_config_file::											getStartProcess()
 		set_defaut_config();
 		_block_server = _defautConfig;
 		parse();
-		std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SUCCESSFULLY PARSING<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n" << std::endl;
+		// verrify_error_page(_serverList);
+		std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SUCCESSFULLY PARSED<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n" << std::endl;
 	}
 	catch(char const *  msg_error)
 	{
@@ -132,12 +136,12 @@ void	Parse_config_file::										set_defaut_config()
 	_defautConfig["index"] = "index.html";
 	_defautConfig["cgi_pass"] = "/usr/bin/php-cgi";
 	_defautConfig["autoindex"] = "on";
-	char *pwd = pwd = getcwd(NULL, 0);
+	char *pwd = getcwd(NULL, 0);
 	if (pwd)
 	{
 		_pwd = pwd;
 		_defautConfig["root"] = pwd;
-		_defautConfig["root"] += "/www";
+		_defautConfig["root"] += "/www/error_page";
 		free(pwd);
 	}
 
@@ -373,6 +377,16 @@ void				Parse_config_file::	set_globalConfig(std::string directive_name, std::st
 	}
 }
 
+static bool	error_page_syntax(std::string error_page_value)
+{
+	size_t pos = error_page_value.find(" ");
+	if (pos != std::string::npos)
+		return (true);//error_page_value = error_page_value.substr(pos + 1);
+	// else
+		// throw("error : syntax on directive error page is wrong");
+	return (false);
+}
+
 /**
  * @brief 
  * this function insure some condition are respect:
@@ -387,12 +401,12 @@ static void				not_allow(Parse_config_file *ptr)
 {
 	std::string directive_name = ptr->get_directive_name();
 	std::string directive_value = ptr->get_directive_value();
+	std::string current_directory = ptr->get_current_directory();
 	if (directive_name.compare("return") == 0 && ptr->get_hisLocation() == false)
 		throw("error : 'return' outside of block location ");
 	if (directive_name.compare("root") == 0)
 	{
-		std::string current_directory = ptr->get_current_directory();
-		std::cout << "current_directory == [" << current_directory << "]\received == [" << directive_value << "]" << std::endl;
+		std::cout << "current_directory == [" << current_directory << "]  received == [" << directive_value << "]" << std::endl;
 		bool ret = is_a_directory(directive_value);
 		if (ret == false)
 		{
@@ -405,6 +419,8 @@ static void				not_allow(Parse_config_file *ptr)
 		throw("error : 'listen' have not be in block laction");
 	if (directive_name.compare("autoindex") == 0 && directive_value.compare("off") != 0 && directive_value.compare("on") != 0)
 		throw("error : 'autoindex' have not be 'off' or 'on' ");
+	if (directive_name.compare("error_page") == 0 && error_page_syntax(directive_value) == false )
+		throw("error : syntax on directive error page is wrong");
 }
 
 /**
@@ -557,6 +573,11 @@ static	void									push_someWhere(Parse_config_file *ptr)
 		ptr->push_front_in_singleList(block_server);
 		t_single_list singList = ptr->get_singleList();
 		ptr->push_in_neestedList(singList);
+		/**
+		 * 
+		 * 
+		 */
+		verrify_error_page(singList);
 		ptr->set_singleList(t_single_list());
 		std::map <std::string, std::string> defaut_config = ptr->get_defaut_block_serve();
 		ptr->set_block_server(defaut_config);

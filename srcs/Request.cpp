@@ -491,7 +491,7 @@ std::string     Request::return_config_info(std::string searching_index)
 //   	return (stat (s.c_str(), &buffer) == 0 && buffer.st_mode & S_IFDIR); // if exist && is a directory return 1
 // }
 
-// bool exists(const std::string &s)
+// bool exists(const std::string &s)	
 // {
 // 	struct stat buffer;
 // 	return (stat (s.c_str(), &buffer) == 0);
