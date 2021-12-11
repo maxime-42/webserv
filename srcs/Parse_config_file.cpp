@@ -168,6 +168,7 @@ void	Parse_config_file::										handleCommentes(std::string &line)
  * @brief Get the File object
  * get file and store it in std::string @_configFile
  * get file line by line and then concated each line got previously
+ * @line contain the line of file
  */
 void	Parse_config_file:: getFile()
 {
@@ -691,6 +692,4 @@ void													Parse_config_file::parse()
 	}
 	if (get_bracket_counter() != 0 )
 		throw("error syntaxe: missing parenthese");
-	display_neestedList(_serverList);
-	
 }

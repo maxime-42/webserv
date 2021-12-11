@@ -17,11 +17,9 @@ Cgi::Cgi(std::string script, void *ptr_void, std::map<std::string, std::string> 
 	{
 		complete_the_name_of_script();
 		set_args();
-		print_arg(_args);
+		// print_arg(_args);
 		set_env_map(ptr_void);
-		displayDirectionary(_env_map);
 		set_env();
-		print_arg(_env);
 		exec_Cgi();
 		// print_arg(_env);
 		remove_headers(cgi_head);
@@ -34,16 +32,24 @@ Cgi::Cgi(std::string script, void *ptr_void, std::map<std::string, std::string> 
 	clear_2D_array(_args);
 }
 
-/**
- * @brief 
- * free memory what as early alloc to the 2D array
- * @param array  is a pointer which has the location to free memory
- */
+/*
+** free memory what as early alloc to "_arg"
+** this function free memory which was early alloc to "_arg"
+*/
+void	Cgi::clear_args()
+{
+	for (size_t i = 0; i < NUMBER_ARGUMENTS ; i++)
+	{
+		free(_args[i]);
+		_args[i] = NULL;
+	}
+	free(_args);
+	_args = NULL;
+}
+
 void	Cgi::clear_2D_array(char **array)
 {
 	int i = 0;
-	if (array == NULL)
-		return ;
 	while (array[i])
 	{
 		free(array[i]);
@@ -52,43 +58,48 @@ void	Cgi::clear_2D_array(char **array)
 	free(array);
 }
 
-/**
- * @brief 
- *	get the current working directory and concatenate that to the  script, it let to have absolute path of script
- *	first add back a slash to the name of "_script"
- *	save the  current working directory given by function getcwd
- *	if neither error   appear then the concatenation going to done between   current working directory and script
- */
+/*
+** this function add  slash to the name of script
+** add likewise name of the current working directory to script
+*/
+
 void	Cgi::								complete_the_name_of_script()
 {
-	char 									*current_working_directory = NULL;
+	char 									*pwd = NULL;
+
 	_script = "/" + _script;
-	current_working_directory = getcwd(NULL, 0);
-	_pwd = current_working_directory;//stock current_working_directory 
-	if (current_working_directory == NULL)
+	std::string tmp = _script;
+	pwd = getcwd(NULL, 0);
+	_pwd = pwd;//stock pwd 
+	if (pwd == NULL)
 	{
 		throw("error while getcwd");
 		_has_error = true;
 	}
 	else
 	{
-		_script = current_working_directory + _script;
-		free(current_working_directory);
+		_script = pwd;
+		if (_script.find("/www") != std::string::npos)
+		{
+			_script += tmp;
+		}
+		else
+		{
+			_script += "/www" + tmp;
+		}
+		free(pwd);
 	}
 }
 
-/**
- * @brief 
- * Create a 2D array it is a char ** _args
- * this 2D array will contain the cgi absolute path  and script absolute path
- * _args meaning argument
- */
+/*
+** recover the cgi binary file name and script name, store it in array "_args"
+** _args meaning argument
+*/
+
 void	Cgi::								set_args()
 {
-	
 	 _args = (char**)malloc(sizeof(char *) * (NUMBER_ARGUMENTS + 1));
-	// char *name = strdup((char*)_script.c_str());
-	char *name = strdup("/home/lenox/webserv/www/cgi/post-method.php");
+	char *name = strdup((char*)_script.c_str());
 	char *path =  strdup((char*)_cgi_path.c_str());
 	if (name == NULL)
 		throw("error alloc for name");
@@ -100,16 +111,17 @@ void	Cgi::								set_args()
 }
 
 /**
- * @brief 
- * this function set a set of variable environement in map
- * @param ptr_void it is a pointer of Request object which has  some functions to values of variable environnement
+ * @brief this function set a set of variable environement in map  
+ * 
+ * @param ptr_void it is a pointer of Request which has  some functions to  values of variable environnement
  */
 void	Cgi::set_env_map(void *ptr_void)
 {
 	/*
 		Set cgi body to empty string to check when we execve to know if there is something to send in STDIN
 	*/
-	// _cgi_body = "";
+	_cgi_body = "";
+
 	Request *ptr_request = (Request *)ptr_void;
 	_env_map["AUTH_TYPE"] = "";
 	_env_map["CONTENT_LENGTH"] = "0";
@@ -137,28 +149,13 @@ void	Cgi::set_env_map(void *ptr_void)
 		_env_map["CONTENT_LENGTH"] = ptr_request->header["CONTENT-LENGTH"];
 		_env_map["CONTENT_TYPE"] = ptr_request->header["CONTENT-TYPE"];
 		_cgi_body = ptr_request->header["body"];
-		_env_map["ACCEPT_ENCODING"] = "gzip, deflate, br";
-		_env_map["USER_AGENT"] = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36";
-		_env_map["REFERER"] = "http://localhost:8080/cgi/post-method.php";
-		_env_map["ACCEPT_LANGUAGE"] = "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7";
-		_env_map["ACCEPT"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";
-		_env_map["CACHE_CONTROL"] = "max-age=0";
-		_env_map["ORIGIN"] = "http://localhost:8080";
-		// _env_map["SERVER_SOFTWARE"] = "webserv/0.1.0";
-
-		// _env_map["PATH_INFO"] = "http://localhost:8080/cgi/post-method.php";
-		// _env_map["PRAGMA"] = "no-cache";
-		// _env_map["REQUEST_METHOD"] = ptr_request->header["method"];
-
-
-
 	}
 }
 
-/**
- * @brief
- * recover the variables environment in map "_env_map" then store them in a char ** _env
- * skim the map "_env" map to get each variables, concatenate value and key with "=" then put the string concat in _env 
+/*
+ * recover the HTTP_META_VARIABLES and store them in a malloc pointer of ch
+ * strings (char **).
+ *
 */
 void	Cgi::set_env()
 {
@@ -168,8 +165,7 @@ void	Cgi::set_env()
 	int i = 0;
 	for(std::map<std::string, std::string>::iterator it = _env_map.begin(); it != _env_map.end(); it++)
 	{
-		std::string var_env = (it->first + "=" + it->second);
-		_env[i] = strdup(var_env.c_str());
+		_env[i] = strdup((it->first + "=" + it->second).c_str());
 		if (_env[i] == NULL)
 			throw("error happened while mallo in set_env() to cgi");
 		i++;
@@ -177,32 +173,29 @@ void	Cgi::set_env()
 	_env[i] = NULL;
 }
 
-/**
- * @brief 
- * this function throw error if ever the variable "code" is less than zero
- * @param code if is less than zero an error will throw
- * @param error_msg text message to display
- */
+/*
+**	this function throw error if ever the variable "code" is less than zero
+*/
 void	Cgi::								check_error(int code, const char *error_msg)
 {
 	if (code < 0)
 		throw(error_msg);
 }
 
-/**
- * @brief
- * the behind this function is to get the stdout of process child in other file descriptor like pipeFd[TO_READ]
- * it mean there for to write the stdout of process child in  pipeFd[TO_WRITE]
- * "child_status" gonna have the code of exite child process, if the exit code  is less than zero an error will throw
- * afterward the contain in pipeFd[TO_READ] will be copy in string "_data"
- */
+
+/*
+** the behind this function is to get the stdout of process child in other file descriptor like pipeFd[TO_READ]
+** it mean there for to write the stdout of process child in  pipeFd[TO_WRITE]
+**	"child_status" gonna have the code of exite child process, if the exit code  is less than zero an error will throw
+** afterward the contain in pipeFd[TO_READ] will be copy in string "_data"
+** afterward 
+*/
 void		Cgi::	exec_Cgi()
 {
  	int			pipeFd[2];
 	int			child_status;
 
 	pipe(pipeFd);
-	std::cout << "cgi body  ==" << _cgi_body << "==\n";
 	int			pid = fork();
 	check_error(pid, "error cgi fork failed\n");
 
@@ -237,32 +230,6 @@ void		Cgi::	exec_Cgi()
 		{
 			_data += c; 
 		}
-		// set_data(pipeFd[TO_READ]);
-			std::cout << "\ndata==" << _data << "==" << std::endl;
-	}
-}
-
-/**
- * @brief Get the data object
- * std::string contains  data  has recovery through a file descriptor
- * @return std::string 
- */
-std::string		Cgi::	get_data() {return (_data);}
-
-/**
- * @brief Set data
- * data recovery  inside file descriptor to copy that in string "_data"
- * _data contains data has recovery through file descriptor
- * @param fd is the file descriptor where to recovery data
- */
-void	Cgi::	set_data(int fd)
-{
-	char	buf[READ_SIZE + 1];
-	int		nbByte = 0;
-	while ( (nbByte = read(fd, buf, READ_SIZE)) > 0)/*from, here contains in pipeFd[TO_READ] gonna be copy in string "_data"*/
-	{
-		buf[nbByte] = '\0';
-		_data += buf; 
 	}
 }
 
@@ -294,13 +261,17 @@ void		Cgi::	remove_headers(std::map<std::string, std::string> &cgi_head) {
 
 }
 
+std::string		Cgi::	get_data(){return (_data);}
 
+/*
+**	this function get all variable in _url
+** it meant everything after ? 
+*/
 
-/**
- * @brief Get the query string object
- * this function recovery all variable in _url it meant everything after ? 
- * @return std::string contains all data after ?
- */
+/*
+	Debug : THIS FUNCTION IS USELESS FINALLY BECAUSE THE QUERY IS SPLIT FROM URL IN args IN THE REQUEST::PARSE
+	Flemme de ré écrire en miniscule.............;
+*/
 std::string		Cgi::	get_query_string()
 {
 	std::string query_string;
@@ -311,4 +282,3 @@ std::string		Cgi::	get_query_string()
 	}
 	return (query_string);
 }
-
