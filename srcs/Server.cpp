@@ -82,7 +82,7 @@ int		Server:: 						receive_data(struct pollfd	*ptr_tab_poll)
 	}
 /*
 	std::cout << "\n\n" << "===============   "  << ret << " BYTES  RECEIVED   ===============\n";
-   	write(1, _buffer, ret);
+	std::cout << _buffer;
 	std::cout << "\n======================================================" << std::endl;
 */
 	return (ret);	

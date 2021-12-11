@@ -132,6 +132,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
     size_t end_key;
     
     std::string bound = "";
+    int         inside_bound = 0;
     
     val.clear();
     request_str.erase(0, request_str.find('\n') + 1);
@@ -149,21 +150,14 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
             /*
                 In case where the client is uploading something, there can have a big '-' line, that is not the body.
             */
-            if (strncmp(request_str.c_str(), "-----------------------------", 28) == 0)
+            if ((inside_bound == 0) && (bound.size() > 0) && (strncmp(request_str.c_str() + 2, bound.c_str(), bound.size()) == 0)) // +2 because bound have been erase by 2
             {
-                if (header["CONTENT-TYPE"].size() > 0)
-                {
-                    std::size_t found = header["CONTENT-TYPE"].find("boundary=");
-                    if (found != std::string::npos)
-                    {
-                        bound = header["CONTENT-TYPE"].substr(header["CONTENT-TYPE"].find("boundary=") + 9);
-                    }
-                }
                 if (request_str.find(bound) < 3)
                 {
                     begin_key = request_str.find('\n');
                     request_str.erase(0, begin_key + 1); //+ 1 for the '\n'.
                 }
+                inside_bound = 1;
             }
 			else if (header.find("TRANSFER-ENCODING") != header.end() && header["TRANSFER-ENCODING"] == "chunked")
             {
@@ -217,6 +211,16 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
                 }
 			}
         }
+
+        if ((bound.size() == 0) && (header["CONTENT-TYPE"].size() > 0))
+        {
+            std::size_t found = header["CONTENT-TYPE"].find("boundary=");
+            if (found != std::string::npos)
+            {
+                bound = header["CONTENT-TYPE"].substr(header["CONTENT-TYPE"].find("boundary=") + 9);
+            }
+        }
+
         /*
            The key and the value are separate by ':'. The function is going to find the separator then fill header with the key and value
         */
@@ -248,14 +252,14 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 	g_request[ptr_tab_poll->fd].clear(); // empty vector to allow incoming request from the same client
 
 	// --------  affichage  --------------------------------------------------------------------------
-	/*    
+/*
    	std::cout << "Display header parsed begin" << std::endl;
     for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it)
     {
        	std::cout << it->first << ":" << it->second << std::endl;
     }
        	std::cout << "\nDisplay header parsed end" << std::endl;
-    */
+*/
 }
 
 std::string        Request::get_method()
