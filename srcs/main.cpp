@@ -1,9 +1,11 @@
 #include "Server.hpp"
-#include "ParsingFile.hpp"
+#include "Parse_config_file.hpp"
 #include "Service.hpp"
 #include "header.hpp"
 #include "Cgi.hpp"
-   void							displayServerTable();
+#include "utile.hpp"
+
+void							displayServerTable();
 
 int	 main(int argc, const char** argv)
 {
@@ -16,7 +18,7 @@ int	 main(int argc, const char** argv)
 	else
 	{
 		Service svc;
-		// ParsingFile &parse = ParsingFile::getInstance("./configFile/default.conf");
+		// Parse_config_file &parse = Parse_config_file::getInstance("./configFile/default.conf");
 		// displayServerTable();
 		// (void)parse;
 	}

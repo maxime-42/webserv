@@ -24,11 +24,11 @@ DIR_INC     = includes/
 F_SRCS        =		main.cpp 			\
                 	Server.cpp			\
 					Request.cpp			\
-					ParsingFile.cpp		\
-					lookup_in_nested_list.cpp\
+					Parse_config_file.cpp		\
+					utile.cpp			\
 					Service.cpp			\
 					Cgi.cpp\
-					#to_debug.cpp\
+					to_debug.cpp\
 
 SRCS        = $(addprefix $(DIR_SRCS), $(F_SRCS))
 

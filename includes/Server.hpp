@@ -26,12 +26,11 @@
 #include <vector>
 #include "header.hpp"
 
-/*
-**	it going to have as much Server object inside linked list than it will have server block in config file
-**	it will help to have a program multiport
-*/
-
-
+/**
+ * @brief 
+ * it going to have as much Server object inside linked list than it will have server block in config file
+ * it will help to have a program multiport
+ */
 class Server
 {
 	private:

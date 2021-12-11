@@ -297,4 +297,3 @@ std::string		Cgi::	get_query_string()
 	}
 	return (query_string);
 }
-
