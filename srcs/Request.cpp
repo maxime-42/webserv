@@ -248,7 +248,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 	g_request[ptr_tab_poll->fd].clear(); // empty vector to allow incoming request from the same client
 
 	// --------  affichage  --------------------------------------------------------------------------
-    /*
+	/*    
    	std::cout << "Display header parsed begin" << std::endl;
     for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it)
     {
@@ -858,8 +858,10 @@ int ci_find_substr( const std::string& str1, const std::string& str2 )
  */
 bool	Request::end_reached(struct pollfd *ptr_tab_poll) {
 
+	int		pos;
 	size_t len = g_request[ptr_tab_poll->fd].size();
 	std::string request_str(g_request[ptr_tab_poll->fd].begin(), g_request[ptr_tab_poll->fd].end());
+	std::string rqcp(request_str); // request_copy
 
 	if (ci_find_substr(request_str, "transfer-encoding") != -1 && request_str.find("chunked") != std::string::npos)
 		/*	if (request_str.find("TRANSFER-ENCODING") != std::string::npos
@@ -876,6 +878,34 @@ bool	Request::end_reached(struct pollfd *ptr_tab_poll) {
 							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n'))
 						return true;
 				}
+			} else if ((pos = ci_find_substr(request_str, "content-length")) != -1) {
+	
+				size_t content_length;
+				rqcp.erase(0, pos + 15);
+				if (rqcp[0] == 13 || rqcp[0] == 32)
+					rqcp.erase(0, 1);
+				int str_len = 0;
+				for (size_t i = 0; isdigit(rqcp[i]); i++)
+					str_len++;
+				std::istringstream ( rqcp.substr(0, str_len)) >> content_length;
+
+//				std::cout << "specified content_length is " << content_length << std::endl;
+
+				for (size_t i = 0; i < len; i++) {
+
+					if (g_request[ptr_tab_poll->fd][i] == '\r'
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
+							&& (++i < len)) {
+
+//				std::cout << "current content_length is" << request_str.length() - i << std::endl;
+						
+						if (request_str.length() - i >= content_length)
+							return true;
+					}
+				}
+	
 			} else {
 
 				for (size_t i = 0; i < len; i++) {
