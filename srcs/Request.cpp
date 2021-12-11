@@ -498,9 +498,9 @@ std::string     Request::return_config_info(std::string searching_index)
 // }
 
 void        Request::_process_GET() {
-    std::map<std::string, std::string> mime_types;
+
+    std::map<std::string, std::string> mime_types = initialize_mime_types();
     std::map<std::string, std::string>::const_iterator it;
-    initialize_mime_types(mime_types);
 
 	std::string	filestr;
     std::string path;
@@ -522,7 +522,10 @@ void        Request::_process_GET() {
     	return http_code(code);
 	}
 
-	chdir(root.c_str());
+	if (chdir(root.c_str()) != 0) {
+		std::cout << "CHDIR FAILED" << std::endl;
+		exit(0);
+	}
 
     int	auto_index = 0;
     std::string rep = return_config_info("autoindex");
@@ -627,8 +630,10 @@ void        Request::_process_GET() {
    Le nom MIME vient des différents CONTENT-TYPE qui existe. La liste est non
    exclusive
    */
-void		Request::initialize_mime_types(std::map<std::string, std::string> &mime_types)
+std::map<std::string, std::string>		Request::initialize_mime_types()
 {
+    std::map<std::string, std::string> mime_types;
+
 	mime_types[".aac"]      = "audio/aac";
 	mime_types[".abw"]      = "application/x-abiword";
 	mime_types[".arc"]      = "application/octet-stream";
@@ -689,6 +694,8 @@ void		Request::initialize_mime_types(std::map<std::string, std::string> &mime_ty
 	mime_types[".3gp"]      = "video/3gpp audio/3gpp";
 	mime_types[".3g2"]      = "video/3gpp2 audio/3gpp2";
 	mime_types[".7z"]       = "application/x-7z-compressed";
+
+	return mime_types;
 }
 
 std::string Request::find_url_and_name_from_file(std::string const file_type)
@@ -768,10 +775,9 @@ void    Request::_process_POST()
         }
     }
 
-    std::map<std::string, std::string> mime_types;
+    std::map<std::string, std::string> mime_types = initialize_mime_types();
     std::map<std::string, std::string>::const_iterator it;
 
-    initialize_mime_types(mime_types);
     for (it = mime_types.begin(); it != mime_types.end(); ++it)
     {
         if (it->second == header["CONTENT-TYPE"])
@@ -896,12 +902,12 @@ void	Request::http_code(std::string http_code)
     std::map<std::string, std::string> http = http_table();
 	std::ostringstream	s;
 
-	if (int_code == 404)
+/*	if (int_code == 404)
     {
 		header["url"] = "/error_page/error_page_" + http_code + ".html";
 		_process_GET();
 	}
-	else if (int_code >= 400) {
+	else */if (int_code >= 400) {
 		reponse["body"] = "<h1>" + http_code + " " +  http[http_code] + "</h1>";
 		s << reponse["body"].length();
 		reponse["CONTENT-LENGTH"] = std::string(s.str());
