@@ -252,14 +252,15 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 	g_request[ptr_tab_poll->fd].clear(); // empty vector to allow incoming request from the same client
 
 	// --------  affichage  --------------------------------------------------------------------------
-/*
+
    	std::cout << "Display header parsed begin" << std::endl;
     for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it)
     {
-       	std::cout << it->first << ":" << it->second << std::endl;
+		if (it->first == "body")
+       	std::cout << std::endl << ">>>>>>>" << it->first << ":" << it->second << "<<<<<<<" << std::endl;
     }
        	std::cout << "\nDisplay header parsed end" << std::endl;
-*/
+
 }
 
 std::string        Request::get_method()
@@ -935,13 +936,14 @@ void	Request::http_code(std::string http_code)
 	std::istringstream(http_code) >> int_code;
     std::map<std::string, std::string> http = http_table();
 	std::ostringstream	s;
+	std::string path;
 
-/*	if (int_code == 404)
+	if ((path = return_config_info("error_page_" + http_code)) != "")
     {
-		header["url"] = "/error_page/error_page_" + http_code + ".html";
+		header["url"] = path;
 		_process_GET();
 	}
-	else */if (int_code >= 400) {
+	else if (int_code >= 400) {
 		reponse["body"] = "<h1>" + http_code + " " +  http[http_code] + "</h1>";
 		s << reponse["body"].length();
 		reponse["CONTENT-LENGTH"] = std::string(s.str());
