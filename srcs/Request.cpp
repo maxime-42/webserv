@@ -204,7 +204,10 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
                 if (request_str.find(bound) != std::string::npos)
                 {
                     begin_key = (int)request_str.find(bound);
-                	header["body"] = request_str.erase(begin_key - 5); // -5 because there is those 5 char "'\13''\n''-''-''\n'"
+                    if (begin_key >= 5)
+                    	header["body"] = request_str.erase(begin_key - 5); // -5 because there is those 5 char "'\13''\n''-''-''\n'"
+                    else if (begin_key >= 2)
+                    	header["body"] = request_str.erase(begin_key - 2); // -3 because there is those 2 char "'\13''\n'"
                     request_str.erase(0, request_str.size()); //+ 1 for the '\n'.
                 }
                 else
