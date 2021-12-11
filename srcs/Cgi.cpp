@@ -126,18 +126,13 @@ void	Cgi::set_env_map(void *ptr_void)
 	_env_map["AUTH_TYPE"] = "";
 	_env_map["CONTENT_LENGTH"] = "0";
 	_env_map["GATEWAY_INTERFACE"] = "CGI/1.1";
-	//_env_map["HTTP_RAW_POST_DATA"] = ptr_request->header["body"];
-	//_env_map["PATH_INFO"] = _pwd + "/usr/bin/php-cgi";
 	_env_map["PATH_TRANSLATED"] = "";//_args[0];
 	_env_map["REDIRECT_STATUS"] = "200";
 	_env_map["REQUEST_METHOD"] = ptr_request->header["method"];
 	_env_map["SCRIPT_FILENAME"] = _args[1];
-	//_env_map["SCRIPT_NAME"] = "/cgi/post-method.php";
 	_env_map["SCRIPT_PORT"] = ptr_request->header["port"];
 	_env_map["SERVER_NAME"] = "webserv";
 	_env_map["SERVER_PROTOCOL"] = "HTTP/1.1";
-	//_env_map["SERVER_SOFTWARE"] = "webserv";
-
 
 	if (ptr_request->header["method"] == "GET" && ptr_request->header["args"] != "")
 	{
@@ -199,21 +194,6 @@ void		Cgi::	exec_Cgi()
 	int			pid = fork();
 	check_error(pid, "error cgi fork failed\n");
 
-/*
-	DEBUG (for demo) :
-std::cout << "cgi body = [" << _cgi_body << "]\n";
-
-for (int i = 0; _args[i]; i++)
-{
-	std::cout << "args[" << i << "] = [" << _args[i] << "]\n";
-}
-
-for (int i = 0; _env[i]; i++)
-{
-	std::cout << "env[" << i << "] = [" << _env[i] << "]\n";
-}
-*/
-
 	if (pid == 0)
 	{
 		close(pipeFd[TO_READ]);/*closing read side of pipe because we're only going to write*/
@@ -225,7 +205,7 @@ for (int i = 0; _env[i]; i++)
 
 			dup2(pipe2[TO_READ], 0);
 
-			write(pipe2[TO_WRITE], _cgi_body.c_str(), 41);
+			write(pipe2[TO_WRITE], _cgi_body.c_str(), _cgi_body.size());
 			close(pipe2[TO_WRITE]); // send EOF
 		}
 
@@ -278,22 +258,3 @@ void		Cgi::	remove_headers(std::map<std::string, std::string> &cgi_head) {
 
 std::string		Cgi::	get_data(){return (_data);}
 
-/*
-**	this function get all variable in _url
-** it meant everything after ? 
-*/
-
-/*
-	Debug : THIS FUNCTION IS USELESS FINALLY BECAUSE THE QUERY IS SPLIT FROM URL IN args IN THE REQUEST::PARSE
-	Flemme de ré écrire en miniscule.............;
-*/
-std::string		Cgi::	get_query_string()
-{
-	std::string query_string;
-	size_t pos =  _uri.find("?");
-	if (pos != std::string::npos)/*check if "?" was there */
-	{
-		query_string = _uri.substr(pos, _uri.length()); /*copy from position of "?" until end string*/
-	}
-	return (query_string);
-}
