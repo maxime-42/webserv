@@ -201,7 +201,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 			}
             else
             {
-                if (request_str.find(bound) != std::string::npos)
+                if ((bound.size() > 1) && (request_str.find(bound) != std::string::npos))
                 {
                     begin_key = (int)request_str.find(bound);
                     if (begin_key >= 5)

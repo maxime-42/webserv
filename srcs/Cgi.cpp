@@ -199,6 +199,21 @@ void		Cgi::	exec_Cgi()
 	int			pid = fork();
 	check_error(pid, "error cgi fork failed\n");
 
+/*
+	DEBUG (for demo) :
+std::cout << "cgi body = [" << _cgi_body << "]\n";
+
+for (int i = 0; _args[i]; i++)
+{
+	std::cout << "args[" << i << "] = [" << _args[i] << "]\n";
+}
+
+for (int i = 0; _env[i]; i++)
+{
+	std::cout << "env[" << i << "] = [" << _env[i] << "]\n";
+}
+*/
+
 	if (pid == 0)
 	{
 		close(pipeFd[TO_READ]);/*closing read side of pipe because we're only going to write*/
