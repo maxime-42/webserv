@@ -199,7 +199,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
                 {
                     begin_key = (int)request_str.find(bound);
                     if (begin_key >= 5)
-                    	header["body"] = request_str.erase(begin_key - 5); // -5 because there is those 5 char "'\13''\n''-''-''\n'"
+                    	header["body"] = request_str.erase(begin_key - 4); // -5 because there is those 5 char "'\13''\n''-''-''\n'"
                     else if (begin_key >= 2)
                     	header["body"] = request_str.erase(begin_key - 2); // -3 because there is those 2 char "'\13''\n'"
                     request_str.erase(0, request_str.size()); //+ 1 for the '\n'.
@@ -386,19 +386,19 @@ void		Request::compose_reponse(struct pollfd *ptr_tab_poll)
 
 	bool content_type = false;
 
-    std::string reply = reponse["http_version"] + " " + reponse["code"] + " " + reponse["status"] + "\n";
+    std::string reply = reponse["http_version"] + " " + reponse["code"] + " " + reponse["status"] + "\r\n";
 	
 	if (reponse.find("LOCATION") != reponse.end())
-		reply.append("Location: " + reponse["LOCATION"] + "\n");
+		reply.append("Location: " + reponse["LOCATION"] + "\r\n");
 
-	reply.append("Date: " + time_to_string() + " \n");
-	reply.append("Server: Webserv/1.0 (Unix)\n");
+	reply.append("Date: " + time_to_string() + " \r\n");
+	reply.append("Server: Webserv/1.0 (Unix)\r\n");
 
     if (reponse.find("body") == reponse.end()) {
 
-		reply.append("Connection: Closed\n");
-        reply.append("\n");
-        reply.append("\n");
+		reply.append("Content-Length: 0\r\n");
+		reply.append("Connection: Closed\r\n");
+        reply.append("\r\n");
 
     	write(1, "\nREPONSE:\n\n", 11);
 	    write(1, reply.c_str(),reply.length());
@@ -407,18 +407,18 @@ void		Request::compose_reponse(struct pollfd *ptr_tab_poll)
 
 		for (std::map<std::string, std::string>::iterator it = cgi_head.begin(); it != cgi_head.end(); it++) {
 
-			reply.append(it->first + ": " + it->second + "\n");
+			reply.append(it->first + ": " + it->second + "\r\n");
 			std::string str = it->first;
 			std::transform(str.begin(), str.end(), str.begin(), ::toupper);
 			if (str == "CONTENT-TYPE")
 				content_type = true;
 		}
 		if (!content_type)
-	        reply.append("Content-Type: " + reponse["CONTENT-TYPE"] + "\n");
-        reply.append("Content-Length: " + reponse["CONTENT-LENGTH"] + "\n");
+	        reply.append("Content-Type: " + reponse["CONTENT-TYPE"] + "\r\n");
+        reply.append("Content-Length: " + reponse["CONTENT-LENGTH"] + "\r\n");
 
-		reply.append("Connection: Closed\n");
-        reply.append("\n");
+		reply.append("Connection: Closed\r\n");
+        reply.append("\r\n");
 
     	write(1, "\nREPONSE:\n\n", 11);
 	    write(1, reply.c_str(),reply.length());
