@@ -19,18 +19,7 @@ int	 main(int argc, const char** argv)
 	{
 		// Service svc;
 		Parse_config_file &parse = Parse_config_file::getInstance("./configFile/default.conf");
-		// std::string str;
-		// bool ret = getInfo(8080, "index", &str, find_directive);
-		// if (ret == true)
-		// {
-		// 	std::cout << "directive [" << str << "]" << std::endl;
-		// }
-		// else
-		// {
-		// 	std::cout << "ECHEC"  << std::endl;
-		// }
-		
-		displayServerTable();
+		// displayServerTable();
 		(void)parse;
 	}
 	(void)argc;

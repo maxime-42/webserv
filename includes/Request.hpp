@@ -33,7 +33,7 @@ class Request
         void                                _process_DELETE();
 
         void                                http_code(std::string code);
-		void								initialize_mime_types(std::map<std::string, std::string> &mime_types);
+		std::map<std::string, std::string>	initialize_mime_types();
 
 	public:
 

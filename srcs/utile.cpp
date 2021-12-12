@@ -224,3 +224,56 @@ bool exists(const std::string &s)
 	struct stat buffer;
 	return (stat (s.c_str(), &buffer) == 0);
 }
+
+bool 	is_in_block_server(std::string &error_page_value, std::string &path_root)
+{
+	bool ret;
+	size_t pos = error_page_value.find(" ");
+	error_page_value = error_page_value.substr(pos + 1);
+	if (error_page_value[0] == '/')
+	{
+		std::cout << "chemin absolut" << std::endl;
+		ret = exists(error_page_value);
+	}
+	else
+	{
+		// std::cout << "chemin relatif == " << error_page_value<< std::endl;
+		std::string error_page_path = path_root + "/" + error_page_value;
+		std::cout << "error_page_path = [" << error_page_path <<"]" << std::endl;
+		ret = exists(error_page_path);
+	}
+	// (void)ret;
+	return (ret);
+}
+
+
+void  verrify_error_page(t_single_list &secondList)
+{
+	bool ret = true;
+	std::map < std::string, std::string > dictionary;
+	t_single_list::iterator itr_secondList = secondList.begin();
+	dictionary = *itr_secondList;
+	std::string server_root = dictionary["root"]; 
+	int i = 0;
+	for (;  itr_secondList != secondList.end(); itr_secondList++)
+	{
+		dictionary = *itr_secondList;
+		if (dictionary.find("error_page") != dictionary.end())
+		{
+			if (i < 0)
+				ret = is_in_block_server(dictionary["error_page"], dictionary["root"]);
+			else
+			{
+				if (dictionary.find("root") != dictionary.end())
+					ret = is_in_block_server(dictionary["error_page"], dictionary["root"]);
+				else
+					ret = is_in_block_server(dictionary["error_page"], server_root);
+
+			}
+		}
+		if (ret == false)
+			throw("error: path of 'error page' doesn't existed");
+		std::cout << "numero == " << ++i << std::endl;
+	}
+	(void)ret;
+}

@@ -1,8 +1,12 @@
-#include "Parse_config_file.hpp"
 
+
+#include "Parse_config_file.hpp"
 /*
-** THIS IS A SINGLETON CLASS : Singleton design pattern is a software design principle that is used to restrict the instantiation of a class to one object
+*THIS IS A SINGLETON CLASS : Singleton design pattern is a software design principle that is used to restrict the instantiation of a class to one object
+* this class  get config file and parse them and store it
 */
+
+
 
  void Parse_config_file:: operator=(Parse_config_file &other) {(void)other;}// Singletons should prevent copy or assign
 
@@ -11,7 +15,7 @@ Parse_config_file ::Parse_config_file  (const Parse_config_file & other) {(void)
 
 static  std::string  s_fileName;
 
-Parse_config_file & Parse_config_file::								getInstance(std::string fileName)
+Parse_config_file & Parse_config_file::							getInstance(std::string fileName)
 {
 	// s_fileName = fileName;
 	static  Parse_config_file  _instance(fileName);
@@ -24,7 +28,7 @@ Parse_config_file & Parse_config_file::								getInstance(std::string fileName)
  * @return Parse_config_file:: 
  */
 
-Parse_config_file::											Parse_config_file(): _fileName("./configFile/default.conf"), _configFile(std::string()), _errorHappened(false)
+Parse_config_file::												Parse_config_file(): _fileName("./configFile/default.conf"), _configFile(std::string()), _errorHappened(false)
 {
 	std::cout << "*******************************\tTAKING \tDEFAULT\t FILE\t***********************" << std::endl;
 
@@ -41,7 +45,7 @@ Parse_config_file::											Parse_config_file(): _fileName("./configFile/defau
  *	this construct it called when given parameter to the program
  * @param fileName the config file
  */
-Parse_config_file::											Parse_config_file(std::string fileName): _fileName(fileName), _configFile(std::string()), _errorHappened(false)
+Parse_config_file::												Parse_config_file(std::string fileName): _fileName(fileName), _configFile(std::string()), _errorHappened(false)
 {
 	s_fileName = fileName;
 	std::cout << "****************GET FILE\tFROM\tPARAMETER****************" << std::endl;
@@ -54,27 +58,29 @@ Parse_config_file::											Parse_config_file(std::string fileName): _fileName
 	}
 }
 
-bool	Parse_config_file::									getErrorHappened(){return (_errorHappened);}
+bool	Parse_config_file::										getErrorHappened(){return (_errorHappened);}
 
 /*
 **	step one 	:	get file in std::string "configFile"
-**	step two 	:	create table of keyword
 **	step three	:	parsing file, file is located in std::string _configFile;
 */
-int	Parse_config_file::										getStartProcess()
+void  verrify_error_page(t_single_list &secondList);
+
+int	Parse_config_file::											getStartProcess()
 {
 	try
 	{
 		getFile();
-		createKeyWord();
 		_previousToken = initialized;
-		// parsingProcess();
 		_bracket_counter = 0;
 		_previousToken = initialized;
 		_indexConfigFile = 0;
 		_hisLocation = false;
+		set_defaut_config();
+		_block_server = _defautConfig;
 		parse();
-		std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SUCCESSFULLY PARSING<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n" << std::endl;
+		// verrify_error_page(_serverList);
+		std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SUCCESSFULLY PARSED<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n" << std::endl;
 	}
 	catch(char const *  msg_error)
 	{
@@ -87,23 +93,23 @@ int	Parse_config_file::										getStartProcess()
 Parse_config_file::~Parse_config_file(){ }
 
 /***************************************************************alll get function ****************************************/
-size_t	Parse_config_file::									numberOfServer()
+size_t	Parse_config_file::										numberOfServer()
 {
 	return (getInstance(s_fileName).interface_numberOfServer());
 }
 
-size_t	Parse_config_file::									interface_numberOfServer()
+size_t	Parse_config_file::										interface_numberOfServer()
 {
 	return (_serverList.size());
 }
 
 
-t_nested_list	&										Parse_config_file:: getList()
+t_nested_list	&												Parse_config_file:: getList()
 {
 	return(getInstance(s_fileName).interface_getList());
 }
 
-t_nested_list	&	Parse_config_file::						interface_getList(){	return(_serverList);}
+t_nested_list	&	Parse_config_file::							interface_getList(){	return(_serverList);}
 
 std::map<std::string, std::string> & Parse_config_file::		get_globalConfig()
 {
@@ -113,14 +119,14 @@ std::map<std::string, std::string> & Parse_config_file::		get_globalConfig()
 std::map<std::string, std::string> & Parse_config_file::		interface_get_globalConfig(){	return (_globalConfig);}
 
 
-std::vector<int> & Parse_config_file:: 						interface_get_ports () {return (_ports);}
+std::vector<int> & Parse_config_file:: 							interface_get_ports () {return (_ports);}
 
-std::vector<int> & Parse_config_file:: 						get_ports () 
+std::vector<int> & Parse_config_file:: 							get_ports () 
 {
 	return (getInstance(s_fileName).interface_get_ports());
 }
 
-void	Parse_config_file::									set_defaut_config()
+void	Parse_config_file::										set_defaut_config()
 {
 	_defautConfig["allow"] = "PUT GET DELETE POST";
 	_defautConfig["listen"] = "8080";
@@ -128,21 +134,20 @@ void	Parse_config_file::									set_defaut_config()
 	_defautConfig["error page"] = " 404 error.html";
 	_defautConfig["server_name"] = "tebi2poney";
 	_defautConfig["index"] = "index.html";
-	// _defautConfig["cgi_pass"] = CGI_PATH;
+	_defautConfig["cgi_pass"] = "/usr/bin/php-cgi";
 	_defautConfig["autoindex"] = "on";
-	char *pwd = pwd = getcwd(NULL, 0);
+	char *pwd = getcwd(NULL, 0);
 	if (pwd)
 	{
+		_pwd = pwd;
 		_defautConfig["root"] = pwd;
-		_defautConfig["root"] += "/www";
+		_defautConfig["root"] += "/www/error_page";
 		free(pwd);
 	}
 
 }
 
 std::map<std::string, std::string> & Parse_config_file::		get_defaut_config(){return(getInstance(s_fileName).interface_get_defaut_config());}
-// std::map<std::string, std::string> & Parse_config_file::		get_defaut_config(){return(_defautConfig);}
-
 std::map<std::string, std::string> & Parse_config_file:: 		interface_get_defaut_config () {return (_defautConfig);}
 
 /*********************************************************************************OPEN  FILE* *********************************************************************************/
@@ -154,7 +159,7 @@ std::map<std::string, std::string> & Parse_config_file:: 		interface_get_defaut_
  * comment line start with "#"
  * @param line which has  #
  */
-void	Parse_config_file::									handleCommentes(std::string &line)
+void	Parse_config_file::										handleCommentes(std::string &line)
 {
 	size_t  begin = line.find("#");
 	if (begin != std::string::npos)
@@ -165,8 +170,9 @@ void	Parse_config_file::									handleCommentes(std::string &line)
 
 /**
  * @brief Get the File object
- * get file and store it in std::string _configFile
+ * get file and store it in std::string @_configFile
  * get file line by line and then concated each line got previously
+ * @line contain the line of file
  */
 void	Parse_config_file:: getFile()
 {
@@ -190,9 +196,6 @@ void	Parse_config_file:: getFile()
 
 
 /*********************************************************************************ANALYSE SYNTAXE CONFIG FILE*********************************************************************************/
-
-
-
 /**
  * @brief 
  * Returns true if given string in parameter is a number else return false
@@ -214,12 +217,10 @@ bool	 		Parse_config_file::							isNumber(std::string &str)
 	return (true);
 }
 
-
-
 /**
  * @brief 
- * check if the port is a intger
- * if str_port is not a integer in string format throw error
+ * check if the port is a integer
+ * if @str_port is not a integer in string format a error will be  throw  
  * @param str_port port in string format
  */
 void	Parse_config_file:: 									checkPort(std::string &str_port)
@@ -233,77 +234,7 @@ void	Parse_config_file:: 									checkPort(std::string &str_port)
 }
 
 
-
-void	Parse_config_file:: hasSemicolon()
-{
-	if (_previousToken == value)
-	{
-		_previousToken = semicolon;
-	}
-	else
-	{
-		throw("error syntaxe: insertMap");
-	}
-}
-
-void	Parse_config_file:: 									hasName(std::string &directiveName, std::string & pieceOfString, size_t i)
-{
-	int result = 0;
-	result = !isspace(_configFile[i]);
-	if (result != 0)
-	{
-		throw("error syntaxe: hasName");
-	}
-	// if (_previousToken == semicolon || _previousToken == brackets_open || _previousToken == brackets_close)
-	if (_previousToken == semicolon || _previousToken == brackets_open || _previousToken == brackets_close || _previousToken == initialized)
-	{
-		directiveName = pieceOfString;
-		_previousToken = name;
-	}
-	else
-		throw("error syntaxe: hasName");
-
-}
-
-void	Parse_config_file:: 									hasValue(std::string &directiveValue, std::string & pieceOfString)
-{
-	if (_previousToken == name || _previousToken == location || _previousToken == value)
-	{
-		if (_previousToken == value)
-		{
-			directiveValue.append(" ");
-			directiveValue += pieceOfString;
-		}
-		else
-				directiveValue = pieceOfString;
-		_previousToken = value;
-	}
-	else
-	{
-		throw("error syntaxe: hasValue");
-	}
-}
-
-void	Parse_config_file::	createKeyWord()
-{
-	_keyWords.push_back("listen");
-	_keyWords.push_back("server_name");
-	_keyWords.push_back("root");
-	_keyWords.push_back("error_page");
-	_keyWords.push_back("autoindex");
-	_keyWords.push_back("client_max_body_size");
-	_keyWords.push_back("index");
-	_keyWords.push_back("allow_methods");
-	_keyWords.push_back("allow");
-	_keyWords.push_back("cgi");
-	_keyWords.push_back("fastcgi_pass");
-	_keyWords.push_back("fastcgi_param");
-	_keyWords.push_back("return");
-	_keyWords.push_back("cgi_pass");
-	_keyWords.push_back("cli_max_size");
-}
-
-bool	is_secret_word(std::string &word)
+static bool	is_key_word(std::string &word)
 {
 	if (word.compare("listen") == 0)
 		return (true);
@@ -337,19 +268,23 @@ bool	is_secret_word(std::string &word)
 		return (true);
 	return (false);
 }
-/*
-**	the goal is to get a piece of word inside a string
-**		get a piece of a string, between start and nbCharacterTocopy
-**		this piece came from configFile
-** 		paramter i is index of string _configFile
-** 		i it is increment depending  numbers characters to copy
-*/
+
+/**
+ * @brief Get the Piece Of string object
+ * the goal is to get a word from string this word will be stored in @pieceOfString
+ * this word came from '_configFile'
+ * @_configFile is the config file
+ * @start is the begin of word 
+ * @nbCharacterTocopy number of character to copy from @start
+ * @param i is index of string _configFile 
+ * @return std::string 
+ */
 std::string	Parse_config_file::								getPieceOfstring(size_t &i)
 {
 	size_t	nbCharacterTocopy = 0;
 	size_t start = i;
 
-	if (_configFile[i] == '{' || _configFile[i] == '}' || _configFile[i] == ';')//if { or { or ; is the first character i going to catch that piece Of String
+	if (_configFile[i] == '{' || _configFile[i] == '}' || _configFile[i] == ';')//if { or } or ; is the first character i going to catch that piece Of String
 	{
 		i++;
 		nbCharacterTocopy++;
@@ -367,59 +302,6 @@ std::string	Parse_config_file::								getPieceOfstring(size_t &i)
 }
 
 
-void	Parse_config_file::									hasLocation(std::string &directiveName, std::string & pieceOfString)
-{
-	if (_previousToken == semicolon || _previousToken == brackets_open || _previousToken == brackets_close)
-	{
-		_previousToken = location;
-		directiveName = pieceOfString;
-	}
-	else
-	{
-		throw("Syntaxe error : hasLocation");
-	}
-}
-
-void	Parse_config_file::									hasBracketOpen(int &nbParenthese)
-{
-	if ( _previousToken == server || _previousToken == location || _previousToken == value)
-	{
-		nbParenthese++;
-		_previousToken = brackets_open;
-	}
-	else
-	{
-		throw("Syntaxe error : Server expected open bracket");
-	}
-}
-
-void	Parse_config_file::									hasBracketClose(int &nbParenthese)
-{
-	if ( _previousToken == semicolon || _previousToken == brackets_close || _previousToken == brackets_open)
-	{
-		nbParenthese--;
-		_previousToken = brackets_close;
-	}
-	else
-	{
-		throw("Syntaxe error :  HasBracketClose");
-	}
-}
-
-/*
-** check if given string in paramter of function is secret word
-** secret word is inside vector _keyWords
-*/
-bool	Parse_config_file::									checkIfSecretWord(std::string &pieceOfString)
-{
-	int resultCompar = -1;
-
-	for (size_t j = 0; j < _keyWords.size()&& resultCompar != 0 ; j++)
-	{
-		resultCompar = _keyWords[j].compare(pieceOfString);
-	}
-	return (resultCompar == 0 ? true : false);
-}
 
 void	Parse_config_file::									push_front_in_singleList(std::map<std::string, std::string>	&dictionary)
 {
@@ -437,43 +319,8 @@ void	Parse_config_file::									push_back_in_singleList(std::map<std::string, s
 	}
 }
 
-void		verify_the_path(std::string path)
-{
-	bool ret = is_a_directory(path);
-	if (ret == false)
-	{
-		std::cout << "paht = [" << path <<"]" << std::endl;
-		throw("error : root have to be a existing directory");
-	}
-}
-
-/*
-** this function insert name and value in dictionary
-** afterward initialize  name and value
-*/
-void	Parse_config_file::									insertInDictionary(std::map<std::string, std::string>	&dictionary, std::string &directiveName, std::string &directiveValue)
-{
-	if (directiveName.compare("root") == 0)
-	{
-		verify_the_path(directiveValue);
-	}
-	dictionary[directiveName] = directiveValue;
-	directiveName = std::string();
-	directiveValue = std::string();	
-}
-
-void		Parse_config_file::								block_return(std::map<std::string, std::string>	&dictionary)
-{
-	std::map < std::string, std::string >::iterator itr_dictionary;
-	itr_dictionary = dictionary.find("return");
-	if (itr_dictionary != dictionary.end())
-	{
-		throw("error return");
-	}
-}
 void	Parse_config_file::									hasServer()
 {
-	// if (_previousToken == initialized || _previousToken == brackets_close)
 	if (_previousToken == initialized || _previousToken == brackets_close || _previousToken == semicolon)
 	{
 		_previousToken = server;
@@ -484,26 +331,6 @@ void	Parse_config_file::									hasServer()
 	}
 }
 
-/*
-**	si (location)
-		cout++
-		tmp = dictionary;
-		dicyionary.clear()
-	....
-	apres ajout du dictionnary dans liste
-	si (tmp.size())
-		dictionary = tmp;
-		tmp.clear()
-
-	si (nb_parenthese == 0)
-		push_front dictionary dans liste
-
-*/
-/*
-**to understand pretty good this function you should glance on the diagram of parsing
-** this function try to identify token, then act to depending token  
-** token is pieceOfString
-*/
 
 /////////////getter////////////////
 token_type	Parse_config_file::	get_previousToken(){return (_previousToken);}
@@ -517,7 +344,8 @@ std::string	Parse_config_file::	get_configFile(){return (_configFile);}
 size_t		Parse_config_file::	get_indexConfigFile(){return (_indexConfigFile);}
 t_single_list	Parse_config_file::get_singleList(){return (_singleList);}
 bool		Parse_config_file:: get_hisLocation(){ return(_hisLocation);}
-
+std::map<std::string, std::string> Parse_config_file::get_defaut_block_serve(){return (_defautConfig);}
+std::string	Parse_config_file::	get_current_directory(){return (_pwd);}
 
 ///////////setter//////////////////////
 void		Parse_config_file::	set_previousToken(token_type newToken){_previousToken = newToken;}
@@ -532,6 +360,14 @@ void		Parse_config_file::	set_current_word(std::string word){_current_word = wor
 void		Parse_config_file::	set_singleList(t_single_list singleList){_singleList = singleList;}
 void		Parse_config_file:: set_hisLocation(bool state){_hisLocation = state;}
 
+/**
+ * @brief Set the globalConfig object
+ * this function it called when a directive is found out of a block
+ * this directive will be stored in special map called "_globalConfig" 
+ * _globalConfig[directive_name] = directive_value
+ * @param directive_name is the name value of map "_globalConfig" 
+ * @param directive_value is the value of map "_globalConfig" 
+ */
 void				Parse_config_file::	set_globalConfig(std::string directive_name, std::string directive_value)
 {
 	int bracket_counter = get_bracket_counter();
@@ -541,7 +377,63 @@ void				Parse_config_file::	set_globalConfig(std::string directive_name, std::st
 	}
 }
 
-bool				 has_Semicolon(Parse_config_file *ptr)
+static bool	error_page_syntax(std::string error_page_value)
+{
+	size_t pos = error_page_value.find(" ");
+	if (pos != std::string::npos)
+		return (true);//error_page_value = error_page_value.substr(pos + 1);
+	// else
+		// throw("error : syntax on directive error page is wrong");
+	return (false);
+}
+
+/**
+ * @brief 
+ * this function insure some condition are respect:
+ * conditions at respect:
+ * 		1 "return" have to be in block location
+ *		1 "root" is an absolute path which is existing
+ *		2 the port have to be a  number and have not there in block location
+ * if one of them is not respect, a error throw  will happen
+ * @param ptr pointer to the class object let to access to some function
+ */
+static void				not_allow(Parse_config_file *ptr)
+{
+	std::string directive_name = ptr->get_directive_name();
+	std::string directive_value = ptr->get_directive_value();
+	std::string current_directory = ptr->get_current_directory();
+	if (directive_name.compare("return") == 0 && ptr->get_hisLocation() == false)
+		throw("error : 'return' outside of block location ");
+	if (directive_name.compare("root") == 0)
+	{
+		std::cout << "current_directory == [" << current_directory << "]  received == [" << directive_value << "]" << std::endl;
+		bool ret = is_a_directory(directive_value);
+		if (ret == false)
+		{
+			throw("error : 'root' the path have to be a existing repository");
+		}
+	}
+	if (directive_name.compare("listen") == 0 )
+		ptr->checkPort(directive_value);
+	if (directive_name.compare("listen") == 0 && ptr->get_hisLocation() == true)
+		throw("error : 'listen' have not be in block laction");
+	if (directive_name.compare("autoindex") == 0 && directive_value.compare("off") != 0 && directive_value.compare("on") != 0)
+		throw("error : 'autoindex' have not be 'off' or 'on' ");
+	if (directive_name.compare("error_page") == 0 && error_page_syntax(directive_value) == false )
+		throw("error : syntax on directive error page is wrong");
+}
+
+/**
+ * @brief 
+ * semicolon mean it the endline, 
+ * at this step it necessary to insert directive_name and directive_value inside a map (block server or bock location or global config)
+ * the stake is to know in which map the data will be store
+ * through some condition let to know what map to select to store data (directive_name and directive_value)
+ * @param ptr pointer to the class object let to access to some function
+ * @return true if the function match with the current_word
+ * @return false if the function does not match with the current_word
+ */
+static bool				 has_Semicolon(Parse_config_file *ptr)
 {
 	std::string current_word = ptr->get_current_word();
 	if (current_word.compare(";") == 0)
@@ -549,26 +441,23 @@ bool				 has_Semicolon(Parse_config_file *ptr)
 		token_type previousToken = ptr->get_previousToken();
 		if (previousToken == value)
 		{
+			not_allow(ptr);/*check authorization on some directive name or directive value*/
 			ptr->set_previousToken(semicolon);
-			if (ptr->get_bracket_counter() == 0)
-				ptr->set_globalConfig(ptr->get_directive_name(), ptr->get_directive_value());
-			else if (ptr->get_bracket_counter() == 2 && ptr->get_hisLocation() == true)
-			{
-				ptr->set_block_location(ptr->get_directive_name(), ptr->get_directive_value());//test
-			}
+			if (ptr->get_bracket_counter() == 0)/*were outside block server the data will be store in global config*/
+				ptr->set_globalConfig(ptr->get_directive_name(), ptr->get_directive_value());/*go head to store data in global config*/
+			else if (ptr->get_hisLocation() == true)/* if where are in block location*/
+				ptr->set_block_location(ptr->get_directive_name(), ptr->get_directive_value());/*go head to store data block location*/
 			else
-				ptr->set_block_server(ptr->get_directive_name(), ptr->get_directive_value());
+				ptr->set_block_server(ptr->get_directive_name(), ptr->get_directive_value());/*we are in server block   the data will store there*/
 			return (true);
 		}
 		else
-		{
 			throw("error syntaxe: insertMap");
-		}
 	}
 	return (false);
 }
 
-bool	 									has_Value(Parse_config_file *ptr)
+static bool	 									has_Value(Parse_config_file *ptr)
 {
 	token_type previousToken = ptr->get_previousToken();
 	if (previousToken == name || previousToken == location || previousToken == value)
@@ -576,11 +465,7 @@ bool	 									has_Value(Parse_config_file *ptr)
 		std::string current_word = ptr->get_current_word();
 		std::string directiveValue = ptr->get_directive_value();
 		if (previousToken == value)
-		{
-			// directiveValue.append(" ");
 			directiveValue += " " + current_word;
-			// ptr->set_directive_value(directiveValue);
-		}
 		else
 			directiveValue = current_word;
 		ptr->set_directive_value(directiveValue);
@@ -595,34 +480,52 @@ bool	 									has_Value(Parse_config_file *ptr)
 	return (false);
 }
 
-bool 									has_DirectName(Parse_config_file *ptr)
+/**
+ * @brief 
+ *this function try to identify if the 'current_word' it is a keyword then it check the rule of layout
+ *the rule  layout of configle  is explain in pdf schema go to take a look
+ * the 'current_word' is a key word it will be copy at directive_name
+ * @param ptr pointer to the class object let to access to some function
+ * @return true if the function match with the current_word
+ * @return false if the function does not match with the current_word
+ */
+static bool 									has_DirectName(Parse_config_file *ptr)
 {
 	std::string current_word = ptr->get_current_word();
-	if (is_secret_word(current_word) == true)
+	if (is_key_word(current_word) == true)
 	{
 		std::string configFile = ptr->get_configFile();
 		int result = !isspace(configFile[ptr->get_indexConfigFile()]);/**/
-		if (result != 0)
+		if (result != 0)/*after a name i should have a space*/
 		{
-			throw("error syntaxe: hasName");
+			throw("error syntaxe: a directive name have to seperate with a space");
 		}
 		token_type previousToken = ptr->get_previousToken();
-		if (previousToken == semicolon || previousToken == brackets_open || previousToken == brackets_close || previousToken == initialized)
+		if (previousToken == semicolon || previousToken == brackets_open || previousToken == brackets_close || previousToken == initialized)//the rule of layout of config file
 		{
 			ptr->set_directive_name(current_word);
 			ptr->set_previousToken(name);
 			return (true);
 		}
 		else
-			throw("error syntaxe: hasName");
+			throw("error syntaxe: something go wrong with directive name");
 	}
 	return (false);
 }
 
-bool										curlOpen(Parse_config_file *ptr)
+/**
+ * @brief 
+ * if the current word is '{' the the rule  layout of config file will be apply.
+ * if we are are at 'block location' it be necessary to add directive name and directive value in map 'block location'  
+ * the rule  layout of configle  is explain in pdf schema go to take a look
+ * @param ptr pointer to the class object let to access to some function
+ * @return true if the function match with the current_word
+ * @return false if the function does not match with the current_word
+ */
+static bool										curl_bracket_open(Parse_config_file *ptr)
 {
-	std::string word = ptr->get_current_word();
-	if (word.compare("{") == 0)
+	std::string current_word = ptr->get_current_word();
+	if (current_word.compare("{") == 0)
 	{
 		token_type previousToken = ptr->get_previousToken();
 		if (previousToken == server || previousToken == location || previousToken == value)
@@ -631,6 +534,8 @@ bool										curlOpen(Parse_config_file *ptr)
 			n++;
 			ptr->set_bracket_counter(n);
 			previousToken = brackets_open;
+			if (ptr->get_hisLocation() == true)
+				ptr->set_block_location(ptr->get_directive_name(), ptr->get_directive_value());
 			ptr->set_previousToken(previousToken);
 			return (true);
 		}
@@ -647,7 +552,54 @@ void	Parse_config_file::									push_in_neestedList(t_single_list singleList)
 		_serverList.push_back(singleList);
 }
 
-bool										curlClose(Parse_config_file *ptr)
+/**
+ * @brief
+ * the stake it is to push server_block or push block_location or linked list
+ * if we are out side of any block :
+ * 		->push front 'block server' in linked list then push this linked list in other linked list (neestedList)
+ * 		->then initialize 'block server' and single linked list  with default value
+ * 
+ * else if we coming out location block
+ * 		->push back 'block_location' in linked list
+ * 		->then initialize 'block server' with default value 
+ * 
+ * @param ptr pointer to the class object let to access to some function
+ */
+static	void									push_someWhere(Parse_config_file *ptr)
+{
+	std::map <std::string, std::string> block_server = ptr->get_block_server();
+	if (ptr->get_bracket_counter() == 0)/*out side of any block */
+	{
+		ptr->push_front_in_singleList(block_server);
+		t_single_list singList = ptr->get_singleList();
+		ptr->push_in_neestedList(singList);
+		/**
+		 * 
+		 * 
+		 */
+		verrify_error_page(singList);
+		ptr->set_singleList(t_single_list());
+		std::map <std::string, std::string> defaut_config = ptr->get_defaut_block_serve();
+		ptr->set_block_server(defaut_config);
+	}
+	else if (ptr->get_hisLocation() == true)
+	{
+		std::map <std::string, std::string> block_location = ptr->get_block_location();
+		ptr->push_back_in_singleList(block_location);
+		ptr->set_block_location(std::map <std::string, std::string>());
+		ptr->set_hisLocation(false);
+	}
+}
+
+/**
+ * @brief 
+ *	if the current word is '}' the the rule  layout of config file will be apply.
+ * when the curl bracket closed it is necessary to push somthing 
+ * @param ptr pointer to the class object let to access to some function
+ * @return true if the function match with the current_word
+ * @return false if the function does not match with the current_word
+ */
+static bool										curl_bracket_close(Parse_config_file *ptr)
 {
 	std::string word = ptr->get_current_word();
 	if (word.compare("}") == 0)
@@ -657,22 +609,7 @@ bool										curlClose(Parse_config_file *ptr)
 		{
 			int n = ptr->get_bracket_counter();
 			ptr->set_bracket_counter(--n);
-			std::map <std::string, std::string> block_server = ptr->get_block_server();
-			if (ptr->get_bracket_counter() == 0)
-			{
-				ptr->push_front_in_singleList(block_server);
-				t_single_list singList = ptr->get_singleList();
-				ptr->push_in_neestedList(singList);
-				ptr->set_singleList(t_single_list());
-				ptr->set_block_server(std::map <std::string, std::string>());
-			}
-			else if (ptr->get_bracket_counter() == 1 && ptr->get_hisLocation() == true)
-			{
-				std::map <std::string, std::string> block_location = ptr->get_block_location();
-				ptr->set_hisLocation(false);
-				ptr->push_back_in_singleList(block_location);
-				std::cout << "keeeeeeeeeeLLLLLLLLL BYYYYYYYYYYYY" << std::endl;
-			}
+			push_someWhere(ptr);
 			previousToken = brackets_close;
 			return (true);
 		}
@@ -684,8 +621,15 @@ bool										curlClose(Parse_config_file *ptr)
 	return (false);
 }
 
-
-bool										block_Server(Parse_config_file *ptr)
+/**
+ * @brief 
+ *  *	if the current word is 'server' the the rule  layout of config file will be apply.
+ * the server block in config file have own map called 'block_server' it going to store all directives of a server
+ * @param ptr pointer to the class object let to access to some function
+ * @return true if the function match with the current_word
+ * @return false if the function does not match with the current_word
+ */
+static bool										block_Server(Parse_config_file *ptr)
 {
 	std::string word = ptr->get_current_word();
 	if (word.compare("server") == 0)
@@ -704,29 +648,25 @@ bool										block_Server(Parse_config_file *ptr)
 	}
 	return (false);
 }
-void		displayDirectionary(std::map<std::string, std::string> &map);
-void							displaySingleList(std::list<std::map < std::string, std::string > > &linkedList);
 
-// void						Parse_config_file::handler_location()
-// {
-// 	bool (*ptr_func[SIZE_ARRAY_FUNC])(Parse_config_file *) = {&block_Server, &curlOpen, &curlClose, &has_DirectName, &has_Semicolon};
-// 	while ( _configFile[_indexConfigFile] != '}')
-// 	{
-// 		if (!isspace(_configFile[_indexConfigFile]))
-// 		{
 
-// 		}
-// 	}
-// }
-
-bool									has_location_block(Parse_config_file *ptr)
+/**
+ * @brief 
+ *  if the current word is 'location' the the rule  layout of config file will be apply.
+ * the location block in config file have own map called 'block_location' it going to store all directives of a location
+ * @param ptr pointer to the class object let to access to some function
+ * @return true if the function match with the current_word
+ * @return false if the function does not match with the current_word
+ */
+static bool													has_location_block(Parse_config_file *ptr)
 {
 	std::string current_word = ptr->get_current_word();
 	if (current_word.compare("location") == 0)
 	{
 		token_type	previousToken = ptr->get_previousToken();
-		if (previousToken == semicolon || previousToken == brackets_open || previousToken == brackets_close)
+		if ((previousToken == semicolon || previousToken == brackets_open || previousToken == brackets_close) && ptr->get_hisLocation() == false)
 		{
+			ptr->set_directive_name(current_word);
 			ptr->set_previousToken(location);
 			ptr->set_hisLocation(true);
 			return (true);
@@ -737,13 +677,21 @@ bool									has_location_block(Parse_config_file *ptr)
 		}
 	}
 	return (false);
-
 }
 
+void											display_neestedList(t_nested_list firstList);
+void											displaySingleList(std::list<std::map < std::string, std::string > > &linkedList);
+
+/**
+ * @brief 
+ * skim the config file by getting word by word (_current_word)
+ * the each function of array 'ptr_func' going try to identify the _current_word
+ * if the function identify  '_current_word' 'ret' will be equal to true otherwise false
+ */
 void													Parse_config_file::parse()
 {
 	bool ret;
-	bool (*ptr_func[SIZE_ARRAY_FUNC])(Parse_config_file *) = {&block_Server, &curlOpen, &curlClose, &has_DirectName, &has_Semicolon, &has_location_block};
+	bool (*ptr_func[SIZE_ARRAY_FUNC])(Parse_config_file *) = {&block_Server, &curl_bracket_open, &curl_bracket_close, &has_DirectName, &has_Semicolon, &has_location_block};
 	for (; _indexConfigFile < _configFile.size();)
 	{
 		if (!isspace(_configFile[_indexConfigFile]))
@@ -764,11 +712,5 @@ void													Parse_config_file::parse()
  			_indexConfigFile++;
 	}
 	if (get_bracket_counter() != 0 )
-		throw("error syntaxe: missing parenthe");
-	// std::map <std::string, std::string> test = get_block_server();
-	// displayDirectionary(test);
-	std::cout << "======Location===" << std::endl;
-	displayDirectionary(_block_location);
-	// displaySingleList(_singleList);
-	
+		throw("error syntaxe: missing parenthese");
 }
