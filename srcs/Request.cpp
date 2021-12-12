@@ -737,8 +737,6 @@ int    Request::create_file(std::string const file_type)
     std::string const nomFichier(find_url_and_name_from_file(file_type));
     std::ofstream monFlux(nomFichier.c_str());
 
-std::cout << "nomFichier = " << nomFichier << std::endl;
-
     if(monFlux)
     {
         monFlux << header["body"];
