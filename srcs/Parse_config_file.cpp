@@ -652,48 +652,30 @@ void	Parse_config_file::									push_in_neestedList(t_single_list singleList)
  * @return true if the function match with the current_word
  * @return false if the function does not match with the current_word
  */
-//  bool							Parse_config_file::			block_Server()
-// {
-// 	std::cout << "helllllllllllllllllo" << std::endl;
-// 	std::cout << "helllllllllllllllllo" << std::endl;
-
-// 	// std::string word = ptr->get_current_word();
-// 	// if (word.compare("server") == 0)
-// 	// {	
-// 	// 	token_type previousToken = ptr->get_previousToken();
-// 	// 	if (previousToken == initialized || previousToken == brackets_close || previousToken == semicolon)
-// 	// 	{
-// 	// 		previousToken = server;
-// 	// 		ptr->set_previousToken(previousToken);
-// 	// 		return (true);
-// 	// 	}
-// 	// 	else
-// 	// 	{
-// 	// 		throw("Syntaxe error : hasServer");
-// 	// 	}
-// 	//}
-// 	return (false);
-// }
-
- bool										block_Server(Parse_config_file *ptr)
+ bool							Parse_config_file::			block_Server()
 {
-	std::string word = ptr->get_current_word();
-	if (word.compare("server") == 0)
-	{	
-		token_type previousToken = ptr->get_previousToken();
-		if (previousToken == initialized || previousToken == brackets_close || previousToken == semicolon)
-		{
-			previousToken = server;
-			ptr->set_previousToken(previousToken);
-			return (true);
-		}
-		else
-		{
-			throw("Syntaxe error : hasServer");
-		}
-	}
+	std::cout << "helllllllllllllllllo" << std::endl;
+	std::cout << "helllllllllllllllllo" << std::endl;
+
+	// std::string word = ptr->get_current_word();
+	// if (word.compare("server") == 0)
+	// {	
+	// 	token_type previousToken = ptr->get_previousToken();
+	// 	if (previousToken == initialized || previousToken == brackets_close || previousToken == semicolon)
+	// 	{
+	// 		previousToken = server;
+	// 		ptr->set_previousToken(previousToken);
+	// 		return (true);
+	// 	}
+	// 	else
+	// 	{
+	// 		throw("Syntaxe error : hasServer");
+	// 	}
+	//}
 	return (false);
 }
+
+
 /**
  * @brief 
  *  if the current word is 'location' the the rule  layout of config file will be apply.
@@ -702,7 +684,7 @@ void	Parse_config_file::									push_in_neestedList(t_single_list singleList)
  * @return true if the function match with the current_word
  * @return false if the function does not match with the current_word
  */
- bool													has_location_block(Parse_config_file *ptr)
+bool										Parse_config_file::			has_location_block(Parse_config_file *ptr)
 {
 	std::string current_word = ptr->get_current_word();
 	if (current_word.compare("location") == 0)
@@ -735,61 +717,36 @@ void											displaySingleList(std::list<std::map < std::string, std::string >
  */
 //typedef int FUNC(int, int);
 typedef bool (Parse_config_file:: *ptr)(void);
+
 void													Parse_config_file::parse()
 {
-	bool ret;
-	bool (*ptr_func[SIZE_ARRAY_FUNC])(Parse_config_file *) = {&block_Server, &curl_bracket_open, &curl_bracket_close, &has_DirectName, &has_Semicolon, &has_location_block};
-	for (; _indexConfigFile < _configFile.size();)
-	{
-		if (!isspace(_configFile[_indexConfigFile]))
-		{
-			_current_word = getPieceOfstring(_indexConfigFile);
-			for (size_t i = 0; i < SIZE_ARRAY_FUNC; i++)
-			{
-				ret = ptr_func[i](this);
-				if (ret == true)
-				{
-					i = SIZE_ARRAY_FUNC;
-				}
-			}
-			if (ret == false)
-				has_Value(this);
-		}
-		else
- 			_indexConfigFile++;
-	}
-	if (get_bracket_counter() != 0 )
-		throw("error syntaxe: missing parenthese");
-}
-// void													Parse_config_file::parse()
-// {
-// 	// bool ret;
-// 	// FUNC (*ptr_func[SIZE_ARRAY_FUNC]) = {&Parse_config_file::block_Server, &curl_bracket_open, &curl_bracket_close, &has_DirectName, &has_Semicolon, &has_location_block};
-// 	ptr ptrr[1] = {&Parse_config_file::block_Server};
-// 	ptr ret = ptrr[0];
-// 	bool state = (this->*ret)();
-// 	std::cout << "ret == " << state << std::endl;
-// 	// for (; _indexConfigFile < _configFile.size();)
-// 	// {
-// 	// 	if (!isspace(_configFile[_indexConfigFile]))
-// 	// 	{
-// 	// 		_current_word = getPieceOfstring(_indexConfigFile);
-// 	// 		for (size_t i = 0; i < SIZE_ARRAY_FUNC; i++)
-// 	// 		{
-// 	// 			ret = ptr_func[i](this);
-// 	// 			if (ret == true)
-// 	// 			{
-// 	// 				i = SIZE_ARRAY_FUNC;
-// 	// 			}
-// 	// 		}
-// 	// 		if (ret == false)
-// 	// 			has_Value(this);
-// 	// 	}
-// 	// 	else
-//  	// 		_indexConfigFile++;
-// 	// }
-// 	// if (get_bracket_counter() != 0 )
-// 	// 	throw("error syntaxe: missing parenthese");
-// 	// display_neestedList(_serverList);
+	// bool ret;
+	// FUNC (*ptr_func[SIZE_ARRAY_FUNC]) = {&Parse_config_file::block_Server, &curl_bracket_open, &curl_bracket_close, &has_DirectName, &has_Semicolon, &has_location_block};
+	ptr ptr_func[1] = {&Parse_config_file::block_Server};
+	ptr ret = ptr_func[0];
+	bool state = (this->*ret)();
+	std::cout << "ret == " << state << std::endl;
+	// for (; _indexConfigFile < _configFile.size();)
+	// {
+	// 	if (!isspace(_configFile[_indexConfigFile]))
+	// 	{
+	// 		_current_word = getPieceOfstring(_indexConfigFile);
+	// 		for (size_t i = 0; i < SIZE_ARRAY_FUNC; i++)
+	// 		{
+	// 			ret = ptr_func[i](this);
+	// 			if (ret == true)
+	// 			{
+	// 				i = SIZE_ARRAY_FUNC;
+	// 			}
+	// 		}
+	// 		if (ret == false)
+	// 			has_Value(this);
+	// 	}
+	// 	else
+ 	// 		_indexConfigFile++;
+	// }
+	// if (get_bracket_counter() != 0 )
+	// 	throw("error syntaxe: missing parenthese");
+	// display_neestedList(_serverList);
 
-// }
+}

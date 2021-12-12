@@ -123,7 +123,8 @@ public:
 	std::map<std::string, std::string>									get_block_server();
 	std::map<std::string, std::string>									get_block_location();	
 	std::string															get_current_directory();
- 	// bool				block_Server();
+ 	bool																block_Server();
+	bool																has_location_block(Parse_config_file *ptr)
 
 //////////setter///////
 	void																set_previousToken(token_type newToken);
