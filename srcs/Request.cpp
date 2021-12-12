@@ -712,7 +712,8 @@ std::string Request::find_url_and_name_from_file(std::string const file_type)
 
     if (header["method"] != "DELETE")
     {
-        url_file += file_name + "/";
+        std::size_t found = file_name.find_last_of("/");
+        url_file += file_name.substr(0,found) + "/";
         file_name = "newfile" + file_type;
     }
 
@@ -724,7 +725,6 @@ std::string Request::find_url_and_name_from_file(std::string const file_type)
         file_name = header["CONTENT-DISPOSITION"].substr(header["CONTENT-DISPOSITION"].find("filename=") + 10);
         file_name.erase(file_name.size() - 1, file_name.size());
     }
-
     return (url_file + file_name);
 }
 
@@ -736,6 +736,8 @@ int    Request::create_file(std::string const file_type)
 {
     std::string const nomFichier(find_url_and_name_from_file(file_type));
     std::ofstream monFlux(nomFichier.c_str());
+
+std::cout << "nomFichier = " << nomFichier << std::endl;
 
     if(monFlux)
     {
