@@ -139,7 +139,7 @@ void	Parse_config_file::										set_defaut_config()
 	{
 		_pwd = pwd;
 		_defautConfig["root"] = pwd;
-		_defautConfig["root"] += "/www/error_page";
+		_defautConfig["root"] += "/www";
 		free(pwd);
 	}
 

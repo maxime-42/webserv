@@ -473,7 +473,6 @@ std::string     Request::return_config_info(std::string searching_index)
     
     //		Search_rep will be initialised with the directive value for the searching_index
     bool ret1 = getInfo(port, searching_index, &search_rep, find_directive);
-	std::cout << "directive " << searching_index << " is " << search_rep << std::endl;
     //		Search if the searching_index is in the config file
 	bool ret2 = get_location_url(port, header["url"], &location_rep);
 	if (ret2)
@@ -939,7 +938,7 @@ void	Request::http_code(std::string http_code)
 	std::ostringstream	s;
 	std::string path;
 
-	if ((path = return_config_info("error_page 404"/* + http_code*/)) != "")
+	if ((path = return_config_info("error_page "+ http_code)) != "")
     {
 		header["url"] = path;
 		_process_GET();
@@ -950,7 +949,6 @@ void	Request::http_code(std::string http_code)
 		reponse["CONTENT-LENGTH"] = std::string(s.str());
         reponse["CONTENT-TYPE"] = "text/html; charset=utf-8";
 	}
-	std::cout << std::endl << "PATH IS -> " << path << std::endl << std::endl;
     reponse["code"] = http_code;
     reponse["status"] = http[http_code];
 
