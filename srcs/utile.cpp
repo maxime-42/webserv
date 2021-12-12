@@ -224,3 +224,85 @@ bool exists(const std::string &s)
 	struct stat buffer;
 	return (stat (s.c_str(), &buffer) == 0);
 }
+
+bool 	verrify_path_error_page(std::string &error_page_value, std::string &path_root)
+{
+	bool ret;
+	if (error_page_value[0] == '/')
+	{
+		std::cout << "chemin absolut" << std::endl;
+		ret = exists(error_page_value);
+	}
+	else
+	{
+		std::cout << "chemin relatif == " << error_page_value<< std::endl;
+		std::string error_page_path = path_root + "/" + error_page_value;
+		std::cout << "test = [" << error_page_path <<"]" << std::endl;
+		ret = exists(error_page_path);
+	}
+	return (ret);
+}
+
+
+static bool	there_error_page(std::map < std::string, std::string > &dictionary, std::string &path_error_page, std::string &root_location)
+{
+	for (std::map < std::string, std::string >::iterator it = dictionary.begin(); it != dictionary.end() ; it++)
+	{
+		int cmp = it->first.compare(0, 10, "error_page");
+		if (cmp == 0)
+		{
+			path_error_page = it->second;
+			if (dictionary.find("root") != dictionary.end())
+				root_location = dictionary["root"];
+			std::cout << "root_location == " << root_location << std::endl;
+			return (true);
+		}
+			path_error_page = it->second == "toto";
+
+	}
+	return (false);
+}
+
+void  verrify_error_page(t_single_list &secondList)
+{
+	bool ret = true;
+	std::map < std::string, std::string > dictionary;
+	std::map < std::string, std::string >::iterator it;
+	t_single_list::iterator itr_secondList = secondList.begin();
+	dictionary = *itr_secondList;
+	std::string path_error_page;
+	std::string root_location;
+	std::string server_root = dictionary["root"]; 
+	int i = 0;
+	for (;  itr_secondList != secondList.end(); itr_secondList++)
+	{
+		i++;
+		if (there_error_page(*itr_secondList, path_error_page, root_location) == true)
+		{
+			if (i == 0)
+			{
+				std::cout << "block server"<< std::endl;
+				ret = verrify_path_error_page(dictionary["error_page"], dictionary["root"]);
+
+			}
+			else
+			{
+				if (root_location.size() == 0)
+					root_location = server_root;
+				if (dictionary.find("root") != dictionary.end())
+				{
+					std::cout << "block location with root"<< std::endl;
+					ret = verrify_path_error_page(path_error_page, root_location);
+				}
+				else
+				{
+					std::cout << "block location without root"<< std::endl;
+					ret = verrify_path_error_page(path_error_page, server_root);
+				}
+			}
+		}
+		if (ret == false)
+			throw("error: path of 'error page' doesn't existed");
+		// std::cout << "numero == " << ++i << std::endl;
+	}
+}
