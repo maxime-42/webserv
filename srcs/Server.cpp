@@ -19,7 +19,7 @@ void	Server::						test_error(int error_code,  const char *  msg)
 
 void	Server::			setup()
 {
-	int ret;//return value of functions
+	int ret;//will contain the return value of functions
 	int	option = 1;
 	try
 	{
@@ -67,11 +67,12 @@ int		Server:: 						receive_data(struct pollfd	*ptr_tab_poll)
 	int ret = recv(ptr_tab_poll->fd, _buffer, BUFFER_SIZE, 0);
 	if (ret < 0)
 	{
-		if (errno != EWOULDBLOCK)
-		{
+		// if (errno != EWOULDBLOCK)
+		// {
 			_close_connexion = true;
-			std::cout << "recv() failed" << std::endl;
-		}
+		// 	std::cout << "recv() failed" << std::endl;
+		// }
+		std::cout << "recv() failed" << std::endl;
 		return (ret);
 	}
 	if (ret == 0)
@@ -136,7 +137,6 @@ void	Server::						accept_all_incoming_connections()
 	while (new_sockect != ERROR)
 	{
 		new_sockect = accept(_server_fd, (sockaddr *)&_address, (socklen_t*)&addrlen);
-	
 		if (new_sockect < 0)
 		{
  			if (errno != EWOULDBLOCK)
