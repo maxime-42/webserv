@@ -71,7 +71,6 @@ int	Parse_config_file::											getStartProcess()
 	try
 	{
 		getFile();
-		_previousToken = initialized;
 		_bracket_counter = 0;
 		_previousToken = initialized;
 		_indexConfigFile = 0;
@@ -140,7 +139,7 @@ void	Parse_config_file::										set_defaut_config()
 	{
 		_pwd = pwd;
 		_defautConfig["root"] = pwd;
-		_defautConfig["root"] += "/www/error_page";
+		_defautConfig["root"] += "/www";
 		free(pwd);
 	}
 
@@ -318,18 +317,6 @@ void	Parse_config_file::									push_back_in_singleList(std::map<std::string, s
 	}
 }
 
-void	Parse_config_file::									hasServer()
-{
-	if (_previousToken == initialized || _previousToken == brackets_close || _previousToken == semicolon)
-	{
-		_previousToken = server;
-	}
-	else
-	{
-		throw("Syntaxe error : hasServer");
-	}
-}
-
 
 /////////////getter////////////////
 token_type	Parse_config_file::	get_previousToken(){return (_previousToken);}
@@ -413,6 +400,7 @@ bool	error_page_syntax(std::string error_page_value)
 		std::string value = error_page_value.substr(pos + 1);
 		if (value[0] == '/') /*absolute path start with a slash '/' */
 		{
+			std::cout << "we received this absolute path == " << value << std::endl;
 			std::cout << "error : syntax error absolute path is not accept" << std::endl;
 			return (false);
 		}
@@ -624,6 +612,7 @@ void	Parse_config_file::									push_in_neestedList(t_single_list singleList)
 		ptr->set_singleList(t_single_list());
 		std::map <std::string, std::string> defaut_config = ptr->get_defaut_block_serve();
 		ptr->set_block_server(defaut_config);
+		// ptr->set_previousToken(initialized);
 	}
 	else if (ptr->get_hisLocation() == true)
 	{
@@ -687,7 +676,8 @@ void	Parse_config_file::									push_in_neestedList(t_single_list singleList)
 		}
 		else
 		{
-			throw("Syntaxe error : hasServer");
+			std::cout << "previousToken == " << previousToken << std::endl;
+			throw("Syntaxe error :  hasServer");
 		}
 	}
 	return (false);

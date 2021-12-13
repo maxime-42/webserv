@@ -132,6 +132,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
     size_t end_key;
     
     std::string bound = "";
+    int         inside_bound = 0;
     
     val.clear();
     request_str.erase(0, request_str.find('\n') + 1);
@@ -149,21 +150,14 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
             /*
                 In case where the client is uploading something, there can have a big '-' line, that is not the body.
             */
-            if (strncmp(request_str.c_str(), "-----------------------------", 28) == 0)
+            if ((inside_bound == 0) && (bound.size() > 0) && (strncmp(request_str.c_str() + 2, bound.c_str(), bound.size()) == 0)) // +2 because bound have been erase by 2
             {
-                if (header["CONTENT-TYPE"].size() > 0)
-                {
-                    std::size_t found = header["CONTENT-TYPE"].find("boundary=");
-                    if (found != std::string::npos)
-                    {
-                        bound = header["CONTENT-TYPE"].substr(header["CONTENT-TYPE"].find("boundary=") + 9);
-                    }
-                }
                 if (request_str.find(bound) < 3)
                 {
                     begin_key = request_str.find('\n');
                     request_str.erase(0, begin_key + 1); //+ 1 for the '\n'.
                 }
+                inside_bound = 1;
             }
 			else if (header.find("TRANSFER-ENCODING") != header.end() && header["TRANSFER-ENCODING"] == "chunked")
             {
@@ -205,7 +199,7 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
                 {
                     begin_key = (int)request_str.find(bound);
                     if (begin_key >= 5)
-                    	header["body"] = request_str.erase(begin_key - 5); // -5 because there is those 5 char "'\13''\n''-''-''\n'"
+                    	header["body"] = request_str.erase(begin_key - 4); // -5 because there is those 5 char "'\13''\n''-''-''\n'"
                     else if (begin_key >= 2)
                     	header["body"] = request_str.erase(begin_key - 2); // -3 because there is those 2 char "'\13''\n'"
                     request_str.erase(0, request_str.size()); //+ 1 for the '\n'.
@@ -217,6 +211,16 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
                 }
 			}
         }
+
+        if ((bound.size() == 0) && (header["CONTENT-TYPE"].size() > 0))
+        {
+            std::size_t found = header["CONTENT-TYPE"].find("boundary=");
+            if (found != std::string::npos)
+            {
+                bound = header["CONTENT-TYPE"].substr(header["CONTENT-TYPE"].find("boundary=") + 9);
+            }
+        }
+
         /*
            The key and the value are separate by ':'. The function is going to find the separator then fill header with the key and value
         */
@@ -248,14 +252,15 @@ void		Request::parse(struct pollfd *ptr_tab_poll, int port)
 	g_request[ptr_tab_poll->fd].clear(); // empty vector to allow incoming request from the same client
 
 	// --------  affichage  --------------------------------------------------------------------------
-    /*
-   	std::cout << "Display header parsed begin" << std::endl;
+
+/*   	std::cout << "Display header parsed begin" << std::endl;
     for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end(); ++it)
     {
-       	std::cout << it->first << ":" << it->second << std::endl;
+		if (it->first == "body")
+       	std::cout << std::endl << ">>>>>>>" << it->first << ":" << it->second << "<<<<<<<" << std::endl;
     }
        	std::cout << "\nDisplay header parsed end" << std::endl;
-    */
+*/
 }
 
 std::string        Request::get_method()
@@ -381,19 +386,19 @@ void		Request::compose_reponse(struct pollfd *ptr_tab_poll)
 
 	bool content_type = false;
 
-    std::string reply = reponse["http_version"] + " " + reponse["code"] + " " + reponse["status"] + "\n";
+    std::string reply = reponse["http_version"] + " " + reponse["code"] + " " + reponse["status"] + "\r\n";
 	
 	if (reponse.find("LOCATION") != reponse.end())
-		reply.append("Location: " + reponse["LOCATION"] + "\n");
+		reply.append("Location: " + reponse["LOCATION"] + "\r\n");
 
-	reply.append("Date: " + time_to_string() + " \n");
-	reply.append("Server: Webserv/1.0 (Unix)\n");
+	reply.append("Date: " + time_to_string() + " \r\n");
+	reply.append("Server: Webserv/1.0 (Unix)\r\n");
 
     if (reponse.find("body") == reponse.end()) {
 
-		reply.append("Connection: Closed\n");
-        reply.append("\n");
-        reply.append("\n");
+		reply.append("Content-Length: 0\r\n");
+		reply.append("Connection: Closed\r\n");
+        reply.append("\r\n");
 
     	write(1, "\nREPONSE:\n\n", 11);
 	    write(1, reply.c_str(),reply.length());
@@ -402,18 +407,18 @@ void		Request::compose_reponse(struct pollfd *ptr_tab_poll)
 
 		for (std::map<std::string, std::string>::iterator it = cgi_head.begin(); it != cgi_head.end(); it++) {
 
-			reply.append(it->first + ": " + it->second + "\n");
+			reply.append(it->first + ": " + it->second + "\r\n");
 			std::string str = it->first;
 			std::transform(str.begin(), str.end(), str.begin(), ::toupper);
 			if (str == "CONTENT-TYPE")
 				content_type = true;
 		}
 		if (!content_type)
-	        reply.append("Content-Type: " + reponse["CONTENT-TYPE"] + "\n");
-        reply.append("Content-Length: " + reponse["CONTENT-LENGTH"] + "\n");
+	        reply.append("Content-Type: " + reponse["CONTENT-TYPE"] + "\r\n");
+        reply.append("Content-Length: " + reponse["CONTENT-LENGTH"] + "\r\n");
 
-		reply.append("Connection: Closed\n");
-        reply.append("\n");
+		reply.append("Connection: Closed\r\n");
+        reply.append("\r\n");
 
     	write(1, "\nREPONSE:\n\n", 11);
 	    write(1, reply.c_str(),reply.length());
@@ -708,7 +713,8 @@ std::string Request::find_url_and_name_from_file(std::string const file_type)
 
     if (header["method"] != "DELETE")
     {
-        url_file += file_name + "/";
+        std::size_t found = file_name.find_last_of("/");
+        url_file += file_name.substr(0,found) + "/";
         file_name = "newfile" + file_type;
     }
 
@@ -720,7 +726,6 @@ std::string Request::find_url_and_name_from_file(std::string const file_type)
         file_name = header["CONTENT-DISPOSITION"].substr(header["CONTENT-DISPOSITION"].find("filename=") + 10);
         file_name.erase(file_name.size() - 1, file_name.size());
     }
-
     return (url_file + file_name);
 }
 
@@ -858,8 +863,10 @@ int ci_find_substr( const std::string& str1, const std::string& str2 )
  */
 bool	Request::end_reached(struct pollfd *ptr_tab_poll) {
 
+	int		pos;
 	size_t len = g_request[ptr_tab_poll->fd].size();
 	std::string request_str(g_request[ptr_tab_poll->fd].begin(), g_request[ptr_tab_poll->fd].end());
+	std::string rqcp(request_str); // request_copy
 
 	if (ci_find_substr(request_str, "transfer-encoding") != -1 && request_str.find("chunked") != std::string::npos)
 		/*	if (request_str.find("TRANSFER-ENCODING") != std::string::npos
@@ -876,6 +883,34 @@ bool	Request::end_reached(struct pollfd *ptr_tab_poll) {
 							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n'))
 						return true;
 				}
+			} else if ((pos = ci_find_substr(request_str, "content-length")) != -1) {
+	
+				size_t content_length;
+				rqcp.erase(0, pos + 15);
+				if (rqcp[0] == 13 || rqcp[0] == 32)
+					rqcp.erase(0, 1);
+				int str_len = 0;
+				for (size_t i = 0; isdigit(rqcp[i]); i++)
+					str_len++;
+				std::istringstream ( rqcp.substr(0, str_len)) >> content_length;
+
+//				std::cout << "specified content_length is " << content_length << std::endl;
+
+				for (size_t i = 0; i < len; i++) {
+
+					if (g_request[ptr_tab_poll->fd][i] == '\r'
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\r')
+							&& (++i < len && g_request[ptr_tab_poll->fd][i] == '\n')
+							&& (++i < len)) {
+
+//				std::cout << "current content_length is" << request_str.length() - i << std::endl;
+						
+						if (request_str.length() - i >= content_length)
+							return true;
+					}
+				}
+	
 			} else {
 
 				for (size_t i = 0; i < len; i++) {
@@ -901,13 +936,14 @@ void	Request::http_code(std::string http_code)
 	std::istringstream(http_code) >> int_code;
     std::map<std::string, std::string> http = http_table();
 	std::ostringstream	s;
+	std::string path;
 
-/*	if (int_code == 404)
+	if ((path = return_config_info("error_page "+ http_code)) != "")
     {
-		header["url"] = "/error_page/error_page_" + http_code + ".html";
+		header["url"] = path;
 		_process_GET();
 	}
-	else */if (int_code >= 400) {
+	else if (int_code >= 400) {
 		reponse["body"] = "<h1>" + http_code + " " +  http[http_code] + "</h1>";
 		s << reponse["body"].length();
 		reponse["CONTENT-LENGTH"] = std::string(s.str());
