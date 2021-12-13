@@ -819,6 +819,11 @@ void    Request::_process_POST()
     }
     else
     {
+        std::ostringstream	s;
+        reponse["body"] = "<h1>POST request successfully done.</h1>";
+        s << reponse["body"].length();
+        reponse["CONTENT-LENGTH"] = std::string(s.str());
+        reponse["CONTENT-TYPE"] = "text/html; charset=utf-8";
         return http_code("200");
     }
 }
@@ -839,6 +844,11 @@ void    Request::_process_DELETE()
     {
         return http_code("204");
     }
+    std::ostringstream	s;
+    reponse["body"] = "<h1>DELETE request successfully done.</h1>";
+    s << reponse["body"].length();
+	reponse["CONTENT-LENGTH"] = std::string(s.str());
+    reponse["CONTENT-TYPE"] = "text/html; charset=utf-8";
     return http_code("200");
 }
 
