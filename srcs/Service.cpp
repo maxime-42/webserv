@@ -16,7 +16,7 @@
  */
 void	Service::								displayAvailableServer(/* args */)
 {
-	std::cout << "\nServeur available:" << std::endl;
+	std::cout << "\nAvailable servers:" << std::endl << std::endl;
 	for (std::list<Server>::iterator it = _listServer.begin(); it != _listServer.end(); it++)
 	{
 		std::cout << "server =" << it->get_server_fd() << "= port =" << it->getPort() << "="  << std::endl;
@@ -36,7 +36,7 @@ Service::Service():_instance(Parse_config_file::getInstance("./configFile/defaul
 {
 	if (_instance.getErrorHappened() == true)//glance if the parsing has detected an error
 	{
-		std::cout << "EXIT PROGRAME" << std::endl;
+		std::cout << "EXIT PROGRAM" << std::endl;
 		return ;
 	}
 	int ret = setUpService();
@@ -60,7 +60,7 @@ Service:: 										Service(std::string FileName):_instance(Parse_config_file::g
 {
 	if (_instance.getErrorHappened() == true)//glance if the parsing has detected an error
 	{
-		std::cout << "EXIT PROGRAME" << std::endl;
+		std::cout << "EXIT PROGRAM" << std::endl;
 		return ;
 	}
 	int ret = setUpService();
@@ -202,14 +202,14 @@ void	Service::								handlerServer(size_t &index)
 		Server	&currentServer = *it;
 		std::vector<int> & vect_socket_client = currentServer.get_sockect_clients();
 		old_size = vect_socket_client.size();
-		if (_pollFds[index].fd == currentServer.get_server_fd())// meaning new caming connection
+		if (_pollFds[index].fd == currentServer.get_server_fd())// meaning new incoming connection
 		{
-			currentServer.accept_all_incoming_connections();// new socket has been add to "_sockect_clients"
+			currentServer.accept_all_incoming_connections();// new socket has been added to "_sockect_clients"
 			addFdsToPollFds(vect_socket_client, old_size);// poll array should update to by adding the new socket on it
 		}
 		else if ((std::find(vect_socket_client.begin(), vect_socket_client.end(), _pollFds[index].fd)) != vect_socket_client.end())
 		{
-			//std::cout << "=========connexion existing===============" << std::endl;
+			//std::cout << "========= handle existing connection ===============" << std::endl;
 			_close_connexion = currentServer.handle_existing_connections(&_pollFds[index]); // return true if the connection is closed
 			if (_close_connexion == true)
 			{
@@ -258,7 +258,7 @@ void	Service::								runService()
 				//std::cout << "==========_pollFds[index].fd = " << _pollFds[index].fd << " index = " << index << "===========" << std::endl;
 				if (_pollFds[index].revents == NONE_EVENT)//loop as long the are not event happened
 					continue;
-				handlerServer(index);// like event happened go to handler the file descriptor of this
+				handlerServer(index);// an event happened, handle it
 			}
 		}
 		squeeze_tab_poll();

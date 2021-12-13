@@ -80,6 +80,7 @@ int		Server:: 						receive_data(struct pollfd	*ptr_tab_poll)
 		_close_connexion = true;
 		return(ret);
 	}
+	_buffer[ret] = '\0';
 
 	std::cout << "\n\n" << "===============   "  << ret << " BYTES  RECEIVED   ===============\n";
 	std::cout << _buffer;
