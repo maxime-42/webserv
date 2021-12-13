@@ -86,33 +86,19 @@ private:
 
 	void																hasServer(void);
 
-	void																getFile();
-	std::string															getPieceOfstring(size_t &i);
-	int																	getStartProcess();
 
-public:
-	static size_t														numberOfServer();
-	void																push_front_in_singleList(std::map<std::string, std::string>	&dictionary);
-	bool																checkIfSecretWord(std::string &pieceOfString);
-
-	~Parse_config_file();
 	void																push_back_dictionary_in_singleList(std::map<std::string, std::string>	&dictionary);
 	void																push_back_in_singleList(std::map<std::string, std::string>	&dictionary);
 	void																checkPort(std::string &str_port);
+	void																push_front_in_singleList(std::map<std::string, std::string>	&dictionary);
+	bool																checkIfSecretWord(std::string &pieceOfString);
 
-//////////getter///////
-	static std::map<std::string, std::string> & 						get_defaut_config();
-	bool																getErrorHappened();
-	static	Parse_config_file 											&getInstance(std::string fileName);
-	static	Parse_config_file											&getInstance();
-	static	t_nested_list	&											getList();
-	static	std::map<std::string, std::string> & 						get_globalConfig();
-	static std::vector<int> &											get_ports();
 	size_t																get_indexConfigFile();
-
 	token_type															get_previousToken();
 	std::string															get_directive_name();
 	std::string 														get_directive_value();
+	
+//////////getter///////
 
 	int																	get_bracket_counter();
 	std::string															get_current_word();
@@ -123,8 +109,10 @@ public:
 	std::map<std::string, std::string>									get_block_server();
 	std::map<std::string, std::string>									get_block_location();	
 	std::string															get_current_directory();
- 	bool																block_Server();
-	bool																has_location_block(Parse_config_file *ptr)
+	void																getFile();
+	std::string															create_token(size_t &i);
+	int																	getStartProcess();
+
 
 //////////setter///////
 	void																set_previousToken(token_type newToken);
@@ -141,6 +129,33 @@ public:
 	void																push_in_neestedList(t_single_list singleList);
 	void																set_singleList(t_single_list singleList);
 	void																set_hisLocation(bool state);
+
+/// parser//////////////////
+ 	bool										 						has_Semicolon(Parse_config_file *ptr);
+ 	bool	 															has_Value(Parse_config_file *ptr);
+ 	bool 																has_DirectName(Parse_config_file *ptr);
+ 	bool																curl_bracket_open(Parse_config_file *ptr);
+	void																push_someWhere(Parse_config_file *ptr);
+	bool																curl_bracket_close(Parse_config_file *ptr);
+	bool																has_location_block(Parse_config_file *ptr);
+
+	void																modify_name_error_page(std::string &directive_name, std::string &directive_value);
+	void																not_allow(Parse_config_file *ptr);
+	bool																block_Server(Parse_config_file *ptr);
+	void																method_lookup();
+
+
+public:
+	static size_t														numberOfServer();
+	~Parse_config_file();
+
+	static std::map<std::string, std::string> & 						get_defaut_config();
+	bool																getErrorHappened();
+	static	Parse_config_file 											&getInstance(std::string fileName);
+	static	Parse_config_file											&getInstance();
+	static	t_nested_list	&											getList();
+	static	std::map<std::string, std::string> & 						get_globalConfig();
+	static std::vector<int> &											get_ports();
 
 };
 

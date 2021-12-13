@@ -225,25 +225,46 @@ bool exists(const std::string &s)
 	return (stat (s.c_str(), &buffer) == 0);
 }
 
-bool 	verrify_path_error_page(std::string &error_page_value, std::string &path_root)
-{
-	bool ret;
-	if (error_page_value[0] == '/')
-	{
-		std::cout << "chemin absolut" << std::endl;
-		ret = exists(error_page_value);
-	}
-	else
-	{
-		std::cout << "chemin relatif == " << error_page_value<< std::endl;
-		std::string error_page_path = path_root + "/" + error_page_value;
-		std::cout << "test = [" << error_page_path <<"]" << std::endl;
-		ret = exists(error_page_path);
-	}
-	return (ret);
-}
+/**
+ * @brief 
+ * this function verify the l'existence of error page through the concatenation  of two string.
+ * the concatenated string  is send to a other function which tell us  the existence or not of  file 
+ * @param error_page_value contain the file name of error page 
+ * @param path_root contain the absolute path of error page
+ * @return true the file existe 
+ * @return false the file doesn't existe 
+ */
+// bool 	verrify_path_error_page(std::string &error_page_value, std::string &path_root)
+// {
+// 	bool ret;
+// 	// if (error_page_value[0] == '/')
+// 	// {
+// 	// 	std::cout << "chemin absolut" << std::endl;
+// 	// 	ret = exists(error_page_value);
+// 	// }
+// 	// else
+// 	// {
+// 		// std::cout << "chemin relatif == " << error_page_value<< std::endl;
+// 		std::string error_page_path = path_root + "/" + error_page_value;
+// 		/* @error_page_path is the concatenate string*/
+// 		// std::cout << "test = [" << error_page_path <<"]" << std::endl;
+// 		ret = exists(error_page_path);/* this function return true or false according to the existence of file*/
+// 	// }
+// 	return (ret);
+// }
 
-
+/**
+ * @brief 
+ * look up in the dictionationary to find a error_page path and likely a path root of this dictionnary
+ * the pupose is to find a error page 
+ * this function verify the l'existence of error page through the concatenation  of two string.
+ * the concatenated string  is send to a other function which tell us  the existence or not of  file 
+ * @param dictionary a dictionary match up with a block server or block location 
+ * @param path_error_page reference where to store the error page
+ * @param root_location reference where to store the path of root
+ * @return true there are a a error page in this block
+ * @return false there are not a error page in this block
+ */
 static bool	there_error_page(std::map < std::string, std::string > &dictionary, std::string &path_error_page, std::string &root_location)
 {
 	for (std::map < std::string, std::string >::iterator it = dictionary.begin(); it != dictionary.end() ; it++)
@@ -251,18 +272,24 @@ static bool	there_error_page(std::map < std::string, std::string > &dictionary, 
 		int cmp = it->first.compare(0, 10, "error_page");
 		if (cmp == 0)
 		{
+			/*a error page has been find*/
 			path_error_page = it->second;
-			if (dictionary.find("root") != dictionary.end())
+			if (dictionary.find("root") != dictionary.end())/*check if the are a path root */
 				root_location = dictionary["root"];
-			std::cout << "root_location == " << root_location << std::endl;
+			// std::cout << "root_location == " << root_location << std::endl;
 			return (true);
 		}
-			path_error_page = it->second == "toto";
-
 	}
 	return (false);
 }
-
+/**
+ * @brief 
+ * skim the linked list a take a look at on each node if there are a error page 
+ * a node meant a dictionary
+ * then skim the dinctionary to check the error page and likely a path root
+ * @there_error_page skim the dictionary of linked list
+ * @param secondList the linked liste to skim
+ */
 void  verrify_error_page(t_single_list &secondList)
 {
 	bool ret = true;
@@ -279,30 +306,35 @@ void  verrify_error_page(t_single_list &secondList)
 		i++;
 		if (there_error_page(*itr_secondList, path_error_page, root_location) == true)
 		{
+			/*if a error page has been find path_error_page will contain the path same to root_location*/
 			if (i == 0)
 			{
-				std::cout << "block server"<< std::endl;
-				ret = verrify_path_error_page(dictionary["error_page"], dictionary["root"]);
-
+				// std::cout << "block server"<< std::endl;
+				// ret = verrify_path_error_page(dictionary["error_page"], dictionary["root"]);
+				ret = exists( dictionary["root"]+ "/" + dictionary["error_page"]);/* this function return true or false according to the existence of file*/
 			}
 			else
 			{
 				if (root_location.size() == 0)
+				{
+					/*the block location doesn't have a root inside the dictionary the why it take the root of block server*/
 					root_location = server_root;
+				}
 				if (dictionary.find("root") != dictionary.end())
 				{
-					std::cout << "block location with root"<< std::endl;
-					ret = verrify_path_error_page(path_error_page, root_location);
+					// std::cout << "block location with root"<< std::endl;
+					// ret = verrify_path_error_page(path_error_page, root_location);
+					ret = exists(root_location + "/" + path_error_page);/* this function return true or false according to the existence of file*/
 				}
 				else
 				{
-					std::cout << "block location without root"<< std::endl;
-					ret = verrify_path_error_page(path_error_page, server_root);
+					// std::cout << "block location without root"<< std::endl;
+					// ret = verrify_path_error_page(path_error_page, server_root);
+					ret = exists(server_root + "/" + path_error_page);/* this function return true or false according to the existence of file*/
 				}
 			}
 		}
 		if (ret == false)
 			throw("error: path of 'error page' doesn't existed");
-		// std::cout << "numero == " << ++i << std::endl;
 	}
 }
