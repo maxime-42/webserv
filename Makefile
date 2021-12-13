@@ -13,7 +13,7 @@ _WHITE		=\e[97m
 NAME        = webserv
 
 CC          = clang++
-CFLAGS      = -Werror -Wextra -Wall --std=c++98 -g3 -fstandalone-debug -fsanitize=address
+CFLAGS      = -Werror -Wextra -Wall --std=c++98 #-g3 -fstandalone-debug -fsanitize=address
 DEFINE		= -D CGI_PATH=\"$(shell which php-cgi)\"
 RM          = rm -rf
 
