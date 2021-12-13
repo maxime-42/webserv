@@ -13,7 +13,7 @@ _WHITE		=\e[97m
 NAME        = webserv
 
 CC          = clang++
-CFLAGS      = -Werror -Wextra -Wall --std=c++98 -g3 -fstandalone-debug  #-fsanitize=address
+CFLAGS      = -Werror -Wextra -Wall --std=c++98 #-g3 -fstandalone-debug -fsanitize=address
 DEFINE		= -D CGI_PATH=\"$(shell which php-cgi)\"
 RM          = rm -rf
 
@@ -21,14 +21,14 @@ DIR_SRCS    = srcs/
 DIR_OBJS    = objs/
 DIR_INC     = includes/
 
-F_SRCS        =		main.cpp 			\
-                	Server.cpp			\
-					Request.cpp			\
-					Parse_config_file.cpp		\
-					utile.cpp			\
-					Service.cpp			\
-					Cgi.cpp\
-					to_debug.cpp\
+F_SRCS        =		main.cpp 				\
+                	Server.cpp				\
+					Request.cpp				\
+					Parse_config_file.cpp	\
+					Service.cpp				\
+					Cgi.cpp					\
+					utils.cpp				\
+#					to_debug.cpp\
 
 SRCS        = $(addprefix $(DIR_SRCS), $(F_SRCS))
 

@@ -36,7 +36,7 @@ class Server
 	private:
 		int						_server_fd;
 		int						_listen_fd;
-		char					_buffer[BUFFER_SIZE];
+		char					_buffer[BUFFER_SIZE + 1];
 		int						_port;
 		bool					_close_connexion;
 		bool					_compress_array;// any time a clients disconnected  this variable will be set to true to squeeze poll array

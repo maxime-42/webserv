@@ -765,7 +765,7 @@ void    Request::_process_POST()
     std::string size_max = return_config_info("cli_max_size");
     if (size_max.size() < header["CONTENT-LENGTH"].size())
     {
-        return http_code("411");
+        return http_code("413");
     }
     else if (size_max.size() == header["CONTENT-LENGTH"].size())
     {
@@ -775,7 +775,7 @@ void    Request::_process_POST()
                 break ;
             else if (size_max.at(i) < header["CONTENT-LENGTH"].at(i))
             {
-                return http_code("411");
+                return http_code("413");
             }
         }
     }

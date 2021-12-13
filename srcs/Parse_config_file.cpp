@@ -48,7 +48,7 @@ Parse_config_file::												Parse_config_file(): _fileName("./configFile/defa
 Parse_config_file::												Parse_config_file(std::string fileName): _fileName(fileName), _configFile(std::string()), _errorHappened(false)
 {
 	s_fileName = fileName;
-	std::cout << "****************GET FILE\tFROM\tPARAMETER****************" << std::endl;
+	//std::cout << "****************GET FILE\tFROM\tPARAMETER****************" << std::endl;
 	set_defaut_config();
 
 	int result = getStartProcess();
@@ -78,9 +78,7 @@ int	Parse_config_file::											getStartProcess()
 		set_defaut_config();
 		_block_server = _defautConfig;
 		parse();
-		std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>SUCCESSFULLY PARSED<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n" << std::endl;
-	}
-	catch(char const *  msg_error)
+		std::cout << ">>  CONFIG FILE [ OK ]" << std::endl; } catch(char const *  msg_error)
 	{
 		std::cerr << msg_error << std::endl;
 		return (ERROR);
@@ -487,7 +485,7 @@ bool	error_page_syntax(std::string error_page_value)
 			return (true);
 		}
 		else
-			throw("error syntaxe: insertMap");
+			throw("/!\\ SYNTAX ERROR: insertMap /!\\");
 	}
 	return (false);
 }
@@ -510,8 +508,7 @@ bool	error_page_syntax(std::string error_page_value)
 	else
 	{
 		std::cout << "ptr->get_current_word() == [" << ptr->get_current_word() << "]" << std::endl;
-		throw("error syntaxe: hasValue");
-	}
+		throw("/!\\ SYNTAX ERROR: hasValue /!\\"); }
 	return (false);
 }
 
@@ -533,7 +530,7 @@ bool	error_page_syntax(std::string error_page_value)
 		int result = !isspace(configFile[ptr->get_indexConfigFile()]);/**/
 		if (result != 0)/*after a name i should have a space*/
 		{
-			throw("error syntaxe: a directive name have to seperate with a space");
+			throw("/!\\ SYNTAX ERROR: a directive name have to seperate with a space /!\\");
 		}
 		token_type previousToken = ptr->get_previousToken();
 		if (previousToken == semicolon || previousToken == brackets_open || previousToken == brackets_close || previousToken == initialized)//the rule of layout of config file
@@ -543,7 +540,7 @@ bool	error_page_syntax(std::string error_page_value)
 			return (true);
 		}
 		else
-			throw("error syntaxe: something go wrong with directive name");
+			throw("/!\\ SYNTAX ERROR: something went wrong with directive name /!\\");
 	}
 	return (false);
 }
@@ -551,8 +548,7 @@ bool	error_page_syntax(std::string error_page_value)
 /**
  * @brief 
  * if the current word is '{' the the rule  layout of config file will be apply.
- * if we are are at 'block location' it be necessary to add directive name and directive value in map 'block location'  
- * the rule  layout of configle  is explain in pdf schema go to take a look
+ * if we are are at 'block location' it be necessary to add directive name and directive value in map 'block location'  * the rule  layout of configle  is explain in pdf schema go to take a look
  * @param ptr pointer to the class object let to access to some function
  * @return true if the function match with the current_word
  * @return false if the function does not match with the current_word
