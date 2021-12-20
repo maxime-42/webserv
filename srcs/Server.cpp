@@ -19,7 +19,7 @@ void	Server::						test_error(int error_code,  const char *  msg)
 
 void	Server::			setup()
 {
-	int ret;//return value of functions
+	int ret;//will contain the return value of functions
 	int	option = 1;
 	try
 	{
@@ -45,59 +45,79 @@ void	Server::			setup()
 	}
 }
 
+/*
+** this function remove socke given in parameter, it meaning this client is disconnected 
+** it useless to keeping it in "_sockect_clients" 
+*/
 void	Server::						Squeze_vect_sockect_fd(int to_find)
 {
-	for (std::vector<int>::iterator it = _vect_socket_fd.begin(); it !=  _vect_socket_fd.end() ; it++)
+	for (std::vector<int>::iterator it = _sockect_clients.begin(); it !=  _sockect_clients.end() ; it++)
 	{
 		if (*it == to_find)
 		{
-			std::cout << ">>>>>>>>>>>>>>>>>> erase file descriptor == " << *it << " from server : " << _server_fd << "<<<<<<<<<<<<<<<<<<" << std::endl;
-			_vect_socket_fd.erase(it);
+//			std::cout << ">>>>>>>>>>>>>>>>>> erase file descriptor == " << *it << " from server : " << _server_fd << "<<<<<<<<<<<<<<<<<<" << std::endl;
+			_sockect_clients.erase(it);
 			return ;
 		}
 	}
 }
 
-bool	Server:: 						receive_data(struct pollfd	*ptr_tab_poll)
+int		Server:: 						receive_data(struct pollfd	*ptr_tab_poll)
 {	
 	int ret = recv(ptr_tab_poll->fd, _buffer, BUFFER_SIZE, 0);
 	if (ret < 0)
 	{
-		if (errno != EWOULDBLOCK)
-		{
+		// if (errno != EWOULDBLOCK)
+		// {
 			_close_connexion = true;
-			std::cout << "recv() failed" << std::endl;
-		}
-		return (false);
+		// 	std::cout << "recv() failed" << std::endl;
+		// }
+		std::cout << "recv() failed" << std::endl;
+		return (ret);
 	}
 	if (ret == 0)
 	{
 		std::cout << "connection closed from remote side" << std::endl;
 		_close_connexion = true;
-		return(false);
+		return(ret);
 	}
-	std::cout << ret << " bytes received:\n ===============\n" << _buffer << "\n===============\n"<< std::endl;
-	return (true);
+	_buffer[ret] = '\0';
+
+	std::cout << "\n\n" << "===============   "  << ret << " BYTES  RECEIVED   ===============\n";
+	std::cout << _buffer;
+	std::cout << "\n======================================================" << std::endl;
+
+	return (ret);	
 }
 
 
 
 bool	Server::						handle_existing_connections(struct pollfd	*ptr_tab_poll)
 {
-	Request								request;
+	Request		request;
+	int			ret;
 
 	_close_connexion = false;
-	if (receive_data(ptr_tab_poll))
-	{
-		if (request.read(_buffer, ptr_tab_poll) < BUFFER_SIZE || request.end_reached(ptr_tab_poll))
-		{
+	if (ptr_tab_poll->revents & POLLOUT) {
 
-			request.parse(ptr_tab_poll);
-			request.process();
-			if (!(request.send_reponse(ptr_tab_poll->fd)))
-				std::cout << "send() failed !" << std::endl;
+		ret =  request.send_reponse(ptr_tab_poll);
+
+		if (ret < 0)
+			std::cout << "send() failed!" << std::endl;
+		else if (ret == 0) {
 			close(ptr_tab_poll->fd);
 			_close_connexion = true;
+		}
+
+	}
+	else if ((ret = receive_data(ptr_tab_poll)) > 0)
+	{
+		request.store(_buffer, ptr_tab_poll, ret);
+		if (request.end_reached(ptr_tab_poll))
+		{
+			request.parse(ptr_tab_poll, _port);
+			request.process();
+			request.compose_reponse(ptr_tab_poll);
 		}
 	}
 	if (_close_connexion)
@@ -113,29 +133,29 @@ bool	Server::						handle_existing_connections(struct pollfd	*ptr_tab_poll)
 
 void	Server::						accept_all_incoming_connections()
 {
-	int new_sd = 0;
+	int new_sockect = 0;
 	int addrlen = sizeof(_address);
-	while (new_sd != ERROR)
+	while (new_sockect != ERROR)
 	{
-		new_sd = accept(_server_fd, (sockaddr *)&_address, (socklen_t*)&addrlen);
-	
-		if (new_sd < 0)
+		new_sockect = accept(_server_fd, (sockaddr *)&_address, (socklen_t*)&addrlen);
+		if (new_sockect < 0)
 		{
  			if (errno != EWOULDBLOCK)
 				test_error(ERROR, "accept() failed");
-			new_sd = ERROR;
+			new_sockect = ERROR;
 		}
 		else
 		{
-			_vect_socket_fd.push_back(new_sd);
-			std::cout << "new incoming connection new_sd = " << new_sd << std::endl;
+			_sockect_clients.push_back(new_sockect);//add new socket in vector socket, it has all  client of own port
+			//std::cout << "new incoming connection new_sockect = " << new_sockect << std::endl;
 		}
 	}
 }
 
+void		Server::						set_port(int port){_port = port;}
 
 
 int		Server::						getPort(){	return (_port);}
 int	 	Server::						get_server_fd() {return (_server_fd);}
 int	 	Server::						get_hasError() {return (_hasError);}
-std::vector<int> &	Server::			get_vect_socket_fd(){return (_vect_socket_fd);}
+std::vector<int> &	Server::			get_sockect_clients(){return (_sockect_clients);}

@@ -8,21 +8,27 @@ _WHITE		=\e[97m
 #           MAKEFILE          #
 ###############################
 
+
+
 NAME        = webserv
 
-CC            = clang++
-CFLAGS        = -Werror -Wextra -Wall --std=c++98 -g3 -fsanitize=address
-RM            = rm -rf
+CC          = clang++
+CFLAGS      = -Werror -Wextra -Wall --std=c++98 #-g3 -fstandalone-debug -fsanitize=address
+DEFINE		= -D CGI_PATH=\"$(shell which php-cgi)\"
+RM          = rm -rf
 
 DIR_SRCS    = srcs/
 DIR_OBJS    = objs/
 DIR_INC     = includes/
 
-F_SRCS        =		main.cpp 			\
-                	Server.cpp			\
-					Request.cpp			\
-					ParsingFile.cpp		\
-					Service.cpp			\
+F_SRCS        =		main.cpp 				\
+                	Server.cpp				\
+					Request.cpp				\
+					Parse_config_file.cpp	\
+					Service.cpp				\
+					Cgi.cpp					\
+					utils.cpp				\
+#					to_debug.cpp\
 
 SRCS        = $(addprefix $(DIR_SRCS), $(F_SRCS))
 
@@ -32,9 +38,10 @@ HEADER        = -I $(DIR_INC)
 
 all:        $(NAME)
 
+
 $(DIR_OBJS)%.o:		$(DIR_SRCS)%.cpp
 		@echo "$(_CYAN)Compilating..$(_R)"
-		$(CC) $(CFLAGS) $(HEADER) -c $< -o $@
+		$(CC) $(CFLAGS) $(HEADER) $(DEFINE) -c $< -o $@
 
 $(NAME):    $(DIR_OBJS) $(OBJS)
 		${CC} $(CFLAGS) $(OBJS) -o $(NAME)
