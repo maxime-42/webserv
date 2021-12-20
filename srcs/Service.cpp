@@ -215,8 +215,8 @@ void	Service::								runService()
 				std::cout << "==========_pollFds[index].fd = " << _pollFds[index].fd << " index = " << index << "===========" << std::endl;
 				handlerServer(index);
 			}
+			squeeze_tab_poll();
 		}
-		squeeze_tab_poll();
 	}
 	catch (const char * msg_error)
 	{

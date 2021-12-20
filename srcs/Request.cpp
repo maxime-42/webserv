@@ -209,10 +209,12 @@ void        Request::_process_GET()
 	root = "root/";
 	chdir(root.c_str());
 
-    if (header["url"] == "/")
+    if (header["url"] == "/"){
         path = "index.html";
-    else if (header["url"][0] == '/')
+	}
+    else if (header["url"][0] == '/'){
         path = header["url"].erase(0,1);
+	}
 //	path = root + path;
 
 	std::cout << "path is " << path << std::endl;
