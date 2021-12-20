@@ -66,3 +66,7 @@ https://www.youtube.com/watch?v=vpYct2npKD8<br>
 
 APIs | REST | REST APIs Demystified :<br>
 https://youtu.be/FOZtRzY5x8E
+
+to test your server use siege :
+https://linux.die.net/man/1/siege
+https://www.interserver.net/tips/kb/http-load-testing-siege/
