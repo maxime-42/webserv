@@ -1,5 +1,25 @@
 # webserv
-in progrress
+
+
+this project let me to deeply understad the network programing stuff like:
+- socket
+- Api and apiRest
+- protocole http
+- request 
+- tcp and udp
+and many more...
+it help me to know what happened in the under hood of web
+
+I personally code :
+- Cgi.cpp
+- Service.cpp
+- Server.cpp at 95%
+- Parse_config_file.cpp
+- utils.cpp
+- to_debug.cpp
+
+it was my first project to work in group, it was a good experience to work with @Raphack and @martingarcialopez
+
 Comprendre les modèles OSI et TCP/IP :<br>
   https://www.youtube.com/watch?v=26jazyc7VNk<br>
   
