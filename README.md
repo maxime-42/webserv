@@ -1,7 +1,7 @@
 # webserv
 
 
-this project let me to deeply understad the network programing stuff like:
+this project let me to deeply understand the network programing stuff like:
 - socket
 - Api and apiRest
 - protocole http
