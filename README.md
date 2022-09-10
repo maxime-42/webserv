@@ -42,8 +42,12 @@ I personally code :
 [Socket Programming Tutorial In C part 2](https://www.youtube.com/watch?v=mStnzIEprH8)
 
 ## socket and file descriptor
-https://docs.oracle.com/javase/tutorial/networking/sockets/definition.html#:~:text=A%20socket%20is%20one%20endpoint,address%20and%20a%20port%20number.<br>
+
+[definition](https://docs.oracle.com/javase/tutorial/networking/sockets/definition.html#:~:text=A%20socket%20is%20one%20endpoint,address%20and%20a%20port%20number.)
+
 [file-descriptor](https://www.computerhope.com/jargon/f/file-descriptor.htm)
+
+
 [network-socket](https://www.computerhope.com/jargon/n/network-socket.htm)
 
 ## Blocking and Nonblocking I/O
