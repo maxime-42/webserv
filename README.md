@@ -20,11 +20,11 @@ I personally code :
 
 it was my first project to work in group, it was a good experience to work with @Raphack and @martingarcialopez
 
-(Comprendre les modèles OSI et TCP/IP)[https://www.youtube.com/watch?v=26jazyc7VNk]
+[Comprendre les modèles OSI et TCP/IP](https://www.youtube.com/watch?v=26jazyc7VNk)
   
-(serveur web)[https://www.youtube.com/watch?v=msB9AvJ4bTM]
+[serveur web](https://www.youtube.com/watch?v=msB9AvJ4bTM)
   
-(ports)[https://www.youtube.com/watch?v=YSl6bordSh8]
+[ports](https://www.youtube.com/watch?v=YSl6bordSh8)
   
   man http:
     https://www.w3.org/Protocols/<br>
