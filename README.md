@@ -18,7 +18,6 @@ I personally code :
 - utils.cpp
 - to_debug.cpp
 
-it was my first project to work in group, it was a good experience to work with @Raphack and @martingarcialopez
 
 [Comprendre les modèles OSI et TCP/IP](https://www.youtube.com/watch?v=26jazyc7VNk)
   
@@ -26,29 +25,28 @@ it was my first project to work in group, it was a good experience to work with 
   
 [ports](https://www.youtube.com/watch?v=YSl6bordSh8)
   
-  man http:
-    https://www.w3.org/Protocols/<br>
-    https://www.youtube.com/watch?v=Qxs2S4agyxk <br>
+[man http](https://www.w3.org/Protocols/)
+[http explain](https://www.youtube.com/watch?v=Qxs2S4agyxk)
 
 [HTTP Tutorial](https://www.tutorialspoint.com/http/index.htm)
 
 [Beej's Guide to Network Programming](http://beej.us/guide/bgnet/html)
     
-##Example Socket Programming your own web server in C/C++ :<br>
-https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa<br>
+## Example Socket Programming your own web server in C/C++ :<br>
+[what do you need to know to build a simple http server from scratch](https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa)
 
 [socket-programming](https://www.geeksforgeeks.org/socket-programming-cc/)
 
-[part 1](https://www.youtube.com/watch?v=LtXEMwSG5-8)
+[Socket Programming Tutorial In C part 1](https://www.youtube.com/watch?v=LtXEMwSG5-8)
 
-[part 2](https://www.youtube.com/watch?v=mStnzIEprH8)
+[Socket Programming Tutorial In C part 2](https://www.youtube.com/watch?v=mStnzIEprH8)
 
-##socket and file descriptor:<br>
+## socket and file descriptor
 https://docs.oracle.com/javase/tutorial/networking/sockets/definition.html#:~:text=A%20socket%20is%20one%20endpoint,address%20and%20a%20port%20number.<br>
-https://www.computerhope.com/jargon/f/file-descriptor.htm
-https://www.computerhope.com/jargon/n/network-socket.htm
+[file-descriptor](https://www.computerhope.com/jargon/f/file-descriptor.htm)
+[network-socket](https://www.computerhope.com/jargon/n/network-socket.htm)
 
-## Blocking and Nonblocking I/O:<br>
+## Blocking and Nonblocking I/O
 [blocking](http://faculty.salina.k-state.edu/tim/ossg/Device/blocking.html)
 
 [nonblocking](https://www.ibm.com/docs/en/i/7.4?topic=concepts-nonblocking-io)
