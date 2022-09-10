@@ -20,21 +20,17 @@ I personally code :
 
 it was my first project to work in group, it was a good experience to work with @Raphack and @martingarcialopez
 
-Comprendre les modèles OSI et TCP/IP :<br>
-  https://www.youtube.com/watch?v=26jazyc7VNk<br>
+(Comprendre les modèles OSI et TCP/IP)[https://www.youtube.com/watch?v=26jazyc7VNk]
   
-serveur web:<br>
-  https://www.youtube.com/watch?v=msB9AvJ4bTM<br>
+(serveur web)[https://www.youtube.com/watch?v=msB9AvJ4bTM]
   
-ports:<br>
-  https://www.youtube.com/watch?v=YSl6bordSh8<br>
+(ports)[https://www.youtube.com/watch?v=YSl6bordSh8]
   
   man http:
     https://www.w3.org/Protocols/<br>
     https://www.youtube.com/watch?v=Qxs2S4agyxk <br>
 
-HTTP Tutorial :<br>
-    https://www.tutorialspoint.com/http/index.htm<br>
+(HTTP Tutorial)[https://www.tutorialspoint.com/http/index.htm]
 
 Beej's Guide to Network Programming :<br>
 http://beej.us/guide/bgnet/html<br>
