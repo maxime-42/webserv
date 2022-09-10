@@ -74,3 +74,6 @@ I personally code :
 [man siege](https://linux.die.net/man/1/siege)
 
 [to test your server use siege](https://www.interserver.net/tips/kb/http-load-testing-siege/)
+
+## Parsing 
+![alt](https://github.com/maxime-42/webserv/blob/main/diagram/Diagramme_parsing.drawio.pdf)
