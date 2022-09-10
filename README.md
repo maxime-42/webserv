@@ -30,39 +30,45 @@ it was my first project to work in group, it was a good experience to work with 
     https://www.w3.org/Protocols/<br>
     https://www.youtube.com/watch?v=Qxs2S4agyxk <br>
 
-(HTTP Tutorial)[https://www.tutorialspoint.com/http/index.htm]
+[HTTP Tutorial](https://www.tutorialspoint.com/http/index.htm)
 
-Beej's Guide to Network Programming :<br>
-http://beej.us/guide/bgnet/html<br>
+[Beej's Guide to Network Programming](http://beej.us/guide/bgnet/html)
     
-Example Socket Programming your own web server in C/C++ :<br>
+##Example Socket Programming your own web server in C/C++ :<br>
 https://medium.com/from-the-scratch/http-server-what-do-you-need-to-know-to-build-a-simple-http-server-from-scratch-d1ef8945e4fa<br>
-https://www.geeksforgeeks.org/socket-programming-cc/<br>
-part 1 : https://www.youtube.com/watch?v=LtXEMwSG5-8<br>
-part 2 : https://www.youtube.com/watch?v=mStnzIEprH8<br>
 
-socket and file descriptor:<br>
+[socket-programming](https://www.geeksforgeeks.org/socket-programming-cc/)
+
+[part 1](https://www.youtube.com/watch?v=LtXEMwSG5-8)
+
+[part 2](https://www.youtube.com/watch?v=mStnzIEprH8)
+
+##socket and file descriptor:<br>
 https://docs.oracle.com/javase/tutorial/networking/sockets/definition.html#:~:text=A%20socket%20is%20one%20endpoint,address%20and%20a%20port%20number.<br>
 https://www.computerhope.com/jargon/f/file-descriptor.htm
 https://www.computerhope.com/jargon/n/network-socket.htm
 
 7.3. Blocking and Nonblocking I/O:<br>
-http://faculty.salina.k-state.edu/tim/ossg/Device/blocking.html<br>
-https://www.ibm.com/docs/en/i/7.4?topic=concepts-nonblocking-io<br>
+[blocking](http://faculty.salina.k-state.edu/tim/ossg/Device/blocking.html)
 
-Handle multiple socket connections :<br>
-https://www.ibm.com/docs/en/i/7.2?topic=designs-example-nonblocking-io-select<br>
-https://www.binarytides.com/multiple-socket-connections-fdset-select-linux/<br>
-https://man7.org/linux/man-pages/man2/select.2.html<br>
-https://www.youtube.com/watch?v=Y6pFtgRdUts<br>
-https://www.youtube.com/watch?v=dEHZb9JsmOU&list=WL&index=84&t=161s<br>
+[nonblocking](https://www.ibm.com/docs/en/i/7.4?topic=concepts-nonblocking-io)
 
-Difference between URI and URL :<br>
-https://www.youtube.com/watch?v=vpYct2npKD8<br>
+##Handle multiple socket connections 
 
-APIs | REST | REST APIs Demystified :<br>
-https://youtu.be/FOZtRzY5x8E
+[example-nonblocking-io-select](https://www.ibm.com/docs/en/i/7.2?topic=designs-example-nonblocking-io-select)
 
-to test your server use siege :
-https://linux.die.net/man/1/siege
-https://www.interserver.net/tips/kb/http-load-testing-siege/
+[socket-connections-fdset-select](https://www.binarytides.com/multiple-socket-connections-fdset-select-linux/)
+
+[man select](https://man7.org/linux/man-pages/man2/select.2.html)
+
+[tuto](https://www.youtube.com/watch?v=Y6pFtgRdUts)
+
+[tutu](https://www.youtube.com/watch?v=dEHZb9JsmOU&list=WL&index=84&t=161s)
+
+[Difference between URI and URL](https://www.youtube.com/watch?v=vpYct2npKD8)
+
+[APIs | REST | REST APIs Demystified](https://youtu.be/FOZtRzY5x8E)
+
+[man siege](https://linux.die.net/man/1/siege)
+
+[to test your server use siege](https://www.interserver.net/tips/kb/http-load-testing-siege/)
