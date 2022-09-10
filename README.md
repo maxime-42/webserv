@@ -48,12 +48,12 @@ https://docs.oracle.com/javase/tutorial/networking/sockets/definition.html#:~:te
 https://www.computerhope.com/jargon/f/file-descriptor.htm
 https://www.computerhope.com/jargon/n/network-socket.htm
 
-7.3. Blocking and Nonblocking I/O:<br>
+## Blocking and Nonblocking I/O:<br>
 [blocking](http://faculty.salina.k-state.edu/tim/ossg/Device/blocking.html)
 
 [nonblocking](https://www.ibm.com/docs/en/i/7.4?topic=concepts-nonblocking-io)
 
-##Handle multiple socket connections 
+## Handle multiple socket connections 
 
 [example-nonblocking-io-select](https://www.ibm.com/docs/en/i/7.2?topic=designs-example-nonblocking-io-select)
 
@@ -61,9 +61,9 @@ https://www.computerhope.com/jargon/n/network-socket.htm
 
 [man select](https://man7.org/linux/man-pages/man2/select.2.html)
 
-[tuto](https://www.youtube.com/watch?v=Y6pFtgRdUts)
+[How one thread listens to many sockets with select in C](https://www.youtube.com/watch?v=Y6pFtgRdUts)
 
-[tutu](https://www.youtube.com/watch?v=dEHZb9JsmOU&list=WL&index=84&t=161s)
+[I/O multiplexing: socket programming with select, poll and epoll calls in Linux](https://www.youtube.com/watch?v=dEHZb9JsmOU&list=WL&index=84&t=161s)
 
 [Difference between URI and URL](https://www.youtube.com/watch?v=vpYct2npKD8)
 
